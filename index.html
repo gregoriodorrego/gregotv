@@ -77,6 +77,7 @@
             background-color: #2a2a2a; padding: 12px 20px; display: flex;
             justify-content: space-between; align-items: center; border-bottom: 2px solid #444;
             flex-wrap: wrap; gap: 10px; transition: transform 0.3s ease, opacity 0.3s ease;
+            z-index: 100;
         }
         #barra-superior.oculto { transform: translateY(-100%); opacity: 0; pointer-events: none; }
         #barra-superior h2 { font-size: 24px; color: #ffffff; }
@@ -109,19 +110,35 @@
         #btn-guardar { display: none; }
         #btn-borrar-seleccionados { display: none; }
 
-        #contenedor-principal { display: flex; flex: 1; overflow: hidden; transition: all 0.3s ease; }
+        #contenedor-principal { display: flex; flex: 1; overflow: hidden; transition: all 0.3s ease; position: relative; }
         
         #area-video {
             flex: 1; background-color: #000; display: flex; justify-content: center;
             align-items: center; position: relative; min-height: 300px; transition: all 0.3s ease;
+            overflow: hidden; /* Importante para contener el overlay */
         }
         
         #contenedor-principal.modo-cine #area-video { width: 100%; height: 100%; }
 
         #video-nativo { width: 100%; height: 100%; background-color: #000; display: none; }
-        #contenedor-youtube { display: none; width: 100%; height: 100%; }
-        #contenedor-youtube iframe { width: 100%; height: 100%; border: none; }
-        #mensaje-sin-video { color: #888; font-size: 22px; text-align: center; padding: 20px; }
+        
+        /* Contenedor relativo para YouTube y su Overlay */
+        #contenedor-youtube { 
+            display: none; width: 100%; height: 100%; position: relative; 
+        }
+        #contenedor-youtube iframe { width: 100%; height: 100%; border: none; position: absolute; top: 0; left: 0; z-index: 1; }
+        
+        /* NUEVO: Capa transparente para capturar eventos en YouTube */
+        #youtube-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 10;
+            cursor: default;
+            display: none; /* Se activa solo cuando está en modo cine o inactivo */
+        }
+        #youtube-overlay.activo { display: block; }
+
+        #mensaje-sin-video { color: #888; font-size: 22px; text-align: center; padding: 20px; z-index: 5; position: relative; }
 
         /* Contador de carga */
         .spinner-carga {
@@ -141,6 +158,7 @@
         #area-lista {
             width: 480px; background-color: #222; border-left: 2px solid #444;
             display: flex; flex-direction: column; transition: transform 0.3s ease, opacity 0.3s ease;
+            z-index: 50;
         }
         
         #contenedor-principal.modo-cine #area-lista {
@@ -265,6 +283,8 @@
 
         #contenedor-principal.modo-cine,
         #contenedor-principal.modo-cine * { cursor: none !important; }
+        /* Excepción para el overlay de YouTube en modo cine */
+        #contenedor-principal.modo-cine #youtube-overlay { cursor: default !important; }
     </style>
 </head>
 <body>
@@ -288,7 +308,7 @@
 
     <div id="pantalla-principal">
         <div id="barra-superior">
-            <h2> Mi Lista de TV</h2>
+            <h2>📺 Mi Lista de TV</h2>
             <div class="controles-superior">
                 <button class="boton-mediano boton-fullscreen" id="btn-toggle-fullscreen">🖥️ Pantalla Completa</button>
                 <button class="boton-mediano" id="btn-modo-limpieza">✏️ Modo edición</button>
@@ -305,12 +325,17 @@
             <div id="area-video">
                 <div id="mensaje-sin-video">Selecciona un canal de la lista para reproducir</div>
                 <video id="video-nativo" controls></video>
-                <div id="contenedor-youtube"></div>
+                
+                <!-- Contenedor YouTube con Overlay -->
+                <div id="contenedor-youtube">
+                    <div id="youtube-overlay"></div>
+                    <!-- El iframe se inyecta aquí dinámicamente -->
+                </div>
             </div>
 
             <div id="area-lista">
                 <div id="buscador">
-                    <input type="text" id="input-buscar" placeholder=" Buscar canal...">
+                    <input type="text" id="input-buscar" placeholder="🔍 Buscar canal...">
                 </div>
                 <div id="lista-canales"></div>
                 <div id="info-canales">Total: <span id="total-canales">0</span> canales</div>
@@ -324,7 +349,7 @@
             <p>Podés disfrutar del canal en pantalla completa como si apretaras F11.<br>Presioná <strong>ESC</strong> para salir cuando quieras.</p>
             <div class="modal-fullscreen-botones">
                 <button class="boton-si-fullscreen" id="btn-si-fullscreen">✅ Sí, pantalla completa</button>
-                <button class="boton-no-fullscreen" id="btn-no-fullscreen">❌ No, así está bien</button>
+                <button class="boton-no-fullscreen" id="btn-no-fullscreen"> No, así está bien</button>
             </div>
         </div>
     </div>
@@ -342,7 +367,7 @@
             </div>
             <div class="modal-canal-botones">
                 <button class="boton-guardar-canal" id="btn-guardar-canal">💾 Guardar</button>
-                <button class="boton-cancelar-canal" id="btn-cancelar-canal"> Cancelar</button>
+                <button class="boton-cancelar-canal" id="btn-cancelar-canal">❌ Cancelar</button>
             </div>
         </div>
     </div>
@@ -394,6 +419,7 @@
         const mensajeSinVideo = document.getElementById('mensaje-sin-video');
         const videoNativo = document.getElementById('video-nativo');
         const contenedorYoutube = document.getElementById('contenedor-youtube');
+        const youtubeOverlay = document.getElementById('youtube-overlay'); // Referencia al overlay
         
         const modalFullscreen = document.getElementById('modal-fullscreen');
         const btnSiFullscreen = document.getElementById('btn-si-fullscreen');
@@ -490,7 +516,7 @@
                 btnToggleFullscreen.classList.remove('boton-fullscreen');
                 btnToggleFullscreen.classList.add('boton-salir-fullscreen');
             } else {
-                btnToggleFullscreen.textContent = '🖥️ Pantalla Completa';
+                btnToggleFullscreen.textContent = '️ Pantalla Completa';
                 btnToggleFullscreen.classList.remove('boton-salir-fullscreen');
                 btnToggleFullscreen.classList.add('boton-fullscreen');
             }
@@ -508,6 +534,11 @@
             estaEnModoCine = true;
             contenedorPrincipal.classList.add('modo-cine');
             barraSuperior.classList.add('oculto');
+            
+            // Si es YouTube, activamos el overlay para capturar movimientos
+            if (canalSeleccionado && canalSeleccionado.tipo === 'youtube') {
+                youtubeOverlay.classList.add('activo');
+            }
         }
 
         function desactivarModoCine() {
@@ -515,6 +546,10 @@
             estaEnModoCine = false;
             contenedorPrincipal.classList.remove('modo-cine');
             barraSuperior.classList.remove('oculto');
+            
+            // Desactivamos el overlay para poder usar el video
+            youtubeOverlay.classList.remove('activo');
+            
             iniciarTimerModoCine();
         }
 
@@ -524,10 +559,24 @@
             else iniciarTimerModoCine();
         }
 
+        // Detectar movimiento global
         document.addEventListener('mousemove', resetearActividad);
         document.addEventListener('keypress', resetearActividad);
-        document.addEventListener('click', (e) => { if (!modalFullscreen.contains(e.target)) resetearActividad(); });
+        document.addEventListener('click', (e) => { 
+            // Ignorar clicks dentro de modales abiertos
+            if (modalFullscreen.contains(e.target)) return;
+            resetearActividad(); 
+        });
         document.addEventListener('touchstart', resetearActividad);
+
+        // Lógica específica para el Overlay de YouTube
+        youtubeOverlay.addEventListener('mousemove', resetearActividad);
+        youtubeOverlay.addEventListener('click', () => {
+            // Al hacer click, ocultamos el overlay para permitir interactuar con el video
+            youtubeOverlay.classList.remove('activo');
+            // Reiniciamos el timer de inactividad
+            iniciarTimerModoCine();
+        });
 
         btnToggleFullscreen.addEventListener('click', async () => {
             const estaEnFullscreen = document.fullscreenElement || document.webkitFullscreenElement;
@@ -553,10 +602,7 @@
                 return;
             }
             
-            // Limpiar URL
             url = url.trim();
-            
-            // Convertir URL de GitHub blob/raw a raw si es necesario
             if (url.includes('github.com') && url.includes('/blob/')) {
                 url = url.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/');
             }
@@ -564,17 +610,13 @@
             try {
                 const response = await fetch(url);
                 if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
-                
                 const contenido = await response.text();
                 
-                // Verificar si parece ser una lista M3U válida
                 if (!contenido.includes('#EXTINF') && !contenido.includes('.m3u8') && !contenido.includes('youtube')) {
                     throw new Error('El contenido descargado no parece ser una lista M3U válida.');
                 }
 
                 procesarListaM3U(contenido);
-                
-                // Guardar URL en localStorage para restaurar
                 localStorage.setItem('miListaTV_Url', url);
                 
             } catch (err) {
@@ -593,7 +635,6 @@
             cargarListaDesdeURL(inputUrlLista.value);
         });
 
-        // Permitir cargar con Enter
         inputUrlLista.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') cargarListaDesdeURL(inputUrlLista.value);
         });
@@ -646,7 +687,6 @@
 
         btnVolver.addEventListener('click', mostrarPantallaBienvenida);
 
-        // Restaurar URL guardada
         window.addEventListener('DOMContentLoaded', () => {
             const urlGuardada = localStorage.getItem('miListaTV_Url');
             if (urlGuardada) {
@@ -661,7 +701,6 @@
             if (urlGuardada) {
                 cargarListaDesdeURL(urlGuardada);
             } else {
-                // Fallback a lista local si no hay URL
                 const listaGuardada = localStorage.getItem('miListaTV');
                 if (listaGuardada) {
                     canales = JSON.parse(listaGuardada);
@@ -721,7 +760,7 @@
         function renderizarLista() {
             listaCanales.innerHTML = '';
             totalCanales.textContent = canalesFiltrados.length;
-            const iconosTipo = { 'hls': '📡', 'youtube': '▶️', 'mp4': '🎬' };
+            const iconosTipo = { 'hls': '📡', 'youtube': '▶️', 'mp4': '' };
             
             canalesFiltrados.forEach((canal, index) => {
                 const item = document.createElement('div');
@@ -756,7 +795,7 @@
                 
                 const btnEditar = document.createElement('button');
                 btnEditar.className = 'boton-editar';
-                btnEditar.textContent = '✏️ Editar';
+                btnEditar.textContent = '️ Editar';
                 btnEditar.addEventListener('click', (e) => { e.stopPropagation(); abrirModalEditar(canal); });
                 
                 const btnQuitar = document.createElement('button');
@@ -904,15 +943,6 @@
         btnCancelarCanal.addEventListener('click', cerrarModalCanal);
         modalCanal.addEventListener('click', (e) => { if (e.target === modalCanal) cerrarModalCanal(); });
 
-        // ===== COMBINAR LISTAS (Descartar duplicados por URL) =====
-        // Nota: Para combinar desde URL, el usuario puede agregar manualmente o 
-        // podríamos añadir otro input, pero por simplicidad mantenemos la lógica existente
-        // y asumimos que "Combinar" ahora también podría aceptar URL en futuro.
-        // Por ahora, combinamos solo si hay un input file oculto o similar, 
-        // pero como pediste URL, dejamos la estructura lista.
-        // Si quieres combinar dos URLs, puedes cargar la primera, luego agregar la segunda manualmente
-        // o implementar un segundo input URL. Aquí mantengo la funcionalidad base segura.
-
         btnOrdenarAz.addEventListener('click', () => {
             ordenarAlfabeticamente();
             const texto = inputBuscar.value.toLowerCase();
@@ -976,6 +1006,11 @@
             mensajeSinVideo.style.display = 'none';
             videoNativo.style.display = 'none';
             contenedorYoutube.style.display = 'block';
+            
+            // Limpiar iframe anterior
+            const oldIframe = contenedorYoutube.querySelector('iframe');
+            if (oldIframe) oldIframe.remove();
+
             let videoId = '';
             if (url.includes('youtube-nocookie.com/embed/')) videoId = url.split('/embed/')[1].split('?')[0];
             else if (url.includes('youtube.com/watch')) { const params = new URLSearchParams(url.split('?')[1]); videoId = params.get('v'); }
@@ -983,7 +1018,16 @@
             else if (url.includes('youtube.com/embed/')) videoId = url.split('/embed/')[1].split('?')[0];
             
             if (videoId) {
-                contenedorYoutube.innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
+                const iframe = document.createElement('iframe');
+                iframe.src = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0`;
+                iframe.allow = "autoplay; encrypted-media";
+                iframe.allowFullscreen = true;
+                contenedorYoutube.appendChild(iframe);
+                
+                // Activar overlay inicialmente si estamos en modo cine
+                if (estaEnModoCine) {
+                    youtubeOverlay.classList.add('activo');
+                }
             } else {
                 contenedorYoutube.innerHTML = '<p style="color:#fff; padding:20px;">No se pudo identificar el video de YouTube.</p>';
             }
@@ -1010,8 +1054,9 @@
             videoNativo.pause();
             videoNativo.src = '';
             videoNativo.style.display = 'none';
-            contenedorYoutube.innerHTML = '';
+            contenedorYoutube.innerHTML = ''; // Elimina el iframe y el overlay se resetea visualmente
             contenedorYoutube.style.display = 'none';
+            youtubeOverlay.classList.remove('activo'); // Resetear overlay
             mensajeSinVideo.textContent = 'Selecciona un canal de la lista para reproducir';
             mensajeSinVideo.style.display = 'block';
             if (timerInactividad) clearTimeout(timerInactividad);
