@@ -115,7 +115,7 @@
         #area-video {
             flex: 1; background-color: #000; display: flex; justify-content: center;
             align-items: center; position: relative; min-height: 300px; transition: all 0.3s ease;
-            overflow: hidden; /* Importante para contener el overlay */
+            overflow: hidden;
         }
         
         #contenedor-principal.modo-cine #area-video { width: 100%; height: 100%; }
@@ -128,15 +128,16 @@
         }
         #contenedor-youtube iframe { width: 100%; height: 100%; border: none; position: absolute; top: 0; left: 0; z-index: 1; }
         
-        /* NUEVO: Capa transparente para capturar eventos en YouTube */
+        /* Capa transparente para capturar eventos en YouTube */
         #youtube-overlay {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
             z-index: 10;
             cursor: default;
-            display: none; /* Se activa solo cuando está en modo cine o inactivo */
+            display: block; /* Siempre visible por defecto en YouTube */
         }
-        #youtube-overlay.activo { display: block; }
+        /* Clase para ocultar temporalmente al interactuar con el video */
+        #youtube-overlay.inactivo { display: none; }
 
         #mensaje-sin-video { color: #888; font-size: 22px; text-align: center; padding: 20px; z-index: 5; position: relative; }
 
@@ -312,7 +313,7 @@
             <div class="controles-superior">
                 <button class="boton-mediano boton-fullscreen" id="btn-toggle-fullscreen">🖥️ Pantalla Completa</button>
                 <button class="boton-mediano" id="btn-modo-limpieza">✏️ Modo edición</button>
-                <button class="boton-mediano boton-agregar" id="btn-agregar-canal">➕ Agregar canal</button>
+                <button class="boton-mediano boton-agregar" id="btn-agregar-canal"> Agregar canal</button>
                 <button class="boton-mediano boton-combinar" id="btn-combinar-lista">📂 Combinar otra lista</button>
                 <button class="boton-mediano boton-ordenar" id="btn-ordenar-az">🔤 Ordenar A-Z</button>
                 <button class="boton-mediano boton-peligro" id="btn-borrar-seleccionados">🗑️ Borrar seleccionados (<span id="contador-seleccionados">0</span>)</button>
@@ -535,9 +536,9 @@
             contenedorPrincipal.classList.add('modo-cine');
             barraSuperior.classList.add('oculto');
             
-            // Si es YouTube, activamos el overlay para capturar movimientos
+            // En modo cine, aseguramos que el overlay esté activo para YouTube
             if (canalSeleccionado && canalSeleccionado.tipo === 'youtube') {
-                youtubeOverlay.classList.add('activo');
+                youtubeOverlay.classList.remove('inactivo');
             }
         }
 
@@ -547,23 +548,33 @@
             contenedorPrincipal.classList.remove('modo-cine');
             barraSuperior.classList.remove('oculto');
             
-            // Desactivamos el overlay para poder usar el video
-            youtubeOverlay.classList.remove('activo');
+            // Al salir del modo cine, reactivamos el overlay para YouTube
+            youtubeOverlay.classList.remove('inactivo');
             
             iniciarTimerModoCine();
         }
 
         function resetearActividad() {
             if (modalFullscreen.style.display === 'flex') return;
-            if (estaEnModoCine) desactivarModoCine();
-            else iniciarTimerModoCine();
+            
+            // Si estamos en modo cine, salimos de él
+            if (estaEnModoCine) {
+                desactivarModoCine();
+            } else {
+                // Si no estamos en modo cine, reiniciamos el timer
+                iniciarTimerModoCine();
+            }
+            
+            // LÓGICA NUEVA: Reactivar siempre el overlay de YouTube al mover el mouse
+            if (canalSeleccionado && canalSeleccionado.tipo === 'youtube') {
+                youtubeOverlay.classList.remove('inactivo');
+            }
         }
 
         // Detectar movimiento global
         document.addEventListener('mousemove', resetearActividad);
         document.addEventListener('keypress', resetearActividad);
         document.addEventListener('click', (e) => { 
-            // Ignorar clicks dentro de modales abiertos
             if (modalFullscreen.contains(e.target)) return;
             resetearActividad(); 
         });
@@ -572,8 +583,8 @@
         // Lógica específica para el Overlay de YouTube
         youtubeOverlay.addEventListener('mousemove', resetearActividad);
         youtubeOverlay.addEventListener('click', () => {
-            // Al hacer click, ocultamos el overlay para permitir interactuar con el video
-            youtubeOverlay.classList.remove('activo');
+            // Al hacer click, ocultamos el overlay TEMPORALMENTE para permitir interactuar con el video
+            youtubeOverlay.classList.add('inactivo');
             // Reiniciamos el timer de inactividad
             iniciarTimerModoCine();
         });
@@ -861,7 +872,7 @@
             if (modoLimpieza) {
                 if (estaEnModoCine) desactivarModoCine();
                 btnModoLimpieza.classList.add('activo');
-                btnModoLimpieza.textContent = '✏️ Modo edición ACTIVO';
+                btnModoLimpieza.textContent = '️ Modo edición ACTIVO';
                 listaCanales.classList.add('modo-limpieza');
                 btnAgregarCanal.style.display = 'inline-block';
                 btnCombinarLista.style.display = 'inline-block';
@@ -907,7 +918,7 @@
 
         function abrirModalEditar(canal) {
             canalEditandoIndex = canales.indexOf(canal);
-            tituloModalCanal.textContent = '️ Editar canal';
+            tituloModalCanal.textContent = '✏️ Editar canal';
             inputNombreCanal.value = canal.nombre;
             inputUrlCanal.value = canal.url;
             modalCanal.style.display = 'flex';
@@ -1024,10 +1035,8 @@
                 iframe.allowFullscreen = true;
                 contenedorYoutube.appendChild(iframe);
                 
-                // Activar overlay inicialmente si estamos en modo cine
-                if (estaEnModoCine) {
-                    youtubeOverlay.classList.add('activo');
-                }
+                // NUEVA LÓGICA: El overlay SIEMPRE comienza activo en YouTube
+                youtubeOverlay.classList.remove('inactivo');
             } else {
                 contenedorYoutube.innerHTML = '<p style="color:#fff; padding:20px;">No se pudo identificar el video de YouTube.</p>';
             }
@@ -1054,9 +1063,9 @@
             videoNativo.pause();
             videoNativo.src = '';
             videoNativo.style.display = 'none';
-            contenedorYoutube.innerHTML = ''; // Elimina el iframe y el overlay se resetea visualmente
+            contenedorYoutube.innerHTML = ''; 
             contenedorYoutube.style.display = 'none';
-            youtubeOverlay.classList.remove('activo'); // Resetear overlay
+            youtubeOverlay.classList.remove('inactivo'); // Resetear overlay
             mensajeSinVideo.textContent = 'Selecciona un canal de la lista para reproducir';
             mensajeSinVideo.style.display = 'block';
             if (timerInactividad) clearTimeout(timerInactividad);
