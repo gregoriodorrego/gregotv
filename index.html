@@ -151,7 +151,6 @@
             pointer-events: auto;
         }
         
-        /* Modificación Opción 1: Zona libre en la esquina inferior derecha para permitir clics en botones de YouTube (Saltar Anuncio) */
         #youtube-overlay {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -160,7 +159,6 @@
             display: block; 
             background: transparent;
             pointer-events: auto;
-            /* Recorte dinámico o zona excluida inferior derecha (aprox 220px de ancho x 100px de alto) */
             clip-path: polygon(0 0, 100% 0, 100% calc(100% - 100px), calc(100% - 220px) calc(100% - 100px), calc(100% - 220px) 100%, 0 100%);
         }
 
@@ -243,33 +241,6 @@
 
         #info-canales { padding: 10px 12px; background-color: #2a2a2a; border-top: 1px solid #444; font-size: 16px; color: #aaa; }
 
-        /* Modales */
-        #modal-fullscreen {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 2000;
-        }
-        .modal-fullscreen-contenido {
-            background-color: #2a2a2a; padding: 40px; border-radius: 16px;
-            max-width: 550px; text-align: center; border: 3px solid #9C27B0;
-            box-shadow: 0 8px 32px rgba(156, 39, 176, 0.4);
-        }
-        .modal-fullscreen-contenido h3 { font-size: 28px; margin-bottom: 20px; color: #fff; }
-        .modal-fullscreen-contenido p { font-size: 20px; margin-bottom: 30px; color: #ccc; line-height: 1.5; }
-        .modal-fullscreen-botones { display: flex; gap: 20px; justify-content: center; }
-
-        .boton-si-fullscreen {
-            background-color: #4CAF50; color: white; border: none; padding: 16px 32px;
-            font-size: 20px; border-radius: 10px; cursor: pointer; font-family: Arial, sans-serif;
-            font-weight: bold; transition: background-color 0.2s;
-        }
-        .boton-si-fullscreen:hover { background-color: #45a049; }
-        .boton-no-fullscreen {
-            background-color: #666; color: white; border: none; padding: 16px 32px;
-            font-size: 20px; border-radius: 10px; cursor: pointer; font-family: Arial, sans-serif;
-            transition: background-color 0.2s;
-        }
-        .boton-no-fullscreen:hover { background-color: #555; }
-
         #modal-canal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background-color: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 3000;
@@ -318,7 +289,6 @@
         <p>Reproductor compatible con GitHub y archivos locales. Ingresa la URL de tu lista o selecciona un archivo M3U desde tu dispositivo.</p>
         
         <div class="opciones-carga">
-            <!-- Opción 1: Cargar desde Archivo Local -->
             <div class="tarjeta-carga">
                 <h3>📁 Desde archivo local</h3>
                 <p>Sube un archivo .m3u o .txt guardado en tu computadora o celular.</p>
@@ -326,7 +296,6 @@
                 <button class="boton-grande boton-archivo" id="btn-trigger-archivo">📤 Seleccionar archivo de lista</button>
             </div>
 
-            <!-- Opción 2: Cargar desde URL -->
             <div class="tarjeta-carga">
                 <h3>🌐 Desde URL / GitHub</h3>
                 <p>Pega el enlace directo o la URL Raw de tu repositorio de GitHub.</p>
@@ -379,17 +348,6 @@
         </div>
     </div>
 
-    <div id="modal-fullscreen">
-        <div class="modal-fullscreen-contenido">
-            <h3>🖥️ ¿Querés ver en pantalla completa?</h3>
-            <p>Podés disfrutar del canal en pantalla completa como si apretaras F11.<br>Presioná <strong>ESC</strong> para salir cuando quieras.</p>
-            <div class="modal-fullscreen-botones">
-                <button class="boton-si-fullscreen" id="btn-si-fullscreen">✅ Sí, pantalla completa</button>
-                <button class="boton-no-fullscreen" id="btn-no-fullscreen">❌ No, así está bien</button>
-            </div>
-        </div>
-    </div>
-
     <div id="modal-canal">
         <div class="modal-canal-contenido">
             <h3 id="titulo-modal-canal">➕ Agregar canal</h3>
@@ -417,7 +375,6 @@
         
         let timerInactividad = null;
         let estaEnModoCine = false;
-        let yaSePreguntoFullscreen = false;
         const TIEMPO_MODO_CINE = 15000;
 
         let canalEditandoIndex = -1;
@@ -458,10 +415,6 @@
         const videoNativo = document.getElementById('video-nativo');
         const contenedorYoutube = document.getElementById('contenedor-youtube');
         const youtubeOverlay = document.getElementById('youtube-overlay');
-        
-        const modalFullscreen = document.getElementById('modal-fullscreen');
-        const btnSiFullscreen = document.getElementById('btn-si-fullscreen');
-        const btnNoFullscreen = document.getElementById('btn-no-fullscreen');
         
         const barraSuperior = document.getElementById('barra-superior');
         const contenedorPrincipal = document.getElementById('contenedor-principal');
@@ -555,7 +508,6 @@
         }
 
         function resetearActividad() {
-            if (modalFullscreen.style.display === 'flex') return;
             if (estaEnModoCine) {
                 desactivarModoCine();
             } else {
@@ -569,7 +521,6 @@
             resetearActividad();
         });
         document.addEventListener('click', (e) => { 
-            if (modalFullscreen.contains(e.target)) return;
             resetearActividad(); 
         });
         document.addEventListener('touchstart', resetearActividad);
@@ -592,19 +543,17 @@
             if (estaEnFullscreen) await salirPantallaCompletaReal();
             else {
                 const exito = await activarPantallaCompletaReal();
-                if (exito) { yaSePreguntoFullscreen = true; if (timerInactividad) clearTimeout(timerInactividad); }
+                if (exito) { if (timerInactividad) clearTimeout(timerInactividad); }
                 else mostrarError('No se pudo activar la pantalla completa.');
             }
         });
 
         function manejarCambioFullscreen() {
             actualizarBotonFullscreen();
-            if (!document.fullscreenElement && !document.webkitFullscreenElement) yaSePreguntoFullscreen = false;
         }
         document.addEventListener('fullscreenchange', manejarCambioFullscreen);
         document.addEventListener('webkitfullscreenchange', manejarCambioFullscreen);
 
-        /* Manejo de carga de archivo local */
         btnTriggerArchivo.addEventListener('click', () => {
             inputArchivoLocal.click();
         });
@@ -713,7 +662,6 @@
             detenerReproduccion();
             pantallaPrincipal.style.display = 'none';
             pantallaBienvenida.style.display = 'flex';
-            yaSePreguntoFullscreen = false;
             if (timerInactividad) clearTimeout(timerInactividad);
         }
 
@@ -775,14 +723,10 @@
             if (fromIndex !== toIndex && fromIndex >= 0 && toIndex >= 0) {
                 const item = canales.splice(fromIndex, 1)[0];
                 canales.splice(toIndex, 0, item);
-                const filtradoFromIndex = canalesFiltrados.findIndex(c => c === item);
-                if (filtradoFromIndex >= 0) {
-                    canalesFiltrados.splice(filtradoFromIndex, 1);
-                    canalesFiltrados = [...canales];
-                    if (inputBuscar.value.trim() !== '') {
-                        const texto = inputBuscar.value.toLowerCase();
-                        canalesFiltrados = canales.filter(c => c.nombre.toLowerCase().includes(texto));
-                    }
+                canalesFiltrados = [...canales];
+                if (inputBuscar.value.trim() !== '') {
+                    const texto = inputBuscar.value.toLowerCase();
+                    canalesFiltrados = canales.filter(c => c.nombre.toLowerCase().includes(texto));
                 }
                 renderizarLista();
                 try { localStorage.setItem('miListaTV', JSON.stringify(canales)); } catch (e) {}
@@ -982,7 +926,6 @@
             canalSeleccionado = canal;
             renderizarLista();
             detenerReproduccion();
-            yaSePreguntoFullscreen = false;
             if (canal.tipo === 'youtube') reproducirYouTube(canal.url);
             else if (canal.tipo === 'mp4') reproducirMP4(canal.url);
             else reproducirHLS(canal.url);
@@ -1102,8 +1045,7 @@
 
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
-                if (modalFullscreen.style.display === 'flex') btnNoFullscreen.click();
-                else if (modalCanal.style.display === 'flex') cerrarModalCanal();
+                if (modalCanal.style.display === 'flex') cerrarModalCanal();
                 else if (modoLimpieza) btnModoLimpieza.click();
             }
         });
