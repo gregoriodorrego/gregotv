@@ -101,11 +101,8 @@
         #btn-agregar-canal { display: none; }
 
         #btn-combinar-lista { display: none; }
-        #btn-ordenar-az { display: none; }
         .boton-combinar { background-color: #009688; }
         .boton-combinar:hover { background-color: #00796B; }
-        .boton-ordenar { background-color: #3F51B5; }
-        .boton-ordenar:hover { background-color: #303F9F; }
 
         #btn-guardar { display: none; }
         #btn-borrar-seleccionados { display: none; }
@@ -320,7 +317,6 @@
                 <button class="boton-mediano" id="btn-modo-limpieza">✏️ Modo edición</button>
                 <button class="boton-mediano boton-agregar" id="btn-agregar-canal">➕ Agregar canal</button>
                 <button class="boton-mediano boton-combinar" id="btn-combinar-lista">📂 Combinar otra lista</button>
-                <button class="boton-mediano boton-ordenar" id="btn-ordenar-az">🔤 Ordenar A-Z</button>
                 <button class="boton-mediano boton-peligro" id="btn-borrar-seleccionados">🗑️ Borrar seleccionados (<span id="contador-seleccionados">0</span>)</button>
                 <button class="boton-mediano boton-secundario" id="btn-guardar">💾 Guardar lista limpia</button>
                 <button class="boton-mediano" id="btn-volver">← Volver al inicio</button>
@@ -411,7 +407,6 @@
         const btnVolver = document.getElementById('btn-volver');
         
         const btnCombinarLista = document.getElementById('btn-combinar-lista');
-        const btnOrdenarAz = document.getElementById('btn-ordenar-az');
         
         const btnBorrarSeleccionados = document.getElementById('btn-borrar-seleccionados');
         const contadorSeleccionados = document.getElementById('contador-seleccionados');
@@ -466,14 +461,6 @@
         function detenerContadorCarga() {
             if (timerContadorCarga) { clearInterval(timerContadorCarga); timerContadorCarga = null; }
             segundosCarga = 0;
-        }
-
-        function normalizarNombre(nombre) {
-            return nombre.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-        }
-
-        function ordenarAlfabeticamente() {
-            canales.sort((a, b) => normalizarNombre(a.nombre).localeCompare(normalizarNombre(b.nombre), 'es'));
         }
 
         async function activarPantallaCompletaReal() {
@@ -646,7 +633,6 @@
                 }
             }
             if (canales.length === 0) { mostrarError('No se encontraron canales válidos en la lista.'); return; }
-            ordenarAlfabeticamente();
             canalesSeleccionados = [];
             canalAncla = null;
             actualizarContadorSeleccion();
@@ -855,7 +841,6 @@
                 listaCanales.classList.add('modo-limpieza');
                 btnAgregarCanal.style.display = 'inline-block';
                 btnCombinarLista.style.display = 'inline-block';
-                btnOrdenarAz.style.display = 'inline-block';
                 btnGuardar.style.display = 'inline-block';
                 if (timerInactividad) clearTimeout(timerInactividad);
             } else {
@@ -864,7 +849,6 @@
                 listaCanales.classList.remove('modo-limpieza');
                 btnAgregarCanal.style.display = 'none';
                 btnCombinarLista.style.display = 'none';
-                btnOrdenarAz.style.display = 'none';
                 btnGuardar.style.display = 'none';
                 canalesSeleccionados = [];
                 canalAncla = null;
@@ -933,14 +917,6 @@
         btnCancelarCanal.addEventListener('click', cerrarModalCanal);
         modalCanal.addEventListener('click', (e) => { if (e.target === modalCanal) cerrarModalCanal(); });
 
-        btnOrdenarAz.addEventListener('click', () => {
-            ordenarAlfabeticamente();
-            const texto = inputBuscar.value.toLowerCase();
-            canalesFiltrados = texto === '' ? [...canales] : canales.filter(c => c.nombre.toLowerCase().includes(texto));
-            try { localStorage.setItem('miListaTV', JSON.stringify(canales)); } catch (err) {}
-            renderizarLista();
-        });
-
         function reproducirCanal(canal) {
             canalSeleccionado = canal;
             renderizarLista();
@@ -1007,7 +983,6 @@
             
             if (videoId) {
                 const iframe = document.createElement('iframe');
-                // Se ocultan controles y branding de YouTube; la capa overlay se encarga de bloquear el mouse
                 iframe.src = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&controls=0&modestbranding=1&rel=0`;
                 iframe.allow = "autoplay; encrypted-media";
                 iframe.allowFullscreen = true;
@@ -1056,7 +1031,7 @@
             if (canales.length === 0) return;
             let contenido = '#EXTM3U\n';
             canales.forEach(canal => { contenido += `#EXTINF:-1,${canal.nombre}\n${canal.url}\n`; });
-            const blob = new Blob([contenido], { type: 'text/plain;charset=utf-8'	});
+            const blob = new Blob([contenido], { type: 'text/plain;charset=utf-8' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url; a.download = 'mi_lista_limpia.m3u';
