@@ -19,18 +19,12 @@ https://www.youtube-nocookie.com/embed/FEWZjXJ7M0c
 https://www.youtube-nocookie.com/embed/hw4uHyct4vg
 #EXTINF:-1 group-title="📰 Noticias",ARGENTINA - Canal 26
 https://stream-gtlc.telecentro.net.ar/hls/canal26hls/main.m3u8
-#EXTINF:-1 group-title="📰 Noticias",ARGENTINA - IP Noticias
-https://www.youtube.com/@IPNoticias/live
 #EXTINF:-1 group-title="📰 Noticias",ARGENTINA - 24/7 Canal de Noticias
 https://panel.host-live.com:19360/cn247tv/cn247tv.m3u8
 #EXTINF:-1 group-title="📰 Noticias",ARGENTINA - Mercurio Noticias
 https://videostream.shockmedia.com.ar/hls/mercuriotv/mercuriotv.m3u8
 #EXTINF:-1 group-title="📰 Noticias",ARGENTINA - Telediario Digital
 https://www.youtube-nocookie.com/embed/-PtFYqa7_Kg
-#EXTINF:-1 group-title="📰 Noticias",ARGENTINA - OLGA
-https://www.youtube.com/@OLGAstreaming/live
-#EXTINF:-1 group-title="📰 Noticias",ARGENTINA - Resumido
-https://www.youtube.com/@Resumido/live
 #EXTINF:-1 group-title="⚽ Deportes",ARGENTINA - TyC Sports
 https://amg26268-amg26268c14-freelivesports-emea-10267.playouts.now.amagi.tv/ts-us-e2-n2/playlist/amg26268-sportsstudio-tycsports-freelivesportsemea/playlist.m3u8
 #EXTINF:-1 group-title="⚽ Deportes",ARGENTINA - Canal Showsport
@@ -45,12 +39,6 @@ https://lbgo.bozztv.com/ssh101/ssh101/verycoolfgr/playlist.m3u8
 https://www.youtube-nocookie.com/embed/vGNglKWqwcQ
 #EXTINF:-1 group-title="🎵 Videoclips",ARGENTINA - Cumbia Mix
 https://cloud.tvomix.com/CUMBIAMIX/index.m3u8
-#EXTINF:-1 group-title="🎵 Videoclips",ARGENTINA - La Casa Streaming
-https://www.youtube.com/@LaCasaStreaming/live
-#EXTINF:-1 group-title="🎵 Videoclips",ARGENTINA - Bondi Live
-https://www.youtube.com/@BondiLive/live
-#EXTINF:-1 group-title="🎵 Videoclips",ARGENTINA - AZZ
-https://www.youtube.com/@AZZmusica/live
 #EXTINF:-1 group-title="📻 Radio con Video",ARGENTINA - Radio Mitre
 https://www.youtube-nocookie.com/embed/gLRijRdfkjU
 #EXTINF:-1 group-title="📻 Radio con Video",ARGENTINA - La 100
