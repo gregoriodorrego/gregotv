@@ -189,6 +189,34 @@
             position: absolute; right: 0; top: 0; height: 100%; z-index: 999;
         }
 
+        /* ===== PESTAÑAS DE CATEGORÍAS ===== */
+        #contenedor-pestanas {
+            display: flex;
+            gap: 6px;
+            padding: 10px 12px;
+            background-color: #1f1f1f;
+            border-bottom: 1px solid #444;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+        #contenedor-pestanas::-webkit-scrollbar { height: 6px; }
+        #contenedor-pestanas::-webkit-scrollbar-thumb { background: #555; border-radius: 3px; }
+
+        .pestana-categoria {
+            background-color: #333;
+            color: #ccc;
+            border: none;
+            padding: 8px 14px;
+            font-size: 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s, color 0.2s;
+            font-family: Arial, sans-serif;
+            flex-shrink: 0;
+        }
+        .pestana-categoria:hover { background-color: #444; color: #fff; }
+        .pestana-categoria.activa { background-color: #4CAF50; color: #fff; font-weight: bold; }
+
         #buscador { padding: 12px; border-bottom: 1px solid #444; }
         #input-buscar {
             width: 100%; padding: 14px; font-size: 18px; border: 2px solid #555;
@@ -339,6 +367,7 @@
             </div>
 
             <div id="area-lista">
+                <div id="contenedor-pestanas"></div>
                 <div id="buscador">
                     <input type="text" id="input-buscar" placeholder="🔍 Buscar canal...">
                 </div>
@@ -369,6 +398,8 @@
     <script>
         let canales = [];
         let canalesFiltrados = [];
+        let categoriasDisponibles = [];
+        let categoriaSeleccionada = 'TODOS';
         let canalSeleccionado = null;
         let modoLimpieza = false;
         let hls = null;
@@ -407,6 +438,7 @@
         const btnBorrarSeleccionados = document.getElementById('btn-borrar-seleccionados');
         const contadorSeleccionados = document.getElementById('contador-seleccionados');
         
+        const contenedorPestanas = document.getElementById('contenedor-pestanas');
         const inputBuscar = document.getElementById('input-buscar');
         const listaCanales = document.getElementById('lista-canales');
         const totalCanales = document.getElementById('total-canales');
@@ -520,9 +552,7 @@
             if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
             resetearActividad();
         });
-        document.addEventListener('click', (e) => { 
-            resetearActividad(); 
-        });
+        document.addEventListener('click', (e) => { resetearActividad(); });
         document.addEventListener('touchstart', resetearActividad);
 
         function configurarEventosOverlayYouTube() {
@@ -548,15 +578,11 @@
             }
         });
 
-        function manejarCambioFullscreen() {
-            actualizarBotonFullscreen();
-        }
+        function manejarCambioFullscreen() { actualizarBotonFullscreen(); }
         document.addEventListener('fullscreenchange', manejarCambioFullscreen);
         document.addEventListener('webkitfullscreenchange', manejarCambioFullscreen);
 
-        btnTriggerArchivo.addEventListener('click', () => {
-            inputArchivoLocal.click();
-        });
+        btnTriggerArchivo.addEventListener('click', () => { inputArchivoLocal.click(); });
 
         inputArchivoLocal.addEventListener('change', (e) => {
             const archivo = e.target.files[0];
@@ -572,9 +598,7 @@
                 procesarListaM3U(contenido);
                 localStorage.removeItem('miListaTV_Url');
             };
-            lector.onerror = function() {
-                mostrarError('No se pudo leer el archivo local.');
-            };
+            lector.onerror = function() { mostrarError('No se pudo leer el archivo local.'); };
             lector.readAsText(archivo);
         });
 
@@ -613,13 +637,8 @@
             }
         }
 
-        btnCargarUrl.addEventListener('click', () => {
-            cargarListaDesdeURL(inputUrlLista.value);
-        });
-
-        inputUrlLista.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') cargarListaDesdeURL(inputUrlLista.value);
-        });
+        btnCargarUrl.addEventListener('click', () => { cargarListaDesdeURL(inputUrlLista.value); });
+        inputUrlLista.addEventListener('keypress', (e) => { if (e.key === 'Enter') cargarListaDesdeURL(inputUrlLista.value); });
 
         function procesarListaM3U(contenido) {
             const lineas = contenido.split('\n');
@@ -629,21 +648,86 @@
                 if (linea.startsWith('#EXTINF:')) {
                     const partes = linea.split(',');
                     const nombre = partes[partes.length - 1].trim();
+                    
+                    // Extraer categoría de group-title si existe
+                    let categoria = 'General';
+                    const matchGroup = linea.match(/group-title="([^"]+)"/i);
+                    if (matchGroup && matchGroup[1]) {
+                        categoria = matchGroup[1].trim();
+                    }
+
                     let url = '';
                     for (let j = i + 1; j < lineas.length; j++) {
                         const siguiente = lineas[j].trim();
                         if (siguiente && !siguiente.startsWith('#')) { url = siguiente; i = j; break; }
                     }
-                    if (nombre && url) { canales.push({ nombre, url, tipo: detectarTipo(url), marcado: false }); }
+                    if (nombre && url) { 
+                        canales.push({ nombre, url, tipo: detectarTipo(url), categoria, marcado: false }); 
+                    }
                 }
             }
             if (canales.length === 0) { mostrarError('No se encontraron canales válidos en la lista.'); return; }
+            
             canalesSeleccionados = [];
             canalAncla = null;
+            categoriaSeleccionada = 'TODOS';
             actualizarContadorSeleccion();
             try { localStorage.setItem('miListaTV', JSON.stringify(canales)); } catch (e) {}
-            canalesFiltrados = [...canales];
+            
+            extraerCategorias();
+            aplicarFiltros();
             mostrarPantallaPrincipal();
+        }
+
+        function extraerCategorias() {
+            const setCat = new Set();
+            canales.forEach(c => {
+                if (c.categoria) setCat.add(c.categoria);
+            });
+            categoriasDisponibles = Array.from(setCat).sort();
+            renderizarPestanas();
+        }
+
+        function renderizarPestanas() {
+            contenedorPestanas.innerHTML = '';
+            
+            // Botón "TODOS"
+            const btnTodos = document.createElement('button');
+            btnTodos.className = 'pestana-categoria';
+            if (categoriaSeleccionada === 'TODOS') btnTodos.classList.add('activa');
+            btnTodos.textContent = '📁 Todos';
+            btnTodos.addEventListener('click', () => {
+                categoriaSeleccionada = 'TODOS';
+                renderizarPestanas();
+                aplicarFiltros();
+            });
+            contenedorPestanas.appendChild(btnTodos);
+
+            // Botones por categoría detectada
+            categoriasDisponibles.forEach(cat => {
+                const btnCat = document.createElement('button');
+                btnCat.className = 'pestana-categoria';
+                if (categoriaSeleccionada === cat) btnCat.classList.add('activa');
+                btnCat.textContent = cat;
+                btnCat.addEventListener('click', () => {
+                    categoriaSeleccionada = cat;
+                    renderizarPestanas();
+                    aplicarFiltros();
+                });
+                contenedorPestanas.appendChild(btnCat);
+            });
+        }
+
+        function aplicarFiltros() {
+            const textoBusqueda = inputBuscar.value.toLowerCase().trim();
+            
+            canalesFiltrados = canales.filter(c => {
+                const coincideCategoria = (categoriaSeleccionada === 'TODOS' || c.categoria === categoriaSeleccionada);
+                const coincideTexto = textoBusqueda === '' || c.nombre.toLowerCase().includes(textoBusqueda);
+                return coincideCategoria && coincideTexto;
+            });
+            
+            renderizarLista();
         }
 
         function detectarTipo(url) {
@@ -693,8 +777,10 @@
                     canales.forEach(c => c.marcado = false);
                     canalesSeleccionados = [];
                     canalAncla = null;
+                    categoriaSeleccionada = 'TODOS';
                     actualizarContadorSeleccion();
-                    canalesFiltrados = [...canales];
+                    extraerCategorias();
+                    aplicarFiltros();
                     mostrarPantallaPrincipal();
                 } else {
                     mostrarError('No hay lista ni URL guardada.');
@@ -723,12 +809,8 @@
             if (fromIndex !== toIndex && fromIndex >= 0 && toIndex >= 0) {
                 const item = canales.splice(fromIndex, 1)[0];
                 canales.splice(toIndex, 0, item);
-                canalesFiltrados = [...canales];
-                if (inputBuscar.value.trim() !== '') {
-                    const texto = inputBuscar.value.toLowerCase();
-                    canalesFiltrados = canales.filter(c => c.nombre.toLowerCase().includes(texto));
-                }
-                renderizarLista();
+                extraerCategorias();
+                aplicarFiltros();
                 try { localStorage.setItem('miListaTV', JSON.stringify(canales)); } catch (e) {}
             }
         }
@@ -786,14 +868,13 @@
                     e.stopPropagation();
                     const idx = canales.indexOf(canal);
                     if (idx >= 0) canales.splice(idx, 1);
-                    const idxF = canalesFiltrados.indexOf(canal);
-                    if (idxF >= 0) canalesFiltrados.splice(idxF, 1);
                     canalesSeleccionados = canalesSeleccionados.filter(c => c !== canal);
                     if (canalAncla === canal) canalAncla = null;
                     actualizarContadorSeleccion();
                     if (canalSeleccionado === canal) { canalSeleccionado = null; detenerReproduccion(); }
                     try { localStorage.setItem('miListaTV', JSON.stringify(canales)); } catch (err) {}
-                    renderizarLista();
+                    extraerCategorias();
+                    aplicarFiltros();
                 });
                 
                 item.appendChild(dragHandle);
@@ -831,11 +912,7 @@
             });
         }
 
-        inputBuscar.addEventListener('input', (e) => {
-            const texto = e.target.value.toLowerCase();
-            canalesFiltrados = texto === '' ? [...canales] : canales.filter(c => c.nombre.toLowerCase().includes(texto));
-            renderizarLista();
-        });
+        inputBuscar.addEventListener('input', () => { aplicarFiltros(); });
 
         btnModoLimpieza.addEventListener('click', () => {
             modoLimpieza = !modoLimpieza;
@@ -867,12 +944,12 @@
             if (canalesSeleccionados.length === 0) return;
             if (canalesSeleccionados.includes(canalSeleccionado)) { canalSeleccionado = null; detenerReproduccion(); }
             canales = canales.filter(c => !canalesSeleccionados.includes(c));
-            canalesFiltrados = canalesFiltrados.filter(c => !canalesSeleccionados.includes(c));
             canalesSeleccionados = [];
             canalAncla = null;
             try { localStorage.setItem('miListaTV', JSON.stringify(canales)); } catch (e) {}
             actualizarContadorSeleccion();
-            renderizarLista();
+            extraerCategorias();
+            aplicarFiltros();
         });
 
         function abrirModalAgregar() {
@@ -908,13 +985,12 @@
                 canales[canalEditandoIndex].url = url;
                 canales[canalEditandoIndex].tipo = tipo;
             } else {
-                canales.push({ nombre, url, tipo, marcado: false });
+                canales.push({ nombre, url, tipo, categoria: 'General', marcado: false });
             }
-            const texto = inputBuscar.value.toLowerCase();
-            canalesFiltrados = texto === '' ? [...canales] : canales.filter(c => c.nombre.toLowerCase().includes(texto));
             try { localStorage.setItem('miListaTV', JSON.stringify(canales)); } catch (e) {}
             cerrarModalCanal();
-            renderizarLista();
+            extraerCategorias();
+            aplicarFiltros();
         }
 
         btnAgregarCanal.addEventListener('click', abrirModalAgregar);
@@ -1034,7 +1110,9 @@
         btnGuardar.addEventListener('click', () => {
             if (canales.length === 0) return;
             let contenido = '#EXTM3U\n';
-            canales.forEach(canal => { contenido += `#EXTINF:-1,${canal.nombre}\n${canal.url}\n`; });
+            canales.forEach(canal => { 
+                contenido += `#EXTINF:-1 group-title="${canal.categoria || 'General'}",${canal.nombre}\n${canal.url}\n`; 
+            });
             const blob = new Blob([contenido], { type: 'text/plain;charset=utf-8' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
