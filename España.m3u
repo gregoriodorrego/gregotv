@@ -55,137 +55,135 @@ https://cloudvideo.servers10.com:8081/8032/index.m3u8
 https://ventdelnord.tv:8080/mola/directe.m3u8
 #EXTINF:-1 group-title="🎵 Videoclips",ESPAÑA - POP World TV
 https://janus.xpbroadcasting.com:8443/hls/popworld.m3u8
-#EXTINF:-1 group-title="📻 Radio con Video",ESPAÑA - Onda Cadiz
-https://ondacadiztv.es:30443/octv/24h/playlist.m3u8
 #EXTINF:-1 group-title="📻 Radio con Video",ESPAÑA - Radio Carnaval TV
 https://eu1.servers10.com:8081/8116/index.m3u8
 #EXTINF:-1 group-title="📻 Radio con Video",ESPAÑA - Platzi TV
 https://mdstrm.com/live-stream-playlist/629a63ae8df27c082901f78b.m3u8
-#EXTINF:-1,ESPAÑA - BBC Drama Spain
+#EXTINF:-1 group-title="Sin categoría",ESPAÑA - BBC Drama Spain
 https://amg00793-amg00793c40-rakuten-es-5444.playouts.now.amagi.tv/playlist.m3u8
-#EXTINF:-1,ESPAÑA - Crímenes Reales
+#EXTINF:-1 group-title="Sin categoría",ESPAÑA - Crímenes Reales
 https://amg01796-amg01796c13-rakuten-gb-6739.playouts.now.amagi.tv/playlist.m3u8
-#EXTINF:-1,ESPAÑA - MyTime Movie Network
+#EXTINF:-1 group-title="Sin categoría",ESPAÑA - MyTime Movie Network
 https://appletree-mytimespain-rakuten.amagi.tv/playlist.m3u8
-#EXTINF:-1,ESPAÑA - Ideas en 5 minutos
+#EXTINF:-1 group-title="Sin categoría",ESPAÑA - Ideas en 5 minutos
 https://soul-5mincraftspa-rakuten.amagi.tv/playlist.m3u8
-#EXTINF:-1,ESPAÑA - 3Cat Plats bruts
+#EXTINF:-1 group-title="Sin categoría",ESPAÑA - 3Cat Plats bruts
 https://fast-tailor.3catdirectes.cat/v1/channel/ccma-channel2/hls.m3u8
-#EXTINF:-1,ESPAÑA - El Futuro En tu Mano
+#EXTINF:-1 group-title="Sin categoría",ESPAÑA - El Futuro En tu Mano
 https://www.youtube-nocookie.com/embed/Dr_QUl3MVMc
-#EXTINF:-1,ESPAÑA - Taroteame
+#EXTINF:-1 group-title="Sin categoría",ESPAÑA - Taroteame
 https://5d2733224ac48.streamlock.net/taroteame/tarot_web/playlist.m3u8
-#EXTINF:-1,ESPAÑA - EWTN Espana
+#EXTINF:-1 group-title="Sin categoría",ESPAÑA - EWTN Espana
 https://cdn3.wowza.com/1/SmVrQmZCUXZhVDgz/b3J3MFJv/hls/q6xkg9py/480/chunklist.m3u8
-#EXTINF:-1,ESPAÑA - RTV Vida
+#EXTINF:-1 group-title="Sin categoría",ESPAÑA - RTV Vida
 https://vidartv2.todostreaming.es/live/radiovida-emisiontvhd.m3u8
-#EXTINF:-1,ESPAÑA - Solidaria TV
+#EXTINF:-1 group-title="Sin categoría",ESPAÑA - Solidaria TV
 https://canadaremar2.todostreaming.es/live/solidariatv-webhd.m3u8
-#EXTINF:-1,ESPAÑA - El Toro TV
+#EXTINF:-1 group-title="Sin categoría",ESPAÑA - El Toro TV
 https://streaming-1.eltorotv.com/lb0/eltorotv-streaming-web/index.m3u8
-#EXTINF:-1,ESPAÑA - Activa TV
+#EXTINF:-1 group-title="Sin categoría",ESPAÑA - Activa TV
 https://streamtv.mediasector.es/hls/activatv/index.m3u8
-#EXTINF:-1,ESPAÑA - TVOMIX
+#EXTINF:-1 group-title="Sin categoría",ESPAÑA - TVOMIX
 https://cloud.tvomix.com/TVOMIX/index.m3u8
-#EXTINF:-1,ESPAÑA - Tito TV
+#EXTINF:-1 group-title="Sin categoría",ESPAÑA - Tito TV
 https://cloud.tvomix.com/TITOTV/index.m3u8
-#EXTINF:-1,ESPAÑA - LiraTV
+#EXTINF:-1 group-title="Sin categoría",ESPAÑA - LiraTV
 https://cloud2.streaminglivehd.com:1936/liratv/liratv/playlist.m3u8
-#EXTINF:-1,ESPAÑA - Univers TV
+#EXTINF:-1 group-title="Sin categoría",ESPAÑA - Univers TV
 https://cloud2.streaminglivehd.com:1936/universfaller/universfaller/playlist.m3u8
-#EXTINF:-1,ESPAÑA - SpektraTV
+#EXTINF:-1 group-title="Sin categoría",ESPAÑA - SpektraTV
 https://cloudvideo.servers10.com:8081/8026/tracks-v1a1/index.m3u8
-#EXTINF:-1,ESPAÑA - Cadena Elite
+#EXTINF:-1 group-title="Sin categoría",ESPAÑA - Cadena Elite
 https://cloudvideo.servers10.com:8081/8004/index.m3u8
-#EXTINF:-1,ESPAÑA - Ciudades del Ocio TV
+#EXTINF:-1 group-title="Sin categoría",ESPAÑA - Ciudades del Ocio TV
 https://cloudvideo.servers10.com:8081/8024/index.m3u8
-#EXTINF:-1,ESPAÑA - Onda 15 TV
+#EXTINF:-1 group-title="Sin categoría",ESPAÑA - Onda 15 TV
 https://cloudvideo.servers10.com:8081/8034/index.m3u8
-#EXTINF:-1,ESPAÑA - Onda Valencia TV
+#EXTINF:-1 group-title="Sin categoría",ESPAÑA - Onda Valencia TV
 https://cloudvideo.servers10.com:8081/8116/index.m3u8
-#EXTINF:-1,ESPAÑA - Onda Algeciras
+#EXTINF:-1 group-title="Sin categoría",ESPAÑA - Onda Algeciras
 https://cloudtv.provideo.es/live/algecirastv-livestream.m3u8
-#EXTINF:-1,ESPAÑA - 28 kanala
+#EXTINF:-1 group-title="Sin categoría",ESPAÑA - 28 kanala
 https://streaming.28kanala.eus/hls/z.m3u8
-#EXTINF:-1,ESPAÑA - Alcarria TV
+#EXTINF:-1 group-title="Sin categoría",ESPAÑA - Alcarria TV
 https://cls.alcarria.tv/alcarriatv/livestream/playlist.m3u8
-#EXTINF:-1,ESPAÑA - Arabi TV
+#EXTINF:-1 group-title="Sin categoría",ESPAÑA - Arabi TV
 https://streamtv2.elitecomunicacion.cloud:3628/live/arabitv2025live.m3u8
-#EXTINF:-1,ESPAÑA - Canal 10 Emporda
+#EXTINF:-1 group-title="Sin categoría",ESPAÑA - Canal 10 Emporda
 https://ventdelnord.tv:8080/escala/directe.m3u8
-#EXTINF:-1,ESPAÑA - Canal 33 Madrid
+#EXTINF:-1 group-title="Sin categoría",ESPAÑA - Canal 33 Madrid
 https://media2.streambrothers.com:1936/8140/8140/playlist.m3u8
-#EXTINF:-1,ESPAÑA - Canal Donana
+#EXTINF:-1 group-title="Sin categoría",ESPAÑA - Canal Donana
 https://secure5.todostreaming.es/live/division-alm.m3u8
-#EXTINF:-1,ESPAÑA - Canal Malaga RTV
+#EXTINF:-1 group-title="Sin categoría",ESPAÑA - Canal Malaga RTV
 https://canalmalaga-tv-live.flumotion.com/playlist.m3u8
-#EXTINF:-1,ESPAÑA - Canal San Roque
+#EXTINF:-1 group-title="Sin categoría",ESPAÑA - Canal San Roque
 https://cdnlivevlc.codev8.net/aytosanroquelive/smil:channel1.smil/playlist.m3u8
-#EXTINF:-1,ESPAÑA - Canal Sierra de Cadiz
+#EXTINF:-1 group-title="Sin categoría",ESPAÑA - Canal Sierra de Cadiz
 https://s.emisoras.tv:8081/sierradecadiz/index.m3u8
-#EXTINF:-1,ESPAÑA - Canal Taronja Comarques Centrals
+#EXTINF:-1 group-title="Sin categoría",ESPAÑA - Canal Taronja Comarques Centrals
 https://ingest1-video.streaming-pro.com/canaltaronja/central/playlist.m3u8
-#EXTINF:-1,ESPAÑA - Canal Taronja Osona i Moianes
+#EXTINF:-1 group-title="Sin categoría",ESPAÑA - Canal Taronja Osona i Moianes
 https://ingest1-video.streaming-pro.com/canaltaronja/osona/playlist.m3u8
-#EXTINF:-1,ESPAÑA - Canal Terrassa
+#EXTINF:-1 group-title="Sin categoría",ESPAÑA - Canal Terrassa
 https://ingest2-video.streaming-pro.com/canalterrassa/stream/playlist.m3u8
-#EXTINF:-1,ESPAÑA - Costa Noroeste TV
+#EXTINF:-1 group-title="Sin categoría",ESPAÑA - Costa Noroeste TV
 https://limited31.todostreaming.es/live/noroestetv-livestream.m3u8
-#EXTINF:-1,ESPAÑA - Diez TV Las Villas
+#EXTINF:-1 group-title="Sin categoría",ESPAÑA - Diez TV Las Villas
 https://streaming.cloud.innovasur.es/mmj2/index.m3u8
-#EXTINF:-1,ESPAÑA - Distrito TV
+#EXTINF:-1 group-title="Sin categoría",ESPAÑA - Distrito TV
 https://nlb2-live.emitstream.com/hls/3mn7wpcv7hbmxmdzaxap/master.m3u8
-#EXTINF:-1,ESPAÑA - Durangaldeko Telebista
+#EXTINF:-1 group-title="Sin categoría",ESPAÑA - Durangaldeko Telebista
 https://nlb2-live.emitstream.com/hls/5f9asjsehd7gmyxsdpzu/master.m3u8
-#EXTINF:-1,ESPAÑA - Emporda TV
+#EXTINF:-1 group-title="Sin categoría",ESPAÑA - Emporda TV
 https://video3.lhdserver.es/empordatv2/live.m3u8
-#EXTINF:-1,ESPAÑA - EsTuTele
+#EXTINF:-1 group-title="Sin categoría",ESPAÑA - EsTuTele
 https://cloud.streamingconnect.tv/hls/estutele/estutele.m3u8
-#EXTINF:-1,ESPAÑA - ETB1 On
+#EXTINF:-1 group-title="Sin categoría",ESPAÑA - ETB1 On
 https://cdn1.etbon.eus/etb1on/index.m3u8
-#EXTINF:-1,ESPAÑA - ETB2 On
+#EXTINF:-1 group-title="Sin categoría",ESPAÑA - ETB2 On
 https://cdn1.etbon.eus/etb2on/index.m3u8
-#EXTINF:-1,ESPAÑA - ETB Events 1
+#EXTINF:-1 group-title="Sin categoría",ESPAÑA - ETB Events 1
 https://cdn1.etbon.eus/oc1/index.m3u8
-#EXTINF:-1,ESPAÑA - Fuerteventura TV
+#EXTINF:-1 group-title="Sin categoría",ESPAÑA - Fuerteventura TV
 https://5c0956165db0b.streamlock.net/ftv/directo/.m3u8
-#EXTINF:-1,ESPAÑA - Goiena Eus
+#EXTINF:-1 group-title="Sin categoría",ESPAÑA - Goiena Eus
 https://zuzenean.goienamedia.eus/goiena-telebista.m3u8
-#EXTINF:-1,ESPAÑA - Hamaika Telebista
+#EXTINF:-1 group-title="Sin categoría",ESPAÑA - Hamaika Telebista
 https://cdn3.wowza.com/1/RERMR282dnU5eE5Z/OHY0dVFs/hls/live/playlist.m3u8
-#EXTINF:-1,ESPAÑA - Interalmeria TV
+#EXTINF:-1 group-title="Sin categoría",ESPAÑA - Interalmeria TV
 https://interalmeria.tv/directo/live.m3u8
-#EXTINF:-1,ESPAÑA - La 8 Mediterraneo
+#EXTINF:-1 group-title="Sin categoría",ESPAÑA - La 8 Mediterraneo
 https://newscript.gestec-video.com/hls/8TVEVENTOS.m3u8
-#EXTINF:-1,ESPAÑA - Lancelot TV
+#EXTINF:-1 group-title="Sin categoría",ESPAÑA - Lancelot TV
 https://5c0956165db0b.streamlock.net:8090/directo/_definst_/lancelot.television/master.m3u8
-#EXTINF:-1,ESPAÑA - M95 Television Marbella
+#EXTINF:-1 group-title="Sin categoría",ESPAÑA - M95 Television Marbella
 https://limited2.todostreaming.es/live/m95-livestream.m3u8
-#EXTINF:-1,ESPAÑA - Mijas 3.40TV
+#EXTINF:-1 group-title="Sin categoría",ESPAÑA - Mijas 3.40TV
 https://streaming004.gestec-video.com/hls/MIJAS.m3u8
-#EXTINF:-1,ESPAÑA - Radio Television Marbella
+#EXTINF:-1 group-title="Sin categoría",ESPAÑA - Radio Television Marbella
 https://streaming.rtvmarbella.tv/hls/streamingweb.m3u8
-#EXTINF:-1,ESPAÑA - Ribera TV
+#EXTINF:-1 group-title="Sin categoría",ESPAÑA - Ribera TV
 https://common01.todostreaming.es/live/ribera-livestream.m3u8
-#EXTINF:-1,ESPAÑA - ROTV Valencia
+#EXTINF:-1 group-title="Sin categoría",ESPAÑA - ROTV Valencia
 https://rotv.romediavalencia.com:3839/live/rotvlive.m3u8
-#EXTINF:-1,ESPAÑA - Tele 7
+#EXTINF:-1 group-title="Sin categoría",ESPAÑA - Tele 7
 https://ingest2-video.streaming-pro.com/tele7_ABR/stream/playlist.m3u8
-#EXTINF:-1,ESPAÑA - Tele Safor
+#EXTINF:-1 group-title="Sin categoría",ESPAÑA - Tele Safor
 https://video.telesafor.com/hls/video.m3u8
-#EXTINF:-1,ESPAÑA - Teleganes
+#EXTINF:-1 group-title="Sin categoría",ESPAÑA - Teleganes
 https://nlb2-live.emitstream.com/hls/5z6oj7ziwxzfnj78vg2m/master.m3u8
-#EXTINF:-1,ESPAÑA - TV Sabadell-Valles
+#EXTINF:-1 group-title="Sin categoría",ESPAÑA - TV Sabadell-Valles
 https://ingest1-video.streaming-pro.com/canaltaronja/sabadell/playlist.m3u8
-#EXTINF:-1,ESPAÑA - TVReus
+#EXTINF:-1 group-title="Sin categoría",ESPAÑA - TVReus
 https://eu1.servers10.com:8081/8166/index.m3u8
-#EXTINF:-1,ESPAÑA - Urola Telebista
+#EXTINF:-1 group-title="Sin categoría",ESPAÑA - Urola Telebista
 https://5940924978228.streamlock.net/j_Directo2/mp4:j_Directo2/playlist.m3u8
-#EXTINF:-1,ESPAÑA - Ventdelnord TV
+#EXTINF:-1 group-title="Sin categoría",ESPAÑA - Ventdelnord TV
 https://ventdelnord.tv:8080/hls/directe.m3u8
-#EXTINF:-1,ESPAÑA - VOTV
+#EXTINF:-1 group-title="Sin categoría",ESPAÑA - VOTV
 https://ingest2-video.streaming-pro.com/votv/streaming_web/playlist.m3u8
-#EXTINF:-1,ESPAÑA - XPTV1
+#EXTINF:-1 group-title="Sin categoría",ESPAÑA - XPTV1
 https://janus.xpbroadcasting.com:8443/hls/xptv1.m3u8
-#EXTINF:-1,ESPAÑA - XPTV2
+#EXTINF:-1 group-title="Sin categoría",ESPAÑA - XPTV2
 https://janus.xpbroadcasting.com:8443/hls/xptv2.m3u8
