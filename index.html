@@ -116,7 +116,7 @@
             flex: 1; background-color: #000; display: flex; justify-content: center;
             align-items: center; position: relative; min-height: 300px; transition: all 0.3s ease;
             overflow: hidden;
-        }
+            pointer-events: auto;        }
         
         #contenedor-principal.modo-cine #area-video { width: 100%; height: 100%; }
 
@@ -125,18 +125,21 @@
         /* Contenedor relativo para YouTube y su Overlay */
         #contenedor-youtube { 
             display: none; width: 100%; height: 100%; position: relative; 
-        }
-        #contenedor-youtube iframe { width: 100%; height: 100%; border: none; position: absolute; top: 0; left: 0; z-index: 1; }
+            pointer-events: auto;        }
+        #contenedor-youtube iframe { 
+            width: 100%; height: 100%; border: none; position: absolute; top: 0; left: 0; 
+            z-index: 1; 
+            pointer-events: auto;        }
         
-        /* Capa transparente para capturar eventos en YouTube */
+        /* Capa transparente para capturar eventos en YouTube y permitir salir del modo cine */
         #youtube-overlay {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 10;
+            z-index: 20;
             cursor: default;
             display: none; 
             background: transparent;
-        }
+            pointer-events: auto;        }
         #youtube-overlay.activo { display: block; }
 
         #mensaje-sin-video { color: #888; font-size: 22px; text-align: center; padding: 20px; z-index: 5; position: relative; }
@@ -549,14 +552,16 @@
         });
         document.addEventListener('touchstart', resetearActividad);
 
-        // Lógica precisa para el overlay de YouTube: al mover el mouse o detectar control remoto, desactivamos modo cine inmediatamente
+        // Lógica precisa para el overlay de YouTube: al mover el mouse o tocar, desactivamos modo cine inmediatamente
         youtubeOverlay.addEventListener('mousemove', (e) => {
-            resetearActividad();
+            desactivarModoCine();
+        });
+        youtubeOverlay.addEventListener('mousedown', (e) => {
+            desactivarModoCine();
         });
         youtubeOverlay.addEventListener('click', (e) => {
             e.stopPropagation();
-            youtubeOverlay.classList.remove('activo');
-            iniciarTimerModoCine();
+            desactivarModoCine();
         });
 
         btnToggleFullscreen.addEventListener('click', async () => {
@@ -1001,8 +1006,14 @@
                 iframe.allowFullscreen = true;
                 contenedorYoutube.appendChild(iframe);
                 
-                if (estaEnModoCine) {
-                    youtubeOverlay.classList.add('activo');
+                // Asegurar que el overlay esté siempre presente para interceptar movimientos y permitir salir del modo cine
+                const overlayActual = document.getElementById('youtube-overlay');
+                if (overlayActual) {
+                    if (estaEnModoCine) {
+                        overlayActual.classList.add('activo');
+                    } else {
+                        overlayActual.classList.remove('activo');
+                    }
                 }
             } else {
                 contenedorYoutube.innerHTML = '<p style="color:#fff; padding:20px;">No se pudo identificar el video de YouTube.</p>';
@@ -1033,11 +1044,11 @@
             contenedorYoutube.innerHTML = '<div id="youtube-overlay"></div>'; // Restablecer contenedor e overlay
             const nuevoOverlay = document.getElementById('youtube-overlay');
             if (nuevoOverlay) {
-                nuevoOverlay.addEventListener('mousemove', (e) => { resetearActividad(); });
+                nuevoOverlay.addEventListener('mousemove', (e) => { desactivarModoCine(); });
+                nuevoOverlay.addEventListener('mousedown', (e) => { desactivarModoCine(); });
                 nuevoOverlay.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    nuevoOverlay.classList.remove('activo');
-                    iniciarTimerModoCine();
+                    desactivarModoCine();
                 });
             }
             contenedorYoutube.style.display = 'none';
