@@ -286,15 +286,10 @@
         <h1>📺 Mi Lista de TV</h1>
         <p>Reproductor compatible con GitHub. Ingresa la URL de tu lista M3U o pega enlaces de YouTube directamente.</p>
         
-<div class="input-url-container">
-    <input type="text" id="input-url-lista" placeholder="Pega aquí la URL de la lista M3U">
-    <button class="boton-grande" id="btn-cargar-url"> Cargar desde URL</button>
-</div>
-<div style="margin-top: 15px; display: flex; align-items: center; gap: 10px;">
-    <span style="color: #888; font-size: 16px;">O cargá un archivo local:</span>
-    <button class="boton-grande boton-secundario" id="btn-cargar-local">💻 Cargar desde PC</button>
-    <input type="file" id="input-archivo-local" accept=".m3u,.m3u8,.txt" style="display:none;">
-</div>
+        <div class="input-url-container">
+            <input type="text" id="input-url-lista" placeholder="https://raw.githubusercontent.com/usuario/repo/main/lista.m3u">
+            <button class="boton-grande" id="btn-cargar-url"> Cargar Lista</button>
+        </div>
         
         <div id="mensaje-error"></div>
         
@@ -647,22 +642,6 @@
         }
 
         btnCargarUrl.addEventListener('click', () => cargarListaDesdeURL(inputUrlLista.value));
-        const btnCargarLocal = document.getElementById('btn-cargar-local');
-const inputArchivoLocal = document.getElementById('input-archivo-local');
-
-btnCargarLocal.addEventListener('click', () => {
-    inputArchivoLocal.click();
-});
-
-inputArchivoLocal.addEventListener('change', (e) => {
-    const archivo = e.target.files[0];
-    if (!archivo) return;
-    const lector = new FileReader();
-    lector.onload = (evento) => procesarListaM3U(evento.target.result);
-    lector.onerror = () => mostrarError('Error al leer el archivo.');
-    try { lector.readAsText(archivo); } catch (err) { mostrarError('Error al leer el archivo.'); }
-    inputArchivoLocal.value = '';
-});
         inputUrlLista.addEventListener('keypress', (e) => { if (e.key === 'Enter') cargarListaDesdeURL(inputUrlLista.value); });
 
         function procesarListaM3U(contenido) {
@@ -682,6 +661,7 @@ inputArchivoLocal.addEventListener('change', (e) => {
                 }
             }
             if (canales.length === 0) { mostrarError('No se encontraron canales válidos en la lista.'); return; }
+            ordenarAlfabeticamente();
             canalesSeleccionados = [];
             canalAncla = null;
             actualizarContadorSeleccion();
