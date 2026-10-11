@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mi Lista de TV - GitHub Edition</title>
-    <!-- HLS.js para streams .m3u8 -->
+    <title>Mi Lista de TV - GitHub & Local Edition</title>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -27,25 +26,45 @@
             height: 100vh;
             text-align: center;
             padding: 20px;
+            overflow-y: auto;
         }
 
         #pantalla-bienvenida h1 { font-size: 36px; margin-bottom: 20px; color: #ffffff; }
         #pantalla-bienvenida p { font-size: 20px; margin-bottom: 30px; color: #cccccc; max-width: 600px; }
 
-        .input-url-container {
+        .opciones-carga {
             width: 100%;
             max-width: 600px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
             margin-bottom: 20px;
+        }
+
+        .tarjeta-carga {
+            background-color: #2a2a2a;
+            border: 2px solid #444;
+            border-radius: 14px;
+            padding: 20px;
+            text-align: left;
+            transition: border-color 0.2s;
+        }
+        .tarjeta-carga:hover { border-color: #4CAF50; }
+        .tarjeta-carga h3 { font-size: 20px; margin-bottom: 10px; color: #fff; display: flex; align-items: center; gap: 8px; }
+        .tarjeta-carga p { font-size: 15px; color: #aaa; margin-bottom: 15px; }
+
+        .input-url-container {
+            width: 100%;
             display: flex;
             gap: 10px;
         }
 
         #input-url-lista {
             flex: 1;
-            padding: 16px;
-            font-size: 18px;
+            padding: 14px;
+            font-size: 16px;
             border: 2px solid #555;
-            border-radius: 12px;
+            border-radius: 10px;
             background-color: #333;
             color: #fff;
             font-family: Arial, sans-serif;
@@ -55,13 +74,15 @@
         #input-url-lista:focus { border-color: #4CAF50; }
 
         .boton-grande {
-            background-color: #4CAF50; color: white; border: none; padding: 16px 32px;
-            font-size: 20px; border-radius: 12px; cursor: pointer; transition: background-color 0.2s;
-            font-family: Arial, sans-serif; white-space: nowrap;
+            background-color: #4CAF50; color: white; border: none; padding: 14px 24px;
+            font-size: 18px; border-radius: 10px; cursor: pointer; transition: background-color 0.2s;
+            font-family: Arial, sans-serif; white-space: nowrap; font-weight: bold;
         }
         .boton-grande:hover { background-color: #45a049; }
         .boton-secundario { background-color: #2196F3; }
         .boton-secundario:hover { background-color: #1976D2; }
+        .boton-archivo { background-color: #FF9800; color: #fff; display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: 100%; }
+        .boton-archivo:hover { background-color: #F57C00; }
 
         #mensaje-error {
             color: #ff6b6b; font-size: 18px; margin-top: 15px; padding: 10px;
@@ -120,7 +141,6 @@
 
         #video-nativo { width: 100%; height: 100%; background-color: #000; display: none; }
         
-        /* Contenedor relativo para YouTube y su Overlay prioritario */
         #contenedor-youtube { 
             display: none; width: 100%; height: 100%; position: relative; 
             pointer-events: auto;
@@ -128,10 +148,9 @@
         #contenedor-youtube iframe { 
             width: 100%; height: 100%; border: none; position: absolute; top: 0; left: 0; 
             z-index: 1; 
-            pointer-events: none; /* YouTube JAMÁS recibe eventos directamente del usuario */
+            pointer-events: none;
         }
         
-        /* Capa transparente superior que intercepta TODO el ratón/tacto para que YouTube no controle nada */
         #youtube-overlay {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -139,12 +158,11 @@
             cursor: default;
             display: block; 
             background: transparent;
-            pointer-events: auto; /* Intercepta todos los clics y movimientos para despertar la app */
+            pointer-events: auto;
         }
 
         #mensaje-sin-video { color: #888; font-size: 22px; text-align: center; padding: 20px; z-index: 5; position: relative; }
 
-        /* Contador de carga */
         .spinner-carga {
             display: inline-block; width: 28px; height: 28px; margin-right: 14px;
             border: 4px solid #ffffff4d; border-top-color: #ffffff; border-radius: 50%;
@@ -294,11 +312,26 @@
 
     <div id="pantalla-bienvenida">
         <h1>📺 Mi Lista de TV</h1>
-        <p>Reproductor compatible con GitHub. Ingresa la URL de tu lista M3U o pega enlaces de YouTube directamente.</p>
+        <p>Reproductor compatible con GitHub y archivos locales. Ingresa la URL de tu lista o selecciona un archivo M3U desde tu dispositivo.</p>
         
-        <div class="input-url-container">
-            <input type="text" id="input-url-lista" placeholder="https://raw.githubusercontent.com/usuario/repo/main/lista.m3u">
-            <button class="boton-grande" id="btn-cargar-url">📂 Cargar Lista</button>
+        <div class="opciones-carga">
+            <!-- Opción 1: Cargar desde Archivo Local -->
+            <div class="tarjeta-carga">
+                <h3>📁 Desde archivo local</h3>
+                <p>Sube un archivo .m3u o .txt guardado en tu computadora o celular.</p>
+                <input type="file" id="input-archivo-local" accept=".m3u,.m3u8,.txt" style="display: none;">
+                <button class="boton-grande boton-archivo" id="btn-trigger-archivo">📤 Seleccionar archivo de lista</button>
+            </div>
+
+            <!-- Opción 2: Cargar desde URL -->
+            <div class="tarjeta-carga">
+                <h3>🌐 Desde URL / GitHub</h3>
+                <p>Pega el enlace directo o la URL Raw de tu repositorio de GitHub.</p>
+                <div class="input-url-container">
+                    <input type="text" id="input-url-lista" placeholder="https://raw.githubusercontent.com/.../lista.m3u">
+                    <button class="boton-grande" id="btn-cargar-url">📂 Cargar URL</button>
+                </div>
+            </div>
         </div>
         
         <div id="mensaje-error"></div>
@@ -328,7 +361,6 @@
                 <div id="mensaje-sin-video">Selecciona un canal de la lista para reproducir</div>
                 <video id="video-nativo" controls></video>
                 
-                <!-- Contenedor YouTube con Overlay Bloqueante Estricto -->
                 <div id="contenedor-youtube">
                     <div id="youtube-overlay"></div>
                 </div>
@@ -396,6 +428,10 @@
         const pantallaPrincipal = document.getElementById('pantalla-principal');
         const btnCargarUrl = document.getElementById('btn-cargar-url');
         const inputUrlLista = document.getElementById('input-url-lista');
+        
+        const inputArchivoLocal = document.getElementById('input-archivo-local');
+        const btnTriggerArchivo = document.getElementById('btn-trigger-archivo');
+
         const mensajeError = document.getElementById('mensaje-error');
         const zonaRestaurar = document.getElementById('zona-restaurar');
         const btnRestaurar = document.getElementById('btn-restaurar');
@@ -524,7 +560,6 @@
             }
         }
 
-        // Eventos generales de actividad (teclado, mouse, touch)
         document.addEventListener('mousemove', resetearActividad);
         document.addEventListener('keydown', (e) => {
             if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
@@ -536,24 +571,17 @@
         });
         document.addEventListener('touchstart', resetearActividad);
 
-        // Control estricto del overlay de YouTube: intercepta el 100% de los clics y movimientos sobre el reproductor
         function configurarEventosOverlayYouTube() {
             const overlayActual = document.getElementById('youtube-overlay');
             if (!overlayActual) return;
 
-            overlayActual.addEventListener('mousemove', (e) => {
-                desactivarModoCine();
-            });
-            overlayActual.addEventListener('mousedown', (e) => {
-                desactivarModoCine();
-            });
+            overlayActual.addEventListener('mousemove', (e) => { desactivarModoCine(); });
+            overlayActual.addEventListener('mousedown', (e) => { desactivarModoCine(); });
             overlayActual.addEventListener('click', (e) => {
                 e.stopPropagation();
                 desactivarModoCine();
             });
-            overlayActual.addEventListener('dblclick', (e) => {
-                e.stopPropagation();
-            });
+            overlayActual.addEventListener('dblclick', (e) => { e.stopPropagation(); });
         }
 
         btnToggleFullscreen.addEventListener('click', async () => {
@@ -572,6 +600,32 @@
         }
         document.addEventListener('fullscreenchange', manejarCambioFullscreen);
         document.addEventListener('webkitfullscreenchange', manejarCambioFullscreen);
+
+        /* Manejo de carga de archivo local */
+        btnTriggerArchivo.addEventListener('click', () => {
+            inputArchivoLocal.click();
+        });
+
+        inputArchivoLocal.addEventListener('change', (e) => {
+            const archivo = e.target.files[0];
+            if (!archivo) return;
+
+            const lector = new FileReader();
+            lector.onload = function(evento) {
+                const contenido = evento.target.result;
+                if (!contenido.includes('#EXTINF') && !contenido.includes('.m3u8') && !contenido.includes('youtube')) {
+                    mostrarError('El archivo seleccionado no parece ser una lista M3U válida.');
+                    return;
+                }
+                procesarListaM3U(contenido);
+                // Limpiar URL guardada previamente si se usa archivo local
+                localStorage.removeItem('miListaTV_Url');
+            };
+            lector.onerror = function() {
+                mostrarError('No se pudo leer el archivo local.');
+            };
+            lector.readAsText(archivo);
+        });
 
         async function cargarListaDesdeURL(url) {
             if (!url || !url.trim()) {
@@ -668,6 +722,11 @@
             if (urlGuardada) {
                 inputUrlLista.value = urlGuardada;
                 zonaRestaurar.style.display = 'block';
+            } else {
+                const listaGuardada = localStorage.getItem('miListaTV');
+                if (listaGuardada) {
+                    zonaRestaurar.style.display = 'block';
+                }
             }
             actualizarBotonFullscreen();
             configurarEventosOverlayYouTube();
