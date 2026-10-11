@@ -1,30 +1,50 @@
 #EXTM3U
-#EXTINF:-1,ARGENTINA - A24
-https://www.youtube-nocookie.com/embed/ArKbAx1K-2U
 #EXTINF:-1,ARGENTINA - Telefe Rosario
 https://www.youtube-nocookie.com/embed/-vXfVikRPTw
-#EXTINF:-1,ARGENTINA - Cronica TV
-https://www.youtube-nocookie.com/embed/hw4uHyct4vg
-#EXTINF:-1,ARGENTINA - Televisión Pública
-https://www.youtube-nocookie.com/embed/iyG7hGUYGRs
-#EXTINF:-1,ARGENTINA - Telediario Digital
-https://www.youtube-nocookie.com/embed/-PtFYqa7_Kg
 #EXTINF:-1,ARGENTINA - America TV
 https://www.youtube-nocookie.com/embed/zcWXboTnous
 #EXTINF:-1,ARGENTINA - TN Todo Noticias
 https://www.youtube-nocookie.com/embed/cb12KmMMDJA
 #EXTINF:-1,ARGENTINA - C5N
 https://www.youtube-nocookie.com/embed/j6oh4Kqz3UM
-#EXTINF:-1,ARGENTINA - El Doce
-https://www.youtube-nocookie.com/embed/nndzeKDSjuc
-#EXTINF:-1,ARGENTINA - Canal 13 San Juan
-https://www.youtube-nocookie.com/embed/uqUSmqJg0ds
-#EXTINF:-1,ARGENTINA - Canal de la Ciudad
-https://www.youtube-nocookie.com/embed/AMiVAF_tuJ4
-#EXTINF:-1,ARGENTINA - Radio Mitre
-https://www.youtube-nocookie.com/embed/gLRijRdfkjU
+#EXTINF:-1,ARGENTINA - A24
+https://www.youtube-nocookie.com/embed/ArKbAx1K-2U
 #EXTINF:-1,ARGENTINA - La Nacion +
 https://www.youtube-nocookie.com/embed/FEWZjXJ7M0c
+#EXTINF:-1,ARGENTINA - Cronica TV
+https://www.youtube-nocookie.com/embed/hw4uHyct4vg
+#EXTINF:-1,ARGENTINA - Canal 26
+https://stream-gtlc.telecentro.net.ar/hls/canal26hls/main.m3u8
+#EXTINF:-1,ARGENTINA - TyC Sports
+https://amg26268-amg26268c14-freelivesports-emea-10267.playouts.now.amagi.tv/ts-us-e2-n2/playlist/amg26268-sportsstudio-tycsports-freelivesportsemea/playlist.m3u8
+#EXTINF:-1,ARGENTINA - Televisión Pública
+https://www.youtube-nocookie.com/embed/iyG7hGUYGRs
+#EXTINF:-1,ARGENTINA - NET TV
+https://unlimited1-us.dps.live/nettv/nettv.smil/playlist.m3u8
+#EXTINF:-1,ARGENTINA - Telemax
+https://stream-gtlc.telecentro.net.ar/hls/telemaxhls/main.m3u8
+#EXTINF:-1,ARGENTINA - El Gourmet South
+https://iptv.bitred.cl/ELGOURMET_HD/index.m3u8
+#EXTINF:-1,ARGENTINA - Europa Europa
+https://iptv.bitred.cl/EUROPAEUROPA_HD/index.m3u8
+#EXTINF:-1,ARGENTINA - Disney Jr. Latin America South
+https://tr.live.clarovtrcdn.vtrplay.com/disneyjrhdchi/vxfmt=dp/playlist.m3u8?device_profile=STB_HLS_VCAS_LIVE_HD
+#EXTINF:-1,ARGENTINA - Garage TV Latin America
+https://stream1.sersat.com/hls/garagetv.m3u8
+#EXTINF:-1,ARGENTINA - Quiero Música TV
+https://www.youtube-nocookie.com/embed/vGNglKWqwcQ
+#EXTINF:-1,ARGENTINA - Radio Mitre
+https://www.youtube-nocookie.com/embed/gLRijRdfkjU
+#EXTINF:-1,ARGENTINA - La 100
+https://mdstrm.com/live-stream-playlist/68b74fd1d6512526f1f7c75a.m3u8
+#EXTINF:-1,ARGENTINA - Pop Radio 101.5
+https://www.youtube-nocookie.com/embed/B3UccrSiWms
+#EXTINF:-1,ARGENTINA - Mas FM
+https://vivo.solumedia.com:19360/masfm/masfm.m3u8
+#EXTINF:-1,ARGENTINA - Power Max Radio TV
+https://videostream.shockmedia.com.ar:19360/radio1045/radio1045.m3u8
+#EXTINF:-1,ARGENTINA - El Observador 107.9
+https://www.youtube-nocookie.com/embed/lK3zbYr9wnQ
 #EXTINF:-1,ARGENTINA - 24/7 Canal de Noticias
 https://panel.host-live.com:19360/cn247tv/cn247tv.m3u8
 #EXTINF:-1,ARGENTINA - 5tv
@@ -53,8 +73,6 @@ https://nd106.republicaservers.com:4433/hls/canal2misioness/index.m3u8
 https://edge.enhdtv.com/nexthd/index.m3u8
 #EXTINF:-1,ARGENTINA - Canal 21 TV
 https://iptv.ixfo.com.ar:30443/c21tv/hd/c21tv/playlist.m3u8
-#EXTINF:-1,ARGENTINA - Canal 26
-https://stream-gtlc.telecentro.net.ar/hls/canal26hls/main.m3u8
 #EXTINF:-1,ARGENTINA - Canal 3 La Pampa
 https://stream.arcast.com.ar/c3lapampa/ngrp:c3lapampa_all/playlist.m3u8
 #EXTINF:-1,ARGENTINA - Canal 3 Las Heras
@@ -81,6 +99,10 @@ https://streamconex.com:19360/lacosta/lacosta.m3u8
 https://live20.bozztv.com/akamaissh101/ssh101/canal8sanjuan/playlist.m3u8
 #EXTINF:-1,ARGENTINA - Canal 9 Link
 https://617c5175c970b.streamlock.net:4444/9linklivert/smil:9linkmultibr.smil/playlist.m3u8
+#EXTINF:-1,ARGENTINA - Canal 13 San Juan
+https://www.youtube-nocookie.com/embed/uqUSmqJg0ds
+#EXTINF:-1,ARGENTINA - Canal de la Ciudad
+https://www.youtube-nocookie.com/embed/AMiVAF_tuJ4
 #EXTINF:-1,ARGENTINA - Canal E
 https://unlimited1-us.dps.live/perfiltv/perfiltv.smil/playlist.m3u8
 #EXTINF:-1,ARGENTINA - Canal Provincial
@@ -115,24 +137,12 @@ https://canaletaplus.com:3922/live/cosmoslive.m3u8
 https://cloud.tvomix.com/CUMBIAMIX/index.m3u8
 #EXTINF:-1,ARGENTINA - Diputados TV
 https://www.youtube-nocookie.com/embed/_SH6DL3AGig
-#EXTINF:-1,ARGENTINA - Disney Jr. Latin America South
-https://tr.live.clarovtrcdn.vtrplay.com/disneyjrhdchi/vxfmt=dp/playlist.m3u8?device_profile=STB_HLS_VCAS_LIVE_HD
-#EXTINF:-1,ARGENTINA - El Gourmet South
-https://iptv.bitred.cl/ELGOURMET_HD/index.m3u8
-#EXTINF:-1,ARGENTINA - El Observador 107.9
-https://www.youtube-nocookie.com/embed/lK3zbYr9wnQ
-#EXTINF:-1,ARGENTINA - Europa Europa
-https://iptv.bitred.cl/EUROPAEUROPA_HD/index.m3u8
-#EXTINF:-1,ARGENTINA - Garage TV Latin America
-https://stream1.sersat.com/hls/garagetv.m3u8
+#EXTINF:-1,ARGENTINA - El Doce
+https://www.youtube-nocookie.com/embed/nndzeKDSjuc
 #EXTINF:-1,ARGENTINA - Itel TV Canal 2
 https://proxystream.iteltv.com.ar/output/iteltv/playlist.m3u8
-#EXTINF:-1,ARGENTINA - La 100
-https://mdstrm.com/live-stream-playlist/68b74fd1d6512526f1f7c75a.m3u8
 #EXTINF:-1,ARGENTINA - LAMIL35 TV
 https://vtm2.msinteractiva.com/lamil35/lamil35/playlist.m3u8
-#EXTINF:-1,ARGENTINA - Mas FM
-https://vivo.solumedia.com:19360/masfm/masfm.m3u8
 #EXTINF:-1,ARGENTINA - Mercurio Noticias
 https://videostream.shockmedia.com.ar/hls/mercuriotv/mercuriotv.m3u8
 #EXTINF:-1,ARGENTINA - Metro TV
@@ -143,18 +153,10 @@ https://iptv.ixfo.com.ar:30443/live-HD/MISIONES4/playlist.m3u8
 https://videostream.shockmedia.com.ar:19360/neotvdigital/neotvdigital.m3u8
 #EXTINF:-1,ARGENTINA - Neox TV
 https://tv.streamcasthd.com:3031/live/neoxtvlive.m3u8
-#EXTINF:-1,ARGENTINA - NET TV
-https://unlimited1-us.dps.live/nettv/nettv.smil/playlist.m3u8
-#EXTINF:-1,ARGENTINA - Pop Radio 101.5
-https://www.youtube-nocookie.com/embed/B3UccrSiWms
-#EXTINF:-1,ARGENTINA - Power Max Radio TV
-https://videostream.shockmedia.com.ar:19360/radio1045/radio1045.m3u8
 #EXTINF:-1,ARGENTINA - PowerHD
 https://live2.tensila.com/1-1-1.power-tv/hls/master.m3u8
 #EXTINF:-1,ARGENTINA - Quantica TV
 https://videostream.shockmedia.com.ar:19360/quanticatv/quanticatv.m3u8
-#EXTINF:-1,ARGENTINA - Quiero Música TV
-https://www.youtube-nocookie.com/embed/vGNglKWqwcQ
 #EXTINF:-1,ARGENTINA - RTN
 https://media.neuquen.gov.ar/rtn/television/media.m3u8
 #EXTINF:-1,ARGENTINA - Senal U
@@ -167,16 +169,14 @@ https://vivo.solumedia.com:19360/sicarditv/sicarditv.m3u8
 https://live20.bozztv.com/akamaissh101/ssh101/somosentrerios/playlist.m3u8
 #EXTINF:-1,ARGENTINA - T5 Satelital
 https://stream.t5satelital.blog/hls/t5satelitalweb.m3u8
-#EXTINF:-1,ARGENTINA - Telemax
-https://stream-gtlc.telecentro.net.ar/hls/telemaxhls/main.m3u8
+#EXTINF:-1,ARGENTINA - Telediario Digital
+https://www.youtube-nocookie.com/embed/-PtFYqa7_Kg
 #EXTINF:-1,ARGENTINA - Telesol
 https://cdn1.tvlin.net/open/telesol/playlist.m3u8
 #EXTINF:-1,ARGENTINA - TV Canal 72
 https://stmv1.voxtvhd.com.br/canal72tv2/canal72tv2/playlist.m3u8
 #EXTINF:-1,ARGENTINA - TV Publica Fueguina
 https://nd106.republicaservers.com/hls/c8094/index.m3u8
-#EXTINF:-1,ARGENTINA - TyC Sports
-https://amg26268-amg26268c14-freelivesports-emea-10267.playouts.now.amagi.tv/ts-us-e2-n2/playlist/amg26268-sportsstudio-tycsports-freelivesportsemea/playlist.m3u8
 #EXTINF:-1,ARGENTINA - Uniteve
 https://vivo.solumedia.com:19360/uniteve/uniteve.m3u8
 #EXTINF:-1,ARGENTINA - Villa Mantero TV
