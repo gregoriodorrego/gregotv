@@ -148,9 +148,10 @@
         #contenedor-youtube iframe { 
             width: 100%; height: 100%; border: none; position: absolute; top: 0; left: 0; 
             z-index: 1; 
-            pointer-events: none;
+            pointer-events: auto;
         }
         
+        /* Modificación Opción 1: Zona libre en la esquina inferior derecha para permitir clics en botones de YouTube (Saltar Anuncio) */
         #youtube-overlay {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -159,6 +160,8 @@
             display: block; 
             background: transparent;
             pointer-events: auto;
+            /* Recorte dinámico o zona excluida inferior derecha (aprox 220px de ancho x 100px de alto) */
+            clip-path: polygon(0 0, 100% 0, 100% calc(100% - 100px), calc(100% - 220px) calc(100% - 100px), calc(100% - 220px) 100%, 0 100%);
         }
 
         #mensaje-sin-video { color: #888; font-size: 22px; text-align: center; padding: 20px; z-index: 5; position: relative; }
@@ -415,7 +418,7 @@
         let timerInactividad = null;
         let estaEnModoCine = false;
         let yaSePreguntoFullscreen = false;
-        const TIEMPO_MODO_CINE = 15000; // Reducido a 15 segundos
+        const TIEMPO_MODO_CINE = 15000;
 
         let canalEditandoIndex = -1;
         let canalesSeleccionados = [];
@@ -618,7 +621,6 @@
                     return;
                 }
                 procesarListaM3U(contenido);
-                // Limpiar URL guardada previamente si se usa archivo local
                 localStorage.removeItem('miListaTV_Url');
             };
             lector.onerror = function() {
