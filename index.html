@@ -290,7 +290,7 @@
 <body>
 
     <div id="pantalla-bienvenida">
-        <h1>📺 Mi Lista de TV</h1>
+        <h1> Mi Lista de TV</h1>
         <p>Reproductor compatible con GitHub. Ingresa la URL de tu lista M3U o pega enlaces de YouTube directamente.</p>
         
         <div class="input-url-container">
@@ -349,7 +349,7 @@
             <p>Podés disfrutar del canal en pantalla completa como si apretaras F11.<br>Presioná <strong>ESC</strong> para salir cuando quieras.</p>
             <div class="modal-fullscreen-botones">
                 <button class="boton-si-fullscreen" id="btn-si-fullscreen">✅ Sí, pantalla completa</button>
-                <button class="boton-no-fullscreen" id="btn-no-fullscreen"> No, así está bien</button>
+                <button class="boton-no-fullscreen" id="btn-no-fullscreen">❌ No, así está bien</button>
             </div>
         </div>
     </div>
@@ -366,7 +366,7 @@
                 <input type="text" id="input-url-canal" placeholder="https://...">
             </div>
             <div class="modal-canal-botones">
-                <button class="boton-guardar-canal" id="btn-guardar-canal">💾 Guardar</button>
+                <button class="boton-guardar-canal" id="btn-guardar-canal"> Guardar</button>
                 <button class="boton-cancelar-canal" id="btn-cancelar-canal">❌ Cancelar</button>
             </div>
         </div>
@@ -516,7 +516,7 @@
                 btnToggleFullscreen.classList.remove('boton-fullscreen');
                 btnToggleFullscreen.classList.add('boton-salir-fullscreen');
             } else {
-                btnToggleFullscreen.textContent = '️ Pantalla Completa';
+                btnToggleFullscreen.textContent = '🖥️ Pantalla Completa';
                 btnToggleFullscreen.classList.remove('boton-salir-fullscreen');
                 btnToggleFullscreen.classList.add('boton-fullscreen');
             }
@@ -760,7 +760,7 @@
         function renderizarLista() {
             listaCanales.innerHTML = '';
             totalCanales.textContent = canalesFiltrados.length;
-            const iconosTipo = { 'hls': '📡', 'youtube': '▶️', 'mp4': '' };
+            const iconosTipo = { 'hls': '', 'youtube': '▶️', 'mp4': '🎬' };
             
             canalesFiltrados.forEach((canal, index) => {
                 const item = document.createElement('div');
@@ -795,7 +795,7 @@
                 
                 const btnEditar = document.createElement('button');
                 btnEditar.className = 'boton-editar';
-                btnEditar.textContent = '️ Editar';
+                btnEditar.textContent = '✏️ Editar';
                 btnEditar.addEventListener('click', (e) => { e.stopPropagation(); abrirModalEditar(canal); });
                 
                 const btnQuitar = document.createElement('button');
@@ -870,7 +870,7 @@
                 if (timerInactividad) clearTimeout(timerInactividad);
             } else {
                 btnModoLimpieza.classList.remove('activo');
-                btnModoLimpieza.textContent = '✏️ Modo edición';
+                btnModoLimpieza.textContent = '️ Modo edición';
                 listaCanales.classList.remove('modo-limpieza');
                 btnAgregarCanal.style.display = 'none';
                 btnCombinarLista.style.display = 'none';
