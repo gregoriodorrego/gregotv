@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mi Lista de TV - GitHub Edition</title>
-    <!-- HLS.js para streams .m3u8 -->
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -115,7 +114,7 @@
         #area-video {
             flex: 1; background-color: #000; display: flex; justify-content: center;
             align-items: center; position: relative; min-height: 300px; transition: all 0.3s ease;
-            overflow: hidden; /* Importante para contener el overlay */
+            overflow: hidden;
         }
         
         #contenedor-principal.modo-cine #area-video { width: 100%; height: 100%; }
@@ -126,15 +125,18 @@
         #contenedor-youtube { 
             display: none; width: 100%; height: 100%; position: relative; 
         }
-        #contenedor-youtube iframe { width: 100%; height: 100%; border: none; position: absolute; top: 0; left: 0; z-index: 1; }
+        #contenedor-youtube iframe { 
+            width: 100%; height: 100%; border: none; position: absolute; top: 0; left: 0; z-index: 1; 
+        }
         
-        /* NUEVO: Capa transparente para capturar eventos en YouTube */
+        /* NUEVO: Capa transparente PRIORITARIA para capturar eventos en YouTube */
         #youtube-overlay {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 10;
+            z-index: 20; /* Z-index mucho más alto que el iframe (1) */
             cursor: default;
-            display: none; /* Se activa solo cuando está en modo cine o inactivo */
+            display: none;
+            pointer-events: auto; /* Fuerza la recepción de eventos */
         }
         #youtube-overlay.activo { display: block; }
 
@@ -283,14 +285,17 @@
 
         #contenedor-principal.modo-cine,
         #contenedor-principal.modo-cine * { cursor: none !important; }
-        /* Excepción para el overlay de YouTube en modo cine */
-        #contenedor-principal.modo-cine #youtube-overlay { cursor: default !important; }
+        /* Excepción crítica para el overlay de YouTube */
+        #contenedor-principal.modo-cine #youtube-overlay { 
+            cursor: default !important; 
+            pointer-events: auto !important; 
+        }
     </style>
 </head>
 <body>
 
     <div id="pantalla-bienvenida">
-        <h1> Mi Lista de TV</h1>
+        <h1>📺 Mi Lista de TV</h1>
         <p>Reproductor compatible con GitHub. Ingresa la URL de tu lista M3U o pega enlaces de YouTube directamente.</p>
         
         <div class="input-url-container">
@@ -302,7 +307,7 @@
         
         <div id="zona-restaurar">
             <p style="font-size: 16px; margin-bottom: 10px; color: #aaa;">¿Tenías una lista guardada anteriormente?</p>
-            <button class="boton-grande boton-secundario" id="btn-restaurar">↩️ Restaurar mi última lista</button>
+            <button class="boton-grande boton-secundario" id="btn-restaurar">️ Restaurar mi última lista</button>
         </div>
     </div>
 
@@ -310,9 +315,9 @@
         <div id="barra-superior">
             <h2>📺 Mi Lista de TV</h2>
             <div class="controles-superior">
-                <button class="boton-mediano boton-fullscreen" id="btn-toggle-fullscreen">🖥️ Pantalla Completa</button>
+                <button class="boton-mediano boton-fullscreen" id="btn-toggle-fullscreen">️ Pantalla Completa</button>
                 <button class="boton-mediano" id="btn-modo-limpieza">✏️ Modo edición</button>
-                <button class="boton-mediano boton-agregar" id="btn-agregar-canal">➕ Agregar canal</button>
+                <button class="boton-mediano boton-agregar" id="btn-agregar-canal"> Agregar canal</button>
                 <button class="boton-mediano boton-combinar" id="btn-combinar-lista">📂 Combinar otra lista</button>
                 <button class="boton-mediano boton-ordenar" id="btn-ordenar-az">🔤 Ordenar A-Z</button>
                 <button class="boton-mediano boton-peligro" id="btn-borrar-seleccionados">🗑️ Borrar seleccionados (<span id="contador-seleccionados">0</span>)</button>
@@ -326,7 +331,7 @@
                 <div id="mensaje-sin-video">Selecciona un canal de la lista para reproducir</div>
                 <video id="video-nativo" controls></video>
                 
-                <!-- Contenedor YouTube con Overlay -->
+                <!-- Contenedor YouTube con Overlay PRIORITARIO -->
                 <div id="contenedor-youtube">
                     <div id="youtube-overlay"></div>
                     <!-- El iframe se inyecta aquí dinámicamente -->
@@ -345,7 +350,7 @@
 
     <div id="modal-fullscreen">
         <div class="modal-fullscreen-contenido">
-            <h3>🖥️ ¿Querés ver en pantalla completa?</h3>
+            <h3>️ ¿Querés ver en pantalla completa?</h3>
             <p>Podés disfrutar del canal en pantalla completa como si apretaras F11.<br>Presioná <strong>ESC</strong> para salir cuando quieras.</p>
             <div class="modal-fullscreen-botones">
                 <button class="boton-si-fullscreen" id="btn-si-fullscreen">✅ Sí, pantalla completa</button>
@@ -366,7 +371,7 @@
                 <input type="text" id="input-url-canal" placeholder="https://...">
             </div>
             <div class="modal-canal-botones">
-                <button class="boton-guardar-canal" id="btn-guardar-canal"> Guardar</button>
+                <button class="boton-guardar-canal" id="btn-guardar-canal">💾 Guardar</button>
                 <button class="boton-cancelar-canal" id="btn-cancelar-canal">❌ Cancelar</button>
             </div>
         </div>
@@ -419,7 +424,7 @@
         const mensajeSinVideo = document.getElementById('mensaje-sin-video');
         const videoNativo = document.getElementById('video-nativo');
         const contenedorYoutube = document.getElementById('contenedor-youtube');
-        const youtubeOverlay = document.getElementById('youtube-overlay'); // Referencia al overlay
+        const youtubeOverlay = document.getElementById('youtube-overlay');
         
         const modalFullscreen = document.getElementById('modal-fullscreen');
         const btnSiFullscreen = document.getElementById('btn-si-fullscreen');
@@ -535,7 +540,7 @@
             contenedorPrincipal.classList.add('modo-cine');
             barraSuperior.classList.add('oculto');
             
-            // Si es YouTube, activamos el overlay para capturar movimientos
+            // Activar overlay PRIORITARIO para YouTube
             if (canalSeleccionado && canalSeleccionado.tipo === 'youtube') {
                 youtubeOverlay.classList.add('activo');
             }
@@ -547,7 +552,7 @@
             contenedorPrincipal.classList.remove('modo-cine');
             barraSuperior.classList.remove('oculto');
             
-            // Desactivamos el overlay para poder usar el video
+            // Desactivar overlay para permitir interacción con video
             youtubeOverlay.classList.remove('activo');
             
             iniciarTimerModoCine();
@@ -563,18 +568,21 @@
         document.addEventListener('mousemove', resetearActividad);
         document.addEventListener('keypress', resetearActividad);
         document.addEventListener('click', (e) => { 
-            // Ignorar clicks dentro de modales abiertos
             if (modalFullscreen.contains(e.target)) return;
             resetearActividad(); 
         });
         document.addEventListener('touchstart', resetearActividad);
 
-        // Lógica específica para el Overlay de YouTube
-        youtubeOverlay.addEventListener('mousemove', resetearActividad);
-        youtubeOverlay.addEventListener('click', () => {
+        // Lógica PRIORITARIA para el Overlay de YouTube
+        youtubeOverlay.addEventListener('mousemove', (e) => {
+            e.stopPropagation(); // Evita que YouTube capture el evento
+            resetearActividad();
+        });
+        
+        youtubeOverlay.addEventListener('click', (e) => {
+            e.stopPropagation(); // Evita que YouTube capture el click
             // Al hacer click, ocultamos el overlay para permitir interactuar con el video
             youtubeOverlay.classList.remove('activo');
-            // Reiniciamos el timer de inactividad
             iniciarTimerModoCine();
         });
 
@@ -760,7 +768,7 @@
         function renderizarLista() {
             listaCanales.innerHTML = '';
             totalCanales.textContent = canalesFiltrados.length;
-            const iconosTipo = { 'hls': '', 'youtube': '▶️', 'mp4': '🎬' };
+            const iconosTipo = { 'hls': '📡', 'youtube': '▶️', 'mp4': '🎬' };
             
             canalesFiltrados.forEach((canal, index) => {
                 const item = document.createElement('div');
@@ -782,7 +790,7 @@
                 
                 const dragHandle = document.createElement('span');
                 dragHandle.className = 'drag-handle';
-                dragHandle.textContent = '⠿';
+                dragHandle.textContent = '';
                 dragHandle.title = 'Arrastrar para reordenar';
                 
                 const nombreSpan = document.createElement('span');
@@ -870,7 +878,7 @@
                 if (timerInactividad) clearTimeout(timerInactividad);
             } else {
                 btnModoLimpieza.classList.remove('activo');
-                btnModoLimpieza.textContent = '️ Modo edición';
+                btnModoLimpieza.textContent = '✏️ Modo edición';
                 listaCanales.classList.remove('modo-limpieza');
                 btnAgregarCanal.style.display = 'none';
                 btnCombinarLista.style.display = 'none';
@@ -1024,7 +1032,7 @@
                 iframe.allowFullscreen = true;
                 contenedorYoutube.appendChild(iframe);
                 
-                // Activar overlay inicialmente si estamos en modo cine
+                // Activar overlay PRIORITARIO inicialmente si estamos en modo cine
                 if (estaEnModoCine) {
                     youtubeOverlay.classList.add('activo');
                 }
@@ -1054,9 +1062,9 @@
             videoNativo.pause();
             videoNativo.src = '';
             videoNativo.style.display = 'none';
-            contenedorYoutube.innerHTML = ''; // Elimina el iframe y el overlay se resetea visualmente
+            contenedorYoutube.innerHTML = '';
             contenedorYoutube.style.display = 'none';
-            youtubeOverlay.classList.remove('activo'); // Resetear overlay
+            youtubeOverlay.classList.remove('activo');
             mensajeSinVideo.textContent = 'Selecciona un canal de la lista para reproducir';
             mensajeSinVideo.style.display = 'block';
             if (timerInactividad) clearTimeout(timerInactividad);
