@@ -77,7 +77,7 @@
             background-color: #2a2a2a; padding: 12px 20px; display: flex;
             justify-content: space-between; align-items: center; border-bottom: 2px solid #444;
             flex-wrap: wrap; gap: 10px; transition: transform 0.3s ease, opacity 0.3s ease;
-            z-index: 1001; /* Asegurar que esté sobre el overlay de youtube */
+            z-index: 100;
         }
         #barra-superior.oculto { transform: translateY(-100%); opacity: 0; pointer-events: none; }
         #barra-superior h2 { font-size: 24px; color: #ffffff; }
@@ -115,25 +115,37 @@
         #area-video {
             flex: 1; background-color: #000; display: flex; justify-content: center;
             align-items: center; position: relative; min-height: 300px; transition: all 0.3s ease;
+            overflow: hidden;
+            pointer-events: auto;
         }
         
         #contenedor-principal.modo-cine #area-video { width: 100%; height: 100%; }
 
         #video-nativo { width: 100%; height: 100%; background-color: #000; display: none; }
         
-        /* Contenedor YouTube con Overlay para capturar eventos */
+        /* Contenedor relativo para YouTube y su Overlay prioritario */
         #contenedor-youtube { 
             display: none; width: 100%; height: 100%; position: relative; 
+            pointer-events: auto;
         }
-        #contenedor-youtube iframe { width: 100%; height: 100%; border: none; position: absolute; top: 0; left: 0; z-index: 1; }
+        #contenedor-youtube iframe { 
+            width: 100%; height: 100%; border: none; position: absolute; top: 0; left: 0; 
+            z-index: 1; 
+            pointer-events: none; /* YouTube no recibe eventos directamente, mandan nuestros controles y el código */
+        }
         
-        /* Capa transparente para capturar mouse/teclado sobre YouTube */
-        #capa-youtube-overlay {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 2; cursor: pointer; display: none;
+        /* Capa transparente superior que intercepta TODO el ratón/tacto para que YouTube no controle nada */
+        #youtube-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 20;
+            cursor: default;
+            display: block; 
+            background: transparent;
+            pointer-events: auto; /* Intercepta todos los clics y movimientos para despertar la app */
         }
 
-        #mensaje-sin-video { color: #888; font-size: 22px; text-align: center; padding: 20px; }
+        #mensaje-sin-video { color: #888; font-size: 22px; text-align: center; padding: 20px; z-index: 5; position: relative; }
 
         /* Contador de carga */
         .spinner-carga {
@@ -153,7 +165,7 @@
         #area-lista {
             width: 480px; background-color: #222; border-left: 2px solid #444;
             display: flex; flex-direction: column; transition: transform 0.3s ease, opacity 0.3s ease;
-            z-index: 1001;
+            z-index: 50;
         }
         
         #contenedor-principal.modo-cine #area-lista {
@@ -278,6 +290,7 @@
 
         #contenedor-principal.modo-cine,
         #contenedor-principal.modo-cine * { cursor: none !important; }
+        #contenedor-principal.modo-cine #youtube-overlay { cursor: none !important; }
     </style>
 </head>
 <body>
@@ -304,10 +317,10 @@
             <h2>📺 Mi Lista de TV</h2>
             <div class="controles-superior">
                 <button class="boton-mediano boton-fullscreen" id="btn-toggle-fullscreen">🖥️ Pantalla Completa</button>
-                <button class="boton-mediano" id="btn-modo-limpieza">️ Modo edición</button>
+                <button class="boton-mediano" id="btn-modo-limpieza">✏️ Modo edición</button>
                 <button class="boton-mediano boton-agregar" id="btn-agregar-canal">➕ Agregar canal</button>
                 <button class="boton-mediano boton-combinar" id="btn-combinar-lista">📂 Combinar otra lista</button>
-                <button class="boton-mediano boton-ordenar" id="btn-ordenar-az"> Ordenar A-Z</button>
+                <button class="boton-mediano boton-ordenar" id="btn-ordenar-az">🔤 Ordenar A-Z</button>
                 <button class="boton-mediano boton-peligro" id="btn-borrar-seleccionados">🗑️ Borrar seleccionados (<span id="contador-seleccionados">0</span>)</button>
                 <button class="boton-mediano boton-secundario" id="btn-guardar">💾 Guardar lista limpia</button>
                 <button class="boton-mediano" id="btn-volver">← Volver al inicio</button>
@@ -318,9 +331,10 @@
             <div id="area-video">
                 <div id="mensaje-sin-video">Selecciona un canal de la lista para reproducir</div>
                 <video id="video-nativo" controls></video>
+                
+                <!-- Contenedor YouTube con Overlay Bloqueante -->
                 <div id="contenedor-youtube">
-                    <!-- Overlay transparente para capturar eventos en YouTube -->
-                    <div id="capa-youtube-overlay"></div>
+                    <div id="youtube-overlay"></div>
                 </div>
             </div>
 
@@ -379,7 +393,6 @@
         let canalesSeleccionados = [];
         let canalAncla = null;
 
-        // Timer contador de carga
         let timerContadorCarga = null;
         let segundosCarga = 0;
 
@@ -410,7 +423,7 @@
         const mensajeSinVideo = document.getElementById('mensaje-sin-video');
         const videoNativo = document.getElementById('video-nativo');
         const contenedorYoutube = document.getElementById('contenedor-youtube');
-        const capaYoutubeOverlay = document.getElementById('capa-youtube-overlay');
+        const youtubeOverlay = document.getElementById('youtube-overlay');
         
         const modalFullscreen = document.getElementById('modal-fullscreen');
         const btnSiFullscreen = document.getElementById('btn-si-fullscreen');
@@ -432,7 +445,6 @@
             setTimeout(() => { mensajeError.style.display = 'none'; }, 8000);
         }
 
-        // ===== CONTADOR DE CARGA =====
         function iniciarContadorCarga() {
             detenerContadorCarga();
             segundosCarga = 0;
@@ -462,25 +474,6 @@
 
         function ordenarAlfabeticamente() {
             canales.sort((a, b) => normalizarNombre(a.nombre).localeCompare(normalizarNombre(b.nombre), 'es'));
-        }
-
-        function extraerCanalesDeM3U(contenido) {
-            const lineas = contenido.split('\n');
-            const nuevos = [];
-            for (let i = 0; i < lineas.length; i++) {
-                const linea = lineas[i].trim();
-                if (linea.startsWith('#EXTINF:')) {
-                    const partes = linea.split(',');
-                    const nombre = partes[partes.length - 1].trim();
-                    let url = '';
-                    for (let j = i + 1; j < lineas.length; j++) {
-                        const siguiente = lineas[j].trim();
-                        if (siguiente && !siguiente.startsWith('#')) { url = siguiente; i = j; break; }
-                    }
-                    if (nombre && url) { nuevos.push({ nombre: nombre, url: url, tipo: detectarTipo(url), marcado: false }); }
-                }
-            }
-            return nuevos;
         }
 
         async function activarPantallaCompletaReal() {
@@ -537,56 +530,46 @@
 
         function resetearActividad() {
             if (modalFullscreen.style.display === 'flex') return;
-            if (estaEnModoCine) desactivarModoCine();
-            else iniciarTimerModoCine();
+            if (estaEnModoCine) {
+                desactivarModoCine();
+            } else {
+                iniciarTimerModoCine();
+            }
         }
 
-        // ===== EVENTOS GLOBALES INTELIGENTES =====
-        // Capturar movimiento del mouse en todo el documento
+        // Eventos generales de movimiento y actividad (cualquier tecla o clic/movimiento del mouse)
         document.addEventListener('mousemove', resetearActividad);
-        // Capturar toque en pantallas táctiles
-        document.addEventListener('touchstart', resetearActividad);
-        
-        // Overlay de YouTube: Captura eventos específicos sobre el video
-        capaYoutubeOverlay.addEventListener('mousemove', resetearActividad);
-        capaYoutubeOverlay.addEventListener('click', resetearActividad);
-
-        // Listener de teclado inteligente
         document.addEventListener('keydown', (e) => {
-            // 1. Si estamos escribiendo en un input, NO interferir (dejar escribir espacios)
-            const tagName = e.target.tagName.toLowerCase();
-            if (tagName === 'input' || tagName === 'textarea' || e.target.isContentEditable) {
-                return; 
-            }
-
-            // 2. Si es Escape, manejar modales y modo limpieza (lógica existente)
-            if (e.key === 'Escape') {
-                if (modalFullscreen.style.display === 'flex') { btnNoFullscreen.click(); return; }
-                if (modalCanal.style.display === 'flex') { cerrarModalCanal(); return; }
-                if (modoLimpieza) { btnModoLimpieza.click(); return; }
-            }
-
-            // 3. Si es Barra Espaciadora y NO estamos en un input:
-            if (e.code === 'Space' || e.key === ' ') {
-                // Evitar scroll de página por defecto
-                e.preventDefault(); 
-                
-                // Despertar interfaz / Modo Cine
-                resetearActividad();
-
-                // Controlar Play/Pause solo si hay video nativo reproduciéndose
-                if (canalSeleccionado && (canalSeleccionado.tipo === 'hls' || canalSeleccionado.tipo === 'mp4')) {
-                    if (videoNativo.paused) {
-                        videoNativo.play().catch(() => {});
-                    } else {
-                        videoNativo.pause();
-                    }
-                }
-            } else {
-                // Cualquier otra tecla también despierta la interfaz
-                resetearActividad();
-            }
+            // Validación para no interferir si se escribe en inputs
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+            resetearActividad();
         });
+        document.addEventListener('click', (e) => { 
+            if (modalFullscreen.contains(e.target)) return;
+            resetearActividad(); 
+        });
+        document.addEventListener('touchstart', resetearActividad);
+
+        // Control estricto del overlay de YouTube: captura todos los clics y movimientos para que YouTube jamás controle nada directamente
+        function configurarEventosOverlayYouTube() {
+            const overlayActual = document.getElementById('youtube-overlay');
+            if (!overlayActual) return;
+
+            overlayActual.addEventListener('mousemove', (e) => {
+                desactivarModoCine();
+            });
+            overlayActual.addEventListener('mousedown', (e) => {
+                desactivarModoCine();
+            });
+            overlayActual.addEventListener('click', (e) => {
+                e.stopPropagation();
+                desactivarModoCine();
+            });
+            overlayActual.addEventListener('dblclick', (e) => {
+                e.stopPropagation();
+                // Opcional: pantalla completa o doble toque
+            });
+        }
 
         btnToggleFullscreen.addEventListener('click', async () => {
             const estaEnFullscreen = document.fullscreenElement || document.webkitFullscreenElement;
@@ -605,7 +588,6 @@
         document.addEventListener('fullscreenchange', manejarCambioFullscreen);
         document.addEventListener('webkitfullscreenchange', manejarCambioFullscreen);
 
-        // ===== CARGA DESDE URL (GITHUB) =====
         async function cargarListaDesdeURL(url) {
             if (!url || !url.trim()) {
                 mostrarError('Por favor ingresa una URL válida.');
@@ -620,8 +602,8 @@
             try {
                 const response = await fetch(url);
                 if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
-                
                 const contenido = await response.text();
+                
                 if (!contenido.includes('#EXTINF') && !contenido.includes('.m3u8') && !contenido.includes('youtube')) {
                     throw new Error('El contenido descargado no parece ser una lista M3U válida.');
                 }
@@ -633,7 +615,7 @@
                 console.error(err);
                 let msg = 'No se pudo cargar la lista. ';
                 if (err.message.includes('Failed to fetch') || err.message.includes('NetworkError')) {
-                    msg += 'Posible bloqueo CORS. Asegúrate de usar la URL "Raw" (raw.githubusercontent.com).';
+                    msg += 'Posible bloqueo CORS. Si usas GitHub, asegúrate de usar la URL "Raw" (raw.githubusercontent.com).';
                 } else {
                     msg += err.message;
                 }
@@ -641,8 +623,13 @@
             }
         }
 
-        btnCargarUrl.addEventListener('click', () => cargarListaDesdeURL(inputUrlLista.value));
-        inputUrlLista.addEventListener('keypress', (e) => { if (e.key === 'Enter') cargarListaDesdeURL(inputUrlLista.value); });
+        btnCargarUrl.addEventListener('click', () => {
+            cargarListaDesdeURL(inputUrlLista.value);
+        });
+
+        inputUrlLista.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') cargarListaDesdeURL(inputUrlLista.value);
+        });
 
         function procesarListaM3U(contenido) {
             const lineas = contenido.split('\n');
@@ -699,6 +686,7 @@
                 zonaRestaurar.style.display = 'block';
             }
             actualizarBotonFullscreen();
+            configurarEventosOverlayYouTube();
         });
 
         btnRestaurar.addEventListener('click', () => {
@@ -721,7 +709,6 @@
             }
         });
 
-        // ===== DRAG AND DROP =====
         let draggedIndex = -1;
         function handleDragStart(e) {
             draggedIndex = parseInt(e.target.dataset.index);
@@ -765,7 +752,7 @@
         function renderizarLista() {
             listaCanales.innerHTML = '';
             totalCanales.textContent = canalesFiltrados.length;
-            const iconosTipo = { 'hls': '📡', 'youtube': '▶️', 'mp4': '🎬' };
+            const iconosTipo = { 'hls': '📡', 'youtube': '▶️', 'mp4': '' };
             
             canalesFiltrados.forEach((canal, index) => {
                 const item = document.createElement('div');
@@ -956,7 +943,6 @@
             renderizarLista();
         });
 
-        // ===== REPRODUCCIÓN =====
         function reproducirCanal(canal) {
             canalSeleccionado = canal;
             renderizarLista();
@@ -971,7 +957,6 @@
         function reproducirHLS(url) {
             videoNativo.style.display = 'none';
             contenedorYoutube.style.display = 'none';
-            capaYoutubeOverlay.style.display = 'none';
             iniciarContadorCarga();
             if (typeof Hls !== 'undefined' && Hls.isSupported()) {
                 hls = new Hls();
@@ -983,7 +968,6 @@
                         detenerContadorCarga();
                         videoNativo.style.display = 'none';
                         contenedorYoutube.style.display = 'none';
-                        capaYoutubeOverlay.style.display = 'none';
                         mensajeSinVideo.textContent = '❌ No se pudo cargar este canal. Intenta con otro.';
                         mensajeSinVideo.style.display = 'block';
                     }
@@ -995,7 +979,6 @@
                 detenerContadorCarga();
                 videoNativo.style.display = 'none';
                 contenedorYoutube.style.display = 'none';
-                capaYoutubeOverlay.style.display = 'none';
                 mensajeSinVideo.textContent = '❌ Tu navegador no soporta reproducción HLS.';
                 mensajeSinVideo.style.display = 'block';
             }
@@ -1004,7 +987,6 @@
         function reproducirMP4(url) {
             videoNativo.style.display = 'none';
             contenedorYoutube.style.display = 'none';
-            capaYoutubeOverlay.style.display = 'none';
             iniciarContadorCarga();
             videoNativo.src = url;
             videoNativo.play().catch(e => console.log('Autoplay bloqueado:', e));
@@ -1015,9 +997,10 @@
             mensajeSinVideo.style.display = 'none';
             videoNativo.style.display = 'none';
             contenedorYoutube.style.display = 'block';
-            // ACTIVAR EL OVERLAY PARA CAPTURAR EVENTOS EN YOUTUBE
-            capaYoutubeOverlay.style.display = 'block'; 
             
+            const oldIframe = contenedorYoutube.querySelector('iframe');
+            if (oldIframe) oldIframe.remove();
+
             let videoId = '';
             if (url.includes('youtube-nocookie.com/embed/')) videoId = url.split('/embed/')[1].split('?')[0];
             else if (url.includes('youtube.com/watch')) { const params = new URLSearchParams(url.split('?')[1]); videoId = params.get('v'); }
@@ -1025,11 +1008,18 @@
             else if (url.includes('youtube.com/embed/')) videoId = url.split('/embed/')[1].split('?')[0];
             
             if (videoId) {
-                contenedorYoutube.innerHTML = `<div id="capa-youtube-overlay"></div><iframe src="https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
-                // Reasignar referencia al overlay recién creado dentro del innerHTML
-                const nuevoOverlay = document.getElementById('capa-youtube-overlay');
-                nuevoOverlay.addEventListener('mousemove', resetearActividad);
-                nuevoOverlay.addEventListener('click', resetearActividad);
+                const iframe = document.createElement('iframe');
+                // IMPORTANTE: controls=0 y modestbranding=1 para minimizar la interfaz nativa por si acaso, aunque el overlay bloquea totalmente los clics
+                iframe.src = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&controls=0&modestbranding=1&rel=0`;
+                iframe.allow = "autoplay; encrypted-media";
+                iframe.allowFullscreen = true;
+                contenedorYoutube.appendChild(iframe);
+                
+                // Asegurar que el overlay bloqueante esté siempre presente
+                const overlayActual = document.getElementById('youtube-overlay');
+                if (overlayActual) {
+                    configurarEventosOverlayYouTube();
+                }
             } else {
                 contenedorYoutube.innerHTML = '<p style="color:#fff; padding:20px;">No se pudo identificar el video de YouTube.</p>';
             }
@@ -1046,7 +1036,6 @@
             detenerContadorCarga();
             videoNativo.style.display = 'none';
             contenedorYoutube.style.display = 'none';
-            capaYoutubeOverlay.style.display = 'none';
             mensajeSinVideo.textContent = '❌ No se pudo cargar este canal. Intenta con otro.';
             mensajeSinVideo.style.display = 'block';
         });
@@ -1057,9 +1046,9 @@
             videoNativo.pause();
             videoNativo.src = '';
             videoNativo.style.display = 'none';
-            contenedorYoutube.innerHTML = '';
+            contenedorYoutube.innerHTML = '<div id="youtube-overlay"></div>';
+            configurarEventosOverlayYouTube();
             contenedorYoutube.style.display = 'none';
-            capaYoutubeOverlay.style.display = 'none';
             mensajeSinVideo.textContent = 'Selecciona un canal de la lista para reproducir';
             mensajeSinVideo.style.display = 'block';
             if (timerInactividad) clearTimeout(timerInactividad);
@@ -1070,12 +1059,20 @@
             if (canales.length === 0) return;
             let contenido = '#EXTM3U\n';
             canales.forEach(canal => { contenido += `#EXTINF:-1,${canal.nombre}\n${canal.url}\n`; });
-            const blob = new Blob([contenido], { type: 'text/plain;charset=utf-8' });
+            const blob = new Blob([contenido], { type: 'text/plain;charset=utf-8'	});
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url; a.download = 'mi_lista_limpia.m3u';
             document.body.appendChild(a); a.click(); document.body.removeChild(a);
             URL.revokeObjectURL(url);
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                if (modalFullscreen.style.display === 'flex') btnNoFullscreen.click();
+                else if (modalCanal.style.display === 'flex') cerrarModalCanal();
+                else if (modoLimpieza) btnModoLimpieza.click();
+            }
         });
     </script>
 </body>
