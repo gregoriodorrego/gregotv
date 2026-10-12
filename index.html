@@ -321,7 +321,8 @@
                 <button class="boton-mediano boton-fullscreen" id="btn-toggle-fullscreen">🖥️ Pantalla Completa</button>
                 <button class="boton-mediano" id="btn-modo-limpieza">✏️ Modo edición</button>
                 <button class="boton-mediano boton-agregar" id="btn-agregar-canal">➕ Agregar canal</button>
-                <button class="boton-mediano boton-combinar" id="btn-combinar-lista"> Combinar otra lista</button>
+                <button class="boton-mediano boton-combinar" id="btn-combinar-lista">🔗 Combinar otra lista</button>
+                <input type="file" id="file-input-combinar" accept=".m3u,.m3u8,.txt" style="display: none;">
                 <button class="boton-mediano boton-peligro" id="btn-borrar-seleccionados">🗑️ Borrar seleccionados (<span id="contador-seleccionados">0</span>)</button>
                 <button class="boton-mediano boton-secundario" id="btn-guardar">💾 Guardar lista limpia</button>
                 <button class="boton-mediano" id="btn-volver">← Volver al inicio</button>
@@ -345,7 +346,7 @@
                 </div>
                 
                 <div id="buscador">
-                    <input type="text" id="input-buscar" placeholder=" Buscar canal...">
+                    <input type="text" id="input-buscar" placeholder="🔍 Buscar canal...">
                 </div>
                 <div id="lista-canales"></div>
                 <div id="info-canales">Total: <span id="total-canales">0</span> canales</div>
@@ -415,6 +416,7 @@
         const btnCargarUrl = document.getElementById('btn-cargar-url');
         const inputUrlLista = document.getElementById('input-url-lista');
         const fileInputLocal = document.getElementById('file-input-local');
+        const fileInputCombinar = document.getElementById('file-input-combinar');
         const mensajeError = document.getElementById('mensaje-error');
         const zonaRestaurar = document.getElementById('zona-restaurar');
         const btnRestaurar = document.getElementById('btn-restaurar');
@@ -667,6 +669,29 @@
             try { lector.readAsText(archivo); } catch (e) { mostrarError('Error al leer el archivo.'); }
         });
 
+        btnCombinarLista.addEventListener('click', () => {
+            fileInputCombinar.click();
+        });
+
+        fileInputCombinar.addEventListener('change', (e) => {
+            const archivo = e.target.files[0];
+            if (!archivo) return;
+            const lector = new FileReader();
+            lector.onload = (evento) => {
+                const nuevosCanales = extraerCanalesDeM3U(evento.target.result);
+                if (nuevosCanales.length === 0) {
+                    mostrarError('No se encontraron canales válidos en la lista a combinar.');
+                    return;
+                }
+                canales = canales.concat(nuevosCanales);
+                actualizarSelectCategorias();
+                aplicarFiltros();
+            };
+            lector.onerror = () => mostrarError('Error al leer el archivo para combinar.');
+            try { lector.readAsText(archivo); } catch (e) { mostrarError('Error al leer el archivo para combinar.'); }
+            fileInputCombinar.value = '';
+        });
+
         function procesarListaM3U(contenido) {
             canales = extraerCanalesDeM3U(contenido);
             if (canales.length === 0) { mostrarError('No se encontraron canales válidos en la lista.'); return; }
@@ -683,8 +708,8 @@
         }
 
         function actualizarSelectCategorias() {
-            const categorias = [...new Set(canales.map(c => c.categoria))].sort();
-            selectCategoria.innerHTML = '<option value=""> Todos los canales</option>';
+            const categorias = [...new Set(canales.map(c => c.categoria))].filter(cat => cat !== "Sin categoría").sort();
+            selectCategoria.innerHTML = '<option value="">📂 Todos los canales</option>';
             categorias.forEach(cat => {
                 const opt = document.createElement('option');
                 opt.value = cat;
