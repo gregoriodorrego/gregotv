@@ -98,14 +98,14 @@
 
         .boton-agregar { background-color: #4CAF50; }
         .boton-agregar:hover { background-color: #45a049; }
-        #btn-agregar-canal { display: none; }
+        #btn-agregar-canal { display: inline-block; }
 
-        #btn-combinar-lista { display: none; }
+        #btn-combinar-lista { display: inline-block; }
         .boton-combinar { background-color: #009688; }
         .boton-combinar:hover { background-color: #00796B; }
 
-        #btn-guardar { display: none; }
-        #btn-borrar-seleccionados { display: none; }
+        #btn-guardar { display: inline-block; }
+        #btn-borrar-seleccionados { display: inline-block; }
 
         #contenedor-principal { display: flex; flex: 1; overflow: hidden; transition: all 0.3s ease; position: relative; }
         
@@ -323,7 +323,7 @@
                 <button class="boton-mediano boton-fullscreen" id="btn-toggle-fullscreen">🖥️ Pantalla Completa</button>
                 <button class="boton-mediano" id="btn-modo-limpieza">✏️ Modo edición</button>
                 <button class="boton-mediano boton-agregar" id="btn-agregar-canal">➕ Agregar canal</button>
-                <button class="boton-mediano boton-combinar" id="btn-combinar-lista"> Combinar otra lista</button>
+                <button class="boton-mediano boton-combinar" id="btn-combinar-lista">🔗 Combinar otra lista</button>
                 <button class="boton-mediano boton-peligro" id="btn-borrar-seleccionados">🗑️ Borrar seleccionados (<span id="contador-seleccionados">0</span>)</button>
                 <button class="boton-mediano boton-secundario" id="btn-guardar">💾 Guardar lista limpia</button>
                 <button class="boton-mediano" id="btn-volver">← Volver al inicio</button>
@@ -347,7 +347,7 @@
                 </div>
                 
                 <div id="buscador">
-                    <input type="text" id="input-buscar" placeholder=" Buscar canal...">
+                    <input type="text" id="input-buscar" placeholder="🔍 Buscar canal...">
                 </div>
                 <div id="lista-canales"></div>
                 <div id="info-canales">Total: <span id="total-canales">0</span> canales</div>
@@ -490,7 +490,6 @@
         const btnGuardarCanal = document.getElementById('btn-guardar-canal');
         const btnCancelarCanal = document.getElementById('btn-cancelar-canal');
 
-        // Activar Web Audio API al interactuar con el reproductor
         videoNativo.addEventListener('play', () => {
             inicializarNormalizadorAudio();
         });
@@ -535,6 +534,157 @@
         function detenerContadorCarga() {
             if (timerContadorCarga) { clearInterval(timerContadorCarga); timerContadorCarga = null; }
             segundosCarga = 0;
+        }
+
+        // ===== STREAMING_CHUNK:Defining render and player functions... =====
+        function renderizarLista() {
+            listaCanales.innerHTML = '';
+            totalCanales.textContent = canalesFiltrados.length;
+            
+            canalesFiltrados.forEach((canal, indexOriginal) => {
+                const item = document.createElement('div');
+                item.className = 'canal-item';
+                if (canal === canalSeleccionado) item.classList.add('seleccionado');
+                
+                const nombreSpan = document.createElement('span');
+                nombreSpan.className = 'canal-nombre';
+                nombreSpan.textContent = canal.nombre;
+                
+                const tipoSpan = document.createElement('span');
+                tipoSpan.className = 'canal-tipo';
+                tipoSpan.textContent = `[${canal.tipo.toUpperCase()}]`;
+                
+                item.appendChild(nombreSpan);
+                item.appendChild(tipoSpan);
+                
+                item.addEventListener('click', () => {
+                    seleccionarCanal(canal);
+                });
+                
+                listaCanales.appendChild(item);
+            });
+        }
+
+        function seleccionarCanal(canal) {
+            canalSeleccionado = canal;
+            renderizarLista();
+            reproducirCanal(canal);
+        }
+
+        function detenerReproduccion() {
+            detenerContadorCarga();
+            if (hls) {
+                hls.destroy();
+                hls = null;
+            }
+            videoNativo.pause();
+            videoNativo.src = '';
+            videoNativo.style.display = 'none';
+            contenedorYoutube.style.display = 'none';
+            contenedorYoutube.innerHTML = '<div id="capa-youtube-overlay"></div>';
+            mensajeSinVideo.style.display = 'block';
+            mensajeSinVideo.textContent = 'Selecciona un canal de la lista para reproducir';
+        }
+
+        function reproducirCanal(canal) {
+            detenerReproduccion();
+            iniciarContadorCarga();
+
+            if (canal.tipo === 'youtube') {
+                reproducirYouTube(canal.url);
+            } else if (canal.tipo === 'mp4') {
+                reproducirMP4(canal.url);
+            } else {
+                reproducirHLS(canal.url);
+            }
+        }
+
+        function reproducirYouTube(url) {
+            let videoId = '';
+            if (url.includes('youtu.be/')) {
+                videoId = url.split('youtu.be/')[1].split('?')[0];
+            } else if (url.includes('embed/')) {
+                videoId = url.split('embed/')[1].split('?')[0];
+            } else if (url.includes('watch?v=')) {
+                videoId = url.split('watch?v=')[1].split('&')[0];
+            }
+
+            if (!videoId) {
+                mostrarError('URL de YouTube no válida');
+                detenerContadorCarga();
+                return;
+            }
+
+            mensajeSinVideo.style.display = 'none';
+            contenedorYoutube.style.display = 'block';
+
+            const iframe = document.createElement('iframe');
+            iframe.src = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&enablejsapi=1`;
+            iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+            iframe.allowFullscreen = true;
+            contenedorYoutube.appendChild(iframe);
+
+            const overlay = document.createElement('div');
+            overlay.id = 'capa-youtube-overlay';
+            overlay.style.display = 'block';
+            overlay.addEventListener('click', () => {
+                overlay.style.display = 'none';
+                setTimeout(() => { overlay.style.display = 'block'; }, 4000);
+            });
+            contenedorYoutube.appendChild(overlay);
+            detenerContadorCarga();
+        }
+
+        function reproducirMP4(url) {
+            mensajeSinVideo.style.display = 'none';
+            videoNativo.style.display = 'block';
+            videoNativo.src = url;
+            videoNativo.play().then(() => {
+                detenerContadorCarga();
+            }).catch(e => {
+                console.log("Error al reproducir MP4:", e);
+                detenerContadorCarga();
+            });
+        }
+
+        function reproducirHLS(url) {
+            mensajeSinVideo.style.display = 'none';
+            videoNativo.style.display = 'block';
+
+            if (Hls.isSupported()) {
+                hls = new Hls();
+                hls.loadSource(url);
+                hls.attachMedia(videoNativo);
+                hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                    videoNativo.play().catch(() => {});
+                    detenerContadorCarga();
+                });
+                hls.on(Hls.Events.ERROR, (event, data) => {
+                    if (data.fatal) {
+                        switch (data.type) {
+                            case Hls.ErrorTypes.NETWORK_ERROR:
+                                hls.startLoad();
+                                break;
+                            case Hls.ErrorTypes.MEDIA_ERROR:
+                                hls.recoverMediaError();
+                                break;
+                            default:
+                                detenerReproduccion();
+                                mostrarError('Error fatal al reproducir el stream.');
+                                break;
+                        }
+                    }
+                });
+            } else if (videoNativo.canPlayType('application/vnd.apple.mpegurl')) {
+                videoNativo.src = url;
+                videoNativo.addEventListener('loadedmetadata', () => {
+                    videoNativo.play().catch(() => {});
+                    detenerContadorCarga();
+                });
+            } else {
+                mostrarError('Tu navegador no soporta reproducción HLS.');
+                detenerContadorCarga();
+            }
         }
 
         function extraerCanalesDeM3U(contenido) {
@@ -623,9 +773,6 @@
 
         document.addEventListener('mousemove', resetearActividad);
         document.addEventListener('touchstart', resetearActividad);
-        
-        capaYoutubeOverlay.addEventListener('mousemove', resetearActividad);
-        capaYoutubeOverlay.addEventListener('click', resetearActividad);
 
         document.addEventListener('keydown', (e) => {
             const tagName = e.target.tagName.toLowerCase();
