@@ -98,14 +98,14 @@
 
         .boton-agregar { background-color: #4CAF50; }
         .boton-agregar:hover { background-color: #45a049; }
-        #btn-agregar-canal { display: inline-block; }
+        #btn-agregar-canal { display: none; }
 
-        #btn-combinar-lista { display: inline-block; }
+        #btn-combinar-lista { display: none; }
         .boton-combinar { background-color: #009688; }
         .boton-combinar:hover { background-color: #00796B; }
 
-        #btn-guardar { display: inline-block; }
-        #btn-borrar-seleccionados { display: inline-block; }
+        #btn-guardar { display: none; }
+        #btn-borrar-seleccionados { display: none; }
 
         #contenedor-principal { display: flex; flex: 1; overflow: hidden; transition: all 0.3s ease; position: relative; }
         
@@ -323,7 +323,7 @@
                 <button class="boton-mediano boton-fullscreen" id="btn-toggle-fullscreen">🖥️ Pantalla Completa</button>
                 <button class="boton-mediano" id="btn-modo-limpieza">✏️ Modo edición</button>
                 <button class="boton-mediano boton-agregar" id="btn-agregar-canal">➕ Agregar canal</button>
-                <button class="boton-mediano boton-combinar" id="btn-combinar-lista">🔗 Combinar otra lista</button>
+                <button class="boton-mediano boton-combinar" id="btn-combinar-lista"> Combinar otra lista</button>
                 <button class="boton-mediano boton-peligro" id="btn-borrar-seleccionados">🗑️ Borrar seleccionados (<span id="contador-seleccionados">0</span>)</button>
                 <button class="boton-mediano boton-secundario" id="btn-guardar">💾 Guardar lista limpia</button>
                 <button class="boton-mediano" id="btn-volver">← Volver al inicio</button>
@@ -333,7 +333,7 @@
         <div id="contenedor-principal">
             <div id="area-video">
                 <div id="mensaje-sin-video">Selecciona un canal de la lista para reproducir</div>
-                <video id="video-nativo" controls crossorigin="anonymous"></video>
+                <video id="video-nativo" controls></video>
                 <div id="contenedor-youtube">
                     <div id="capa-youtube-overlay"></div>
                 </div>
@@ -347,7 +347,7 @@
                 </div>
                 
                 <div id="buscador">
-                    <input type="text" id="input-buscar" placeholder="🔍 Buscar canal...">
+                    <input type="text" id="input-buscar" placeholder=" Buscar canal...">
                 </div>
                 <div id="lista-canales"></div>
                 <div id="info-canales">Total: <span id="total-canales">0</span> canales</div>
@@ -408,44 +408,6 @@
         let timerContadorCarga = null;
         let segundosCarga = 0;
 
-        // ===== WEB AUDIO API - NORMALIZADOR DE VOLUMEN =====
-        let audioCtx = null;
-        let compNodo = null;
-        let fuenteAudio = null;
-
-        function inicializarNormalizadorAudio() {
-            if (audioCtx) {
-                if (audioCtx.state === 'suspended') {
-                    audioCtx.resume();
-                }
-                return;
-            }
-
-            try {
-                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-                if (!AudioContextClass) return;
-
-                audioCtx = new AudioContextClass();
-                fuenteAudio = audioCtx.createMediaElementSource(videoNativo);
-                compNodo = audioCtx.createDynamicsCompressor();
-                
-                compNodo.threshold.setValueAtTime(-24, audioCtx.currentTime);
-                compNodo.knee.setValueAtTime(30, audioCtx.currentTime);
-                compNodo.ratio.setValueAtTime(12, audioCtx.currentTime);
-                compNodo.attack.setValueAtTime(0.003, audioCtx.currentTime);
-                compNodo.release.setValueAtTime(0.25, audioCtx.currentTime);
-
-                const gananciaNodo = audioCtx.createGain();
-                gananciaNodo.gain.setValueAtTime(1.8, audioCtx.currentTime);
-
-                fuenteAudio.connect(compNodo);
-                compNodo.connect(gananciaNodo);
-                gananciaNodo.connect(audioCtx.destination);
-            } catch (e) {
-                console.log("Normalizador de audio no inicializado o ya enlazado:", e);
-            }
-        }
-
         const pantallaBienvenida = document.getElementById('pantalla-bienvenida');
         const pantallaPrincipal = document.getElementById('pantalla-principal');
         const btnCargarUrl = document.getElementById('btn-cargar-url');
@@ -490,10 +452,6 @@
         const btnGuardarCanal = document.getElementById('btn-guardar-canal');
         const btnCancelarCanal = document.getElementById('btn-cancelar-canal');
 
-        videoNativo.addEventListener('play', () => {
-            inicializarNormalizadorAudio();
-        });
-
         function switchTab(tab) {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.querySelectorAll('.input-area').forEach(a => a.classList.remove('active'));
@@ -536,157 +494,7 @@
             segundosCarga = 0;
         }
 
-        // ===== STREAMING_CHUNK:Defining render and player functions... =====
-        function renderizarLista() {
-            listaCanales.innerHTML = '';
-            totalCanales.textContent = canalesFiltrados.length;
-            
-            canalesFiltrados.forEach((canal, indexOriginal) => {
-                const item = document.createElement('div');
-                item.className = 'canal-item';
-                if (canal === canalSeleccionado) item.classList.add('seleccionado');
-                
-                const nombreSpan = document.createElement('span');
-                nombreSpan.className = 'canal-nombre';
-                nombreSpan.textContent = canal.nombre;
-                
-                const tipoSpan = document.createElement('span');
-                tipoSpan.className = 'canal-tipo';
-                tipoSpan.textContent = `[${canal.tipo.toUpperCase()}]`;
-                
-                item.appendChild(nombreSpan);
-                item.appendChild(tipoSpan);
-                
-                item.addEventListener('click', () => {
-                    seleccionarCanal(canal);
-                });
-                
-                listaCanales.appendChild(item);
-            });
-        }
-
-        function seleccionarCanal(canal) {
-            canalSeleccionado = canal;
-            renderizarLista();
-            reproducirCanal(canal);
-        }
-
-        function detenerReproduccion() {
-            detenerContadorCarga();
-            if (hls) {
-                hls.destroy();
-                hls = null;
-            }
-            videoNativo.pause();
-            videoNativo.src = '';
-            videoNativo.style.display = 'none';
-            contenedorYoutube.style.display = 'none';
-            contenedorYoutube.innerHTML = '<div id="capa-youtube-overlay"></div>';
-            mensajeSinVideo.style.display = 'block';
-            mensajeSinVideo.textContent = 'Selecciona un canal de la lista para reproducir';
-        }
-
-        function reproducirCanal(canal) {
-            detenerReproduccion();
-            iniciarContadorCarga();
-
-            if (canal.tipo === 'youtube') {
-                reproducirYouTube(canal.url);
-            } else if (canal.tipo === 'mp4') {
-                reproducirMP4(canal.url);
-            } else {
-                reproducirHLS(canal.url);
-            }
-        }
-
-        function reproducirYouTube(url) {
-            let videoId = '';
-            if (url.includes('youtu.be/')) {
-                videoId = url.split('youtu.be/')[1].split('?')[0];
-            } else if (url.includes('embed/')) {
-                videoId = url.split('embed/')[1].split('?')[0];
-            } else if (url.includes('watch?v=')) {
-                videoId = url.split('watch?v=')[1].split('&')[0];
-            }
-
-            if (!videoId) {
-                mostrarError('URL de YouTube no válida');
-                detenerContadorCarga();
-                return;
-            }
-
-            mensajeSinVideo.style.display = 'none';
-            contenedorYoutube.style.display = 'block';
-
-            const iframe = document.createElement('iframe');
-            iframe.src = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&enablejsapi=1`;
-            iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
-            iframe.allowFullscreen = true;
-            contenedorYoutube.appendChild(iframe);
-
-            const overlay = document.createElement('div');
-            overlay.id = 'capa-youtube-overlay';
-            overlay.style.display = 'block';
-            overlay.addEventListener('click', () => {
-                overlay.style.display = 'none';
-                setTimeout(() => { overlay.style.display = 'block'; }, 4000);
-            });
-            contenedorYoutube.appendChild(overlay);
-            detenerContadorCarga();
-        }
-
-        function reproducirMP4(url) {
-            mensajeSinVideo.style.display = 'none';
-            videoNativo.style.display = 'block';
-            videoNativo.src = url;
-            videoNativo.play().then(() => {
-                detenerContadorCarga();
-            }).catch(e => {
-                console.log("Error al reproducir MP4:", e);
-                detenerContadorCarga();
-            });
-        }
-
-        function reproducirHLS(url) {
-            mensajeSinVideo.style.display = 'none';
-            videoNativo.style.display = 'block';
-
-            if (Hls.isSupported()) {
-                hls = new Hls();
-                hls.loadSource(url);
-                hls.attachMedia(videoNativo);
-                hls.on(Hls.Events.MANIFEST_PARSED, () => {
-                    videoNativo.play().catch(() => {});
-                    detenerContadorCarga();
-                });
-                hls.on(Hls.Events.ERROR, (event, data) => {
-                    if (data.fatal) {
-                        switch (data.type) {
-                            case Hls.ErrorTypes.NETWORK_ERROR:
-                                hls.startLoad();
-                                break;
-                            case Hls.ErrorTypes.MEDIA_ERROR:
-                                hls.recoverMediaError();
-                                break;
-                            default:
-                                detenerReproduccion();
-                                mostrarError('Error fatal al reproducir el stream.');
-                                break;
-                        }
-                    }
-                });
-            } else if (videoNativo.canPlayType('application/vnd.apple.mpegurl')) {
-                videoNativo.src = url;
-                videoNativo.addEventListener('loadedmetadata', () => {
-                    videoNativo.play().catch(() => {});
-                    detenerContadorCarga();
-                });
-            } else {
-                mostrarError('Tu navegador no soporta reproducción HLS.');
-                detenerContadorCarga();
-            }
-        }
-
+        // Parser mejorado para extraer group-title
         function extraerCanalesDeM3U(contenido) {
             const lineas = contenido.split('\n');
             const nuevos = [];
@@ -773,6 +581,9 @@
 
         document.addEventListener('mousemove', resetearActividad);
         document.addEventListener('touchstart', resetearActividad);
+        
+        capaYoutubeOverlay.addEventListener('mousemove', resetearActividad);
+        capaYoutubeOverlay.addEventListener('click', resetearActividad);
 
         document.addEventListener('keydown', (e) => {
             const tagName = e.target.tagName.toLowerCase();
@@ -875,7 +686,7 @@
 
         function actualizarSelectCategorias() {
             const categorias = [...new Set(canales.map(c => c.categoria))].sort();
-            selectCategoria.innerHTML = '<option value="">📂 Todos los canales</option>';
+            selectCategoria.innerHTML = '<option value=""> Todos los canales</option>';
             categorias.forEach(cat => {
                 const opt = document.createElement('option');
                 opt.value = cat;
@@ -930,11 +741,391 @@
 
         window.addEventListener('DOMContentLoaded', () => {
             const urlGuardada = localStorage.getItem('miListaTV_Url');
+            const esLocal = localStorage.getItem('miListaTV_Local');
+            
             if (urlGuardada) {
                 inputUrlLista.value = urlGuardada;
                 zonaRestaurar.style.display = 'block';
+            } else if (esLocal) {
+                zonaRestaurar.style.display = 'block';
+            }
+            actualizarBotonFullscreen();
+        });
+
+        btnRestaurar.addEventListener('click', () => {
+            const urlGuardada = localStorage.getItem('miListaTV_Url');
+            if (urlGuardada) {
+                cargarListaDesdeURL(urlGuardada);
+            } else if (localStorage.getItem('miListaTV_Local')) {
+                mostrarError('Por seguridad del navegador, debés volver a seleccionar el archivo local manualmente.');
+                switchTab('local');
+                fileInputLocal.click();
+            } else {
+                mostrarError('No hay lista ni URL guardada.');
             }
         });
+
+        // ===== DRAG AND DROP =====
+        let draggedIndex = -1;
+        function handleDragStart(e) {
+            draggedIndex = parseInt(e.target.dataset.index);
+            e.target.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', draggedIndex);
+        }
+        function handleDragEnd(e) {
+            e.target.classList.remove('dragging');
+            document.querySelectorAll('.canal-item').forEach(item => item.classList.remove('drag-over'));
+        }
+        function handleDragOver(e) { e.preventDefault(); e.currentTarget.classList.add('drag-over'); }
+        function handleDragLeave(e) { e.currentTarget.classList.remove('drag-over'); }
+        function handleDrop(e) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('drag-over');
+            const fromIndex = parseInt(e.dataTransfer.getData('text/plain'));
+            const toIndex = parseInt(e.currentTarget.dataset.index);
+            if (fromIndex !== toIndex && fromIndex >= 0 && toIndex >= 0) {
+                if (categoriaActual || inputBuscar.value.trim()) {
+                    mostrarError('Para reordenar, desactiva primero los filtros de categoría o búsqueda.');
+                    return;
+                }
+
+                const item = canales.splice(fromIndex, 1)[0];
+                canales.splice(toIndex, 0, item);
+                
+                aplicarFiltros();
+                try { localStorage.setItem('miListaTV', JSON.stringify(canales)); } catch (e) {}
+            }
+        }
+
+        function actualizarContadorSeleccion() {
+            contadorSeleccionados.textContent = canalesSeleccionados.length;
+            btnBorrarSeleccionados.style.display = canalesSeleccionados.length > 0 ? 'inline-block' : 'none';
+        }
+
+        function renderizarLista() {
+            listaCanales.innerHTML = '';
+            totalCanales.textContent = canalesFiltrados.length;
+            const iconosTipo = { 'hls': '', 'youtube': '▶️', 'mp4': '🎬' };
+            
+            canalesFiltrados.forEach((canal, index) => {
+                const item = document.createElement('div');
+                item.className = 'canal-item';
+                if (canalSeleccionado === canal) item.classList.add('seleccionado');
+                if (canalesSeleccionados.includes(canal)) item.classList.add('seleccion-borrado');
+                
+                if (modoLimpieza && !categoriaActual && !inputBuscar.value.trim()) {
+                    item.classList.add('draggable');
+                    item.draggable = true;
+                    item.dataset.index = canales.indexOf(canal);
+                    item.addEventListener('dragstart', handleDragStart);
+                    item.addEventListener('dragend', handleDragEnd);
+                    item.addEventListener('dragover', handleDragOver);
+                    item.addEventListener('dragleave', handleDragLeave);
+                    item.addEventListener('drop', handleDrop);
+                    item.addEventListener('mousedown', (e) => { if (e.shiftKey) e.preventDefault(); });
+                }
+                
+                const dragHandle = document.createElement('span');
+                dragHandle.className = 'drag-handle';
+                dragHandle.textContent = '⠿';
+                dragHandle.title = 'Arrastrar para reordenar';
+                
+                const nombreSpan = document.createElement('span');
+                nombreSpan.className = 'canal-nombre';
+                nombreSpan.textContent = canal.nombre;
+                
+                const tipoSpan = document.createElement('span');
+                tipoSpan.className = 'canal-tipo';
+                tipoSpan.textContent = iconosTipo[canal.tipo] || '';
+                
+                const btnEditar = document.createElement('button');
+                btnEditar.className = 'boton-editar';
+                btnEditar.textContent = '✏️ Editar';
+                btnEditar.addEventListener('click', (e) => { e.stopPropagation(); abrirModalEditar(canal); });
+                
+                const btnQuitar = document.createElement('button');
+                btnQuitar.className = 'boton-quitar';
+                btnQuitar.textContent = '🗑️ Quitar';
+                // NUEVA LÓGICA DE BORRADO SEGÚN CONTEXTO
+                btnQuitar.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const idxGlobal = canales.indexOf(canal);
+                    
+                    if (categoriaActual && idxGlobal >= 0) {
+                        // Si estamos en una categoría específica, solo quitamos la etiqueta
+                        canales[idxGlobal].categoria = "Sin categoría";
+                        mostrarExito(`"${canal.nombre}" movido a "Sin categoría"`);
+                    } else {
+                        // Si estamos en "Todos", lo eliminamos definitivamente
+                        if (idxGlobal >= 0) canales.splice(idxGlobal, 1);
+                        canalesSeleccionados = canalesSeleccionados.filter(c => c !== canal);
+                        if (canalAncla === canal) canalAncla = null;
+                        if (canalSeleccionado === canal) { canalSeleccionado = null; detenerReproduccion(); }
+                    }
+                    
+                    actualizarContadorSeleccion();
+                    actualizarSelectCategorias();
+                    aplicarFiltros();
+                });
+                
+                item.appendChild(dragHandle);
+                item.appendChild(nombreSpan);
+                item.appendChild(tipoSpan);
+                item.appendChild(btnEditar);
+                item.appendChild(btnQuitar);
+                
+                item.addEventListener('click', (e) => {
+                    if (modoLimpieza && e.shiftKey) {
+                        e.preventDefault();
+                        const indiceAncla = canalAncla ? canalesFiltrados.indexOf(canalAncla) : -1;
+                        if (indiceAncla === -1) {
+                            canalAncla = canal;
+                            canalesSeleccionados = [canal];
+                        } else {
+                            const indiceActual = canalesFiltrados.indexOf(canal);
+                            const desde = Math.min(indiceAncla, indiceActual);
+                            const hasta = Math.max(indiceAncla, indiceActual);
+                            canalesSeleccionados = canalesFiltrados.slice(desde, hasta + 1);
+                        }
+                        actualizarContadorSeleccion();
+                        renderizarLista();
+                        return;
+                    }
+                    if (modoLimpieza) {
+                        canalAncla = canal;
+                        canalesSeleccionados = [];
+                        actualizarContadorSeleccion();
+                    }
+                    reproducirCanal(canal);
+                });
+                
+                listaCanales.appendChild(item);
+            });
+        }
+
+        function mostrarExito(msg) {
+            // Reutilizamos el estilo de error pero en verde para feedback positivo
+            mensajeError.textContent = '✅ ' + msg;
+            mensajeError.style.backgroundColor = '#1b5e20';
+            mensajeError.style.color = '#fff';
+            mensajeError.style.display = 'block';
+            setTimeout(() => { 
+                mensajeError.style.display = 'none'; 
+                mensajeError.style.backgroundColor = '#3a1a1a';
+                mensajeError.style.color = '#ff6b6b';
+            }, 3000);
+        }
+
+        btnModoLimpieza.addEventListener('click', () => {
+            modoLimpieza = !modoLimpieza;
+            if (modoLimpieza) {
+                if (estaEnModoCine) desactivarModoCine();
+                btnModoLimpieza.classList.add('activo');
+                btnModoLimpieza.textContent = '✏️ Modo edición ACTIVO';
+                listaCanales.classList.add('modo-limpieza');
+                btnAgregarCanal.style.display = 'inline-block';
+                btnCombinarLista.style.display = 'inline-block';
+                btnGuardar.style.display = 'inline-block';
+                if (timerInactividad) clearTimeout(timerInactividad);
+            } else {
+                btnModoLimpieza.classList.remove('activo');
+                btnModoLimpieza.textContent = '✏️ Modo edición';
+                listaCanales.classList.remove('modo-limpieza');
+                btnAgregarCanal.style.display = 'none';
+                btnCombinarLista.style.display = 'none';
+                btnGuardar.style.display = 'none';
+                canalesSeleccionados = [];
+                canalAncla = null;
+                actualizarContadorSeleccion();
+                iniciarTimerModoCine();
+            }
+            renderizarLista();
+        });
+
+        btnBorrarSeleccionados.addEventListener('click', () => {
+            if (canalesSeleccionados.length === 0) return;
+            if (canalesSeleccionados.includes(canalSeleccionado)) { canalSeleccionado = null; detenerReproduccion(); }
+            canales = canales.filter(c => !canalesSeleccionados.includes(c));
+            canalesSeleccionados = [];
+            canalAncla = null;
+            actualizarSelectCategorias();
+            aplicarFiltros();
+        });
+
+        function abrirModalAgregar() {
+            canalEditandoIndex = -1;
+            tituloModalCanal.textContent = '➕ Agregar canal';
+            inputNombreCanal.value = '';
+            inputCategoriaCanal.value = categoriaActual || '';
+            inputUrlCanal.value = '';
+            modalCanal.style.display = 'flex';
+            inputNombreCanal.focus();
+        }
+
+        function abrirModalEditar(canal) {
+            canalEditandoIndex = canales.indexOf(canal);
+            tituloModalCanal.textContent = '✏️ Editar canal';
+            inputNombreCanal.value = canal.nombre;
+            inputCategoriaCanal.value = canal.categoria;
+            inputUrlCanal.value = canal.url;
+            modalCanal.style.display = 'flex';
+            inputNombreCanal.focus();
+        }
+
+        function cerrarModalCanal() {
+            modalCanal.style.display = 'none';
+            canalEditandoIndex = -1;
+        }
+
+        function guardarCanal() {
+            const nombre = inputNombreCanal.value.trim();
+            const categoria = inputCategoriaCanal.value.trim() || "Sin categoría";
+            const url = inputUrlCanal.value.trim();
+            if (!nombre || !url) { alert('Completá nombre y URL.'); return; }
+            
+            const tipo = detectarTipo(url);
+            if (canalEditandoIndex >= 0) {
+                canales[canalEditandoIndex].nombre = nombre;
+                canales[canalEditandoIndex].categoria = categoria;
+                canales[canalEditandoIndex].url = url;
+                canales[canalEditandoIndex].tipo = tipo;
+            } else {
+                canales.push({ nombre, url, tipo, marcado: false, categoria });
+            }
+            
+            actualizarSelectCategorias();
+            aplicarFiltros();
+            cerrarModalCanal();
+        }
+
+        btnAgregarCanal.addEventListener('click', abrirModalAgregar);
+        btnGuardarCanal.addEventListener('click', guardarCanal);
+        btnCancelarCanal.addEventListener('click', cerrarModalCanal);
+        modalCanal.addEventListener('click', (e) => { if (e.target === modalCanal) cerrarModalCanal(); });
+
+        // ===== GUARDAR LISTA CON CATEGORÍAS =====
+        btnGuardar.addEventListener('click', () => {
+            if (canales.length === 0) return;
+            let contenido = '#EXTM3U\n';
+            canales.forEach(canal => { 
+                contenido += `#EXTINF:-1 group-title="${canal.categoria}",${canal.nombre}\n${canal.url}\n`; 
+            });
+            const blob = new Blob([contenido], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = 'mi_lista_limpia.m3u';
+            document.body.appendChild(a); a.click(); document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        });
+
+        // ===== REPRODUCCIÓN =====
+        function reproducirCanal(canal) {
+            canalSeleccionado = canal;
+            renderizarLista();
+            detenerReproduccion();
+            yaSePreguntoFullscreen = false;
+            if (canal.tipo === 'youtube') reproducirYouTube(canal.url);
+            else if (canal.tipo === 'mp4') reproducirMP4(canal.url);
+            else reproducirHLS(canal.url);
+            iniciarTimerModoCine();
+        }
+
+        function reproducirHLS(url) {
+            videoNativo.style.display = 'none';
+            contenedorYoutube.style.display = 'none';
+            capaYoutubeOverlay.style.display = 'none';
+            iniciarContadorCarga();
+            if (typeof Hls !== 'undefined' && Hls.isSupported()) {
+                hls = new Hls();
+                hls.loadSource(url);
+                hls.attachMedia(videoNativo);
+                hls.on(Hls.Events.MANIFEST_PARSED, () => { videoNativo.play().catch(e => console.log('Autoplay bloqueado:', e)); });
+                hls.on(Hls.Events.ERROR, (event, data) => {
+                    if (data.fatal) {
+                        detenerContadorCarga();
+                        videoNativo.style.display = 'none';
+                        contenedorYoutube.style.display = 'none';
+                        capaYoutubeOverlay.style.display = 'none';
+                        mensajeSinVideo.textContent = '❌ No se pudo cargar este canal. Intenta con otro.';
+                        mensajeSinVideo.style.display = 'block';
+                    }
+                });
+            } else if (videoNativo.canPlayType('application/vnd.apple.mpegurl')) {
+                videoNativo.src = url;
+                videoNativo.play().catch(e => console.log('Autoplay bloqueado:', e));
+            } else {
+                detenerContadorCarga();
+                videoNativo.style.display = 'none';
+                contenedorYoutube.style.display = 'none';
+                capaYoutubeOverlay.style.display = 'none';
+                mensajeSinVideo.textContent = ' Tu navegador no soporta reproducción HLS.';
+                mensajeSinVideo.style.display = 'block';
+            }
+        }
+
+        function reproducirMP4(url) {
+            videoNativo.style.display = 'none';
+            contenedorYoutube.style.display = 'none';
+            capaYoutubeOverlay.style.display = 'none';
+            iniciarContadorCarga();
+            videoNativo.src = url;
+            videoNativo.play().catch(e => console.log('Autoplay bloqueado:', e));
+        }
+
+        function reproducirYouTube(url) {
+            detenerContadorCarga();
+            mensajeSinVideo.style.display = 'none';
+            videoNativo.style.display = 'none';
+            contenedorYoutube.style.display = 'block';
+            capaYoutubeOverlay.style.display = 'block'; 
+            
+            let videoId = '';
+            if (url.includes('youtube-nocookie.com/embed/')) videoId = url.split('/embed/')[1].split('?')[0];
+            else if (url.includes('youtube.com/watch')) { const params = new URLSearchParams(url.split('?')[1]); videoId = params.get('v'); }
+            else if (url.includes('youtu.be/')) videoId = url.split('youtu.be/')[1].split('?')[0];
+            else if (url.includes('youtube.com/embed/')) videoId = url.split('/embed/')[1].split('?')[0];
+            
+            if (videoId) {
+                contenedorYoutube.innerHTML = `<div id="capa-youtube-overlay"></div><iframe src="https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
+                const nuevoOverlay = document.getElementById('capa-youtube-overlay');
+                nuevoOverlay.addEventListener('mousemove', resetearActividad);
+                nuevoOverlay.addEventListener('click', resetearActividad);
+            } else {
+                contenedorYoutube.innerHTML = '<p style="color:#fff; padding:20px;">No se pudo identificar el video de YouTube.</p>';
+            }
+        }
+
+        videoNativo.addEventListener('playing', () => {
+            detenerContadorCarga();
+            mensajeSinVideo.style.display = 'none';
+            videoNativo.style.display = 'block';
+        });
+
+        videoNativo.addEventListener('error', () => {
+            if (!videoNativo.getAttribute('src')) return;
+            detenerContadorCarga();
+            videoNativo.style.display = 'none';
+            contenedorYoutube.style.display = 'none';
+            capaYoutubeOverlay.style.display = 'none';
+            mensajeSinVideo.textContent = '❌ No se pudo cargar este canal. Intenta con otro.';
+            mensajeSinVideo.style.display = 'block';
+        });
+
+        function detenerReproduccion() {
+            if (hls) { hls.destroy(); hls = null; }
+            detenerContadorCarga();
+            videoNativo.pause();
+            videoNativo.src = '';
+            videoNativo.style.display = 'none';
+            contenedorYoutube.innerHTML = '';
+            contenedorYoutube.style.display = 'none';
+            capaYoutubeOverlay.style.display = 'none';
+            mensajeSinVideo.textContent = 'Selecciona un canal de la lista para reproducir';
+            mensajeSinVideo.style.display = 'block';
+            if (timerInactividad) clearTimeout(timerInactividad);
+            if (estaEnModoCine) desactivarModoCine();
+        }
     </script>
 </body>
 </html>
