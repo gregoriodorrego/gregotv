@@ -434,17 +434,15 @@
                 compNodo = audioCtx.createDynamicsCompressor();
                 
                 // Configuración optimizada para TV/Streams
-                compNodo.threshold.setValueAtTime(-24, audioCtx.currentTime); // Límite donde empieza a comprimir
-                compNodo.knee.setValueAtTime(30, audioCtx.currentTime);       // Transición suave
-                compNodo.ratio.setValueAtTime(12, audioCtx.currentTime);      // Fuerza de compresión
-                compNodo.attack.setValueAtTime(0.003, audioCtx.currentTime);  // Tiempo de respuesta rápido
-                compNodo.release.setValueAtTime(0.25, audioCtx.currentTime);   // Retorno progresivo
+                compNodo.threshold.setValueAtTime(-24, audioCtx.currentTime);
+                compNodo.knee.setValueAtTime(30, audioCtx.currentTime);
+                compNodo.ratio.setValueAtTime(12, audioCtx.currentTime);
+                compNodo.attack.setValueAtTime(0.003, audioCtx.currentTime);
+                compNodo.release.setValueAtTime(0.25, audioCtx.currentTime);
 
-                // Crear nodo de ganancia suave para compensar
                 const gananciaNodo = audioCtx.createGain();
-                gananciaNodo.gain.setValueAtTime(1.8, audioCtx.currentTime); // Incrementa canales suaves
+                gananciaNodo.gain.setValueAtTime(1.8, audioCtx.currentTime);
 
-                // Encadenar: Video -> Compresor -> Ganancia -> Parlantes
                 fuenteAudio.connect(compNodo);
                 compNodo.connect(gananciaNodo);
                 gananciaNodo.connect(audioCtx.destination);
@@ -497,7 +495,6 @@
         const btnGuardarCanal = document.getElementById('btn-guardar-canal');
         const btnCancelarCanal = document.getElementById('btn-cancelar-canal');
 
-        // Activar Web Audio API al interactuar con el reproductor
         videoNativo.addEventListener('play', () => {
             inicializarNormalizadorAudio();
         });
@@ -673,7 +670,6 @@
         document.addEventListener('fullscreenchange', manejarCambioFullscreen);
         document.addEventListener('webkitfullscreenchange', manejarCambioFullscreen);
 
-        // ===== CARGA DESDE URL =====
         async function cargarListaDesdeURL(url) {
             if (!url || !url.trim()) { mostrarError('Por favor ingresa una URL válida.'); return; }
             url = url.trim();
@@ -703,24 +699,37 @@
         btnCargarUrl.addEventListener('click', () => cargarListaDesdeURL(inputUrlLista.value));
         inputUrlLista.addEventListener('keypress', (e) => { if (e.key === 'Enter') cargarListaDesdeURL(inputUrlLista.value); });
 
-        // ===== CARGA DESDE ARCHIVO LOCAL =====
+        // ===== CARGA DESDE ARCHIVO LOCAL (CORREGIDA) =====
         fileInputLocal.addEventListener('change', (e) => {
             const archivo = e.target.files[0];
             if (!archivo) return;
             const lector = new FileReader();
             lector.onload = (evento) => {
-                procesarListaM3U(evento.target.result);
+                const contenido = evento.target.result;
+                procesarListaM3U(contenido);
                 localStorage.setItem('miListaTV_Local', 'true');
                 localStorage.removeItem('miListaTV_Url');
+                // Limpiar el input para permitir recargar el mismo archivo si se desea
+                fileInputLocal.value = '';
             };
-            lector.onerror = () => mostrarError('Error al leer el archivo.');
-            try { lector.readAsText(archivo); } catch (e) { mostrarError('Error al leer el archivo.'); }
+            lector.onerror = () => mostrarError('Error al leer el archivo local.');
+            try { 
+                lector.readAsText(archivo, 'UTF-8'); 
+            } catch (err) { 
+                try {
+                    lector.readAsText(archivo, 'ISO-8859-1');
+                } catch (e2) {
+                    mostrarError('Error al leer el archivo.'); 
+                }
+            }
         });
 
-        // ===== PROCESAMIENTO Y FILTRADO =====
         function procesarListaM3U(contenido) {
             canales = extraerCanalesDeM3U(contenido);
-            if (canales.length === 0) { mostrarError('No se encontraron canales válidos en la lista.'); return; }
+            if (canales.length === 0) { 
+                mostrarError('No se encontraron canales válidos en la lista. Asegúrate de que tenga el formato #EXTINF.'); 
+                return; 
+            }
             
             actualizarSelectCategorias();
             
@@ -735,7 +744,7 @@
 
         function actualizarSelectCategorias() {
             const categorias = [...new Set(canales.map(c => c.categoria))].sort();
-            selectCategoria.innerHTML = '<option value=""> Todos los canales</option>';
+            selectCategoria.innerHTML = '<option value="">📂 Todos los canales</option>';
             categorias.forEach(cat => {
                 const opt = document.createElement('option');
                 opt.value = cat;
@@ -766,6 +775,120 @@
         });
 
         inputBuscar.addEventListener('input', () => aplicarFiltros());
+
+        function renderizarLista() {
+            listaCanales.innerHTML = '';
+            totalCanales.textContent = canalesFiltrados.length;
+
+            if (canalesFiltrados.length === 0) {
+                listaCanales.innerHTML = '<div style="color:#888; text-align:center; padding:20px;">No se encontraron canales</div>';
+                return;
+            }
+
+            canalesFiltrados.forEach((canal, index) => {
+                const item = document.createElement('div');
+                item.className = 'canal-item';
+                if (canalSeleccionado === canal) item.classList.add('seleccionado');
+
+                const nombreSpan = document.createElement('span');
+                nombreSpan.className = 'canal-nombre';
+                nombreSpan.textContent = canal.nombre;
+
+                const tipoSpan = document.createElement('span');
+                tipoSpan.className = 'canal-tipo';
+                tipoSpan.textContent = `[${canal.tipo.toUpperCase()}]`;
+
+                item.appendChild(nombreSpan);
+                item.appendChild(tipoSpan);
+
+                item.addEventListener('click', () => {
+                    seleccionarCanal(canal);
+                });
+
+                listaCanales.appendChild(item);
+            });
+        }
+
+        function seleccionarCanal(canal) {
+            canalSeleccionado = canal;
+            document.querySelectorAll('.canal-item').forEach(el => el.classList.remove('seleccionado'));
+            renderizarLista();
+            reproducirCanal(canal);
+            iniciarTimerModoCine();
+        }
+
+        function reproducirCanal(canal) {
+            detenerReproduccion();
+            iniciarContadorCarga();
+
+            if (canal.tipo === 'youtube') {
+                mensajeSinVideo.style.display = 'none';
+                contenedorYoutube.style.display = 'block';
+                capaYoutubeOverlay.style.display = 'block';
+                
+                let videoId = '';
+                if (canal.url.includes('youtu.be/')) {
+                    videoId = canal.url.split('youtu.be/')[1].split('?')[0];
+                } else if (canal.url.includes('v=')) {
+                    videoId = canal.url.split('v=')[1].split('&')[0];
+                } else if (canal.url.includes('embed/')) {
+                    videoId = canal.url.split('embed/')[1].split('?')[0];
+                }
+
+                contenedorYoutube.innerHTML = `
+                    <iframe src="https://www.youtube.com/embed/${videoId}?autoplay=1&enablejsapi=1" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                    <div id="capa-youtube-overlay"></div>
+                `;
+                detenerContadorCarga();
+            } else if (canal.tipo === 'mp4') {
+                mensajeSinVideo.style.display = 'none';
+                videoNativo.style.display = 'block';
+                videoNativo.src = canal.url;
+                videoNativo.play().then(() => {
+                    detenerContadorCarga();
+                }).catch(() => {
+                    detenerContadorCarga();
+                });
+            } else {
+                // HLS
+                mensajeSinVideo.style.display = 'none';
+                videoNativo.style.display = 'block';
+                if (Hls.isSupported()) {
+                    hls = new Hls();
+                    hls.loadSource(canal.url);
+                    hls.attachMedia(videoNativo);
+                    hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                        detenerContadorCarga();
+                        videoNativo.play().catch(() => {});
+                    });
+                    hls.on(Hls.Events.ERROR, (event, data) => {
+                        if (data.fatal) {
+                            detenerContadorCarga();
+                            mostrarError('Error al reproducir el stream HLS.');
+                        }
+                    });
+                } else if (videoNativo.canPlayType('application/vnd.apple.mpegurl')) {
+                    videoNativo.src = canal.url;
+                    videoNativo.addEventListener('loadedmetadata', () => {
+                        detenerContadorCarga();
+                        videoNativo.play().catch(() => {});
+                    });
+                }
+            }
+        }
+
+        function detenerReproduccion() {
+            detenerContadorCarga();
+            videoNativo.pause();
+            videoNativo.src = '';
+            videoNativo.style.display = 'none';
+            if (hls) { hls.destroy(); hls = null; }
+            contenedorYoutube.innerHTML = '<div id="capa-youtube-overlay"></div>';
+            contenedorYoutube.style.display = 'none';
+            capaYoutubeOverlay.style.display = 'none';
+            mensajeSinVideo.style.display = 'block';
+            mensajeSinVideo.textContent = 'Selecciona un canal de la lista para reproducir';
+        }
 
         function detectarTipo(url) {
             if (url.includes('youtube.com') || url.includes('youtu.be') || url.includes('youtube-nocookie.com')) return 'youtube';
