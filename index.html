@@ -70,7 +70,6 @@
 
         #zona-restaurar { margin-top: 20px; display: none; }
 
-        /* ===== PANTALLA PRINCIPAL ===== */
         #pantalla-principal { display: none; height: 100vh; flex-direction: column; }
 
         #barra-superior {
@@ -218,7 +217,6 @@
 
         #info-canales { padding: 10px 12px; background-color: #2a2a2a; border-top: 1px solid #444; font-size: 16px; color: #aaa; }
 
-        /* Modales */
         #modal-fullscreen {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background-color: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 2000;
@@ -396,6 +394,10 @@
         let modoLimpieza = false;
         let hls = null;
         
+        let audioCtx = null;
+        let compressorNode = null;
+        let sourceNode = null;
+        
         let timerInactividad = null;
         let estaEnModoCine = false;
         let yaSePreguntoFullscreen = false;
@@ -494,7 +496,6 @@
             segundosCarga = 0;
         }
 
-        // Parser mejorado para extraer group-title
         function extraerCanalesDeM3U(contenido) {
             const lineas = contenido.split('\n');
             const nuevos = [];
@@ -624,7 +625,6 @@
         document.addEventListener('fullscreenchange', manejarCambioFullscreen);
         document.addEventListener('webkitfullscreenchange', manejarCambioFullscreen);
 
-        // ===== CARGA DESDE URL =====
         async function cargarListaDesdeURL(url) {
             if (!url || !url.trim()) { mostrarError('Por favor ingresa una URL válida.'); return; }
             url = url.trim();
@@ -654,7 +654,6 @@
         btnCargarUrl.addEventListener('click', () => cargarListaDesdeURL(inputUrlLista.value));
         inputUrlLista.addEventListener('keypress', (e) => { if (e.key === 'Enter') cargarListaDesdeURL(inputUrlLista.value); });
 
-        // ===== CARGA DESDE ARCHIVO LOCAL =====
         fileInputLocal.addEventListener('change', (e) => {
             const archivo = e.target.files[0];
             if (!archivo) return;
@@ -668,12 +667,9 @@
             try { lector.readAsText(archivo); } catch (e) { mostrarError('Error al leer el archivo.'); }
         });
 
-        // ===== PROCESAMIENTO Y FILTRADO =====
         function procesarListaM3U(contenido) {
             canales = extraerCanalesDeM3U(contenido);
             if (canales.length === 0) { mostrarError('No se encontraron canales válidos en la lista.'); return; }
-            
-            // ELIMINADO: ordenarAlfabeticamente(canales); -> Se respeta el orden original
             
             actualizarSelectCategorias();
             
@@ -767,7 +763,6 @@
             }
         });
 
-        // ===== DRAG AND DROP =====
         let draggedIndex = -1;
         function handleDragStart(e) {
             draggedIndex = parseInt(e.target.dataset.index);
@@ -983,7 +978,6 @@
         btnCancelarCanal.addEventListener('click', cerrarModalCanal);
         modalCanal.addEventListener('click', (e) => { if (e.target === modalCanal) cerrarModalCanal(); });
 
-        // ===== GUARDAR LISTA CON CATEGORÍAS =====
         btnGuardar.addEventListener('click', () => {
             if (canales.length === 0) return;
             let contenido = '#EXTM3U\n';
@@ -998,15 +992,45 @@
             URL.revokeObjectURL(url);
         });
 
-        // ===== REPRODUCCIÓN =====
+        function inicializarControlAudio() {
+            if (audioCtx) {
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+                return;
+            }
+            try {
+                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                if (!AudioContextClass) return;
+                audioCtx = new AudioContextClass();
+                
+                compressorNode = audioCtx.createDynamicsCompressor();
+                compressorNode.threshold.setValueAtTime(-25, audioCtx.currentTime);
+                compressorNode.knee.setValueAtTime(30, audioCtx.currentTime);
+                compressorNode.ratio.setValueAtTime(12, audioCtx.currentTime);
+                compressorNode.attack.setValueAtTime(0.003, audioCtx.currentTime);
+                compressorNode.release.setValueAtTime(0.25, audioCtx.currentTime);
+                
+                sourceNode = audioCtx.createMediaElementSource(videoNativo);
+                sourceNode.connect(compressorNode);
+                compressorNode.connect(audioCtx.destination);
+            } catch (e) {
+                console.log("Error al inicializar Web Audio API:", e);
+            }
+        }
+
         function reproducirCanal(canal) {
             canalSeleccionado = canal;
             renderizarLista();
             detenerReproduccion();
             yaSePreguntoFullscreen = false;
-            if (canal.tipo === 'youtube') reproducirYouTube(canal.url);
-            else if (canal.tipo === 'mp4') reproducirMP4(canal.url);
-            else reproducirHLS(canal.url);
+            if (canal.tipo === 'youtube') {
+                reproducirYouTube(canal.url);
+            } else {
+                inicializarControlAudio();
+                if (canal.tipo === 'mp4') reproducirMP4(canal.url);
+                else reproducirHLS(canal.url);
+            }
             iniciarTimerModoCine();
         }
 
