@@ -673,6 +673,8 @@
             canales = extraerCanalesDeM3U(contenido);
             if (canales.length === 0) { mostrarError('No se encontraron canales válidos en la lista.'); return; }
             
+            // ELIMINADO: ordenarAlfabeticamente(canales); -> Se respeta el orden original
+            
             actualizarSelectCategorias();
             
             canalesSeleccionados = [];
@@ -837,7 +839,7 @@
                 
                 const tipoSpan = document.createElement('span');
                 tipoSpan.className = 'canal-tipo';
-                tipoSpan.textContent = iconosTipo[canal.tipo] || '';
+                tipoSpan.textContent = iconosTipo[canal.tipo] || '📺';
                 
                 const btnEditar = document.createElement('button');
                 btnEditar.className = 'boton-editar';
@@ -847,24 +849,14 @@
                 const btnQuitar = document.createElement('button');
                 btnQuitar.className = 'boton-quitar';
                 btnQuitar.textContent = '🗑️ Quitar';
-                // NUEVA LÓGICA DE BORRADO SEGÚN CONTEXTO
                 btnQuitar.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    const idxGlobal = canales.indexOf(canal);
-                    
-                    if (categoriaActual && idxGlobal >= 0) {
-                        // Si estamos en una categoría específica, solo quitamos la etiqueta
-                        canales[idxGlobal].categoria = "Sin categoría";
-                        mostrarExito(`"${canal.nombre}" movido a "Sin categoría"`);
-                    } else {
-                        // Si estamos en "Todos", lo eliminamos definitivamente
-                        if (idxGlobal >= 0) canales.splice(idxGlobal, 1);
-                        canalesSeleccionados = canalesSeleccionados.filter(c => c !== canal);
-                        if (canalAncla === canal) canalAncla = null;
-                        if (canalSeleccionado === canal) { canalSeleccionado = null; detenerReproduccion(); }
-                    }
-                    
+                    const idx = canales.indexOf(canal);
+                    if (idx >= 0) canales.splice(idx, 1);
+                    canalesSeleccionados = canalesSeleccionados.filter(c => c !== canal);
+                    if (canalAncla === canal) canalAncla = null;
                     actualizarContadorSeleccion();
+                    if (canalSeleccionado === canal) { canalSeleccionado = null; detenerReproduccion(); }
                     actualizarSelectCategorias();
                     aplicarFiltros();
                 });
@@ -902,19 +894,6 @@
                 
                 listaCanales.appendChild(item);
             });
-        }
-
-        function mostrarExito(msg) {
-            // Reutilizamos el estilo de error pero en verde para feedback positivo
-            mensajeError.textContent = '✅ ' + msg;
-            mensajeError.style.backgroundColor = '#1b5e20';
-            mensajeError.style.color = '#fff';
-            mensajeError.style.display = 'block';
-            setTimeout(() => { 
-                mensajeError.style.display = 'none'; 
-                mensajeError.style.backgroundColor = '#3a1a1a';
-                mensajeError.style.color = '#ff6b6b';
-            }, 3000);
         }
 
         btnModoLimpieza.addEventListener('click', () => {
@@ -1059,7 +1038,7 @@
                 videoNativo.style.display = 'none';
                 contenedorYoutube.style.display = 'none';
                 capaYoutubeOverlay.style.display = 'none';
-                mensajeSinVideo.textContent = ' Tu navegador no soporta reproducción HLS.';
+                mensajeSinVideo.textContent = '❌ Tu navegador no soporta reproducción HLS.';
                 mensajeSinVideo.style.display = 'block';
             }
         }
