@@ -19,8 +19,6 @@ https://live.telemadrid.cross-media.es/6389770581112/eu-central-1/6416060453001/
 https://cdnlive.codev8.net/rtvalive/smil:channel22.smil/playlist.m3u8
 #EXTINF:-1 group-title="📰 Noticias",ESPAÑA - A Punt
 https://fastly.live.brightcove.com/1846756479408303045/eu-central-1/6057955885001/eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJob3N0IjoiZWFxNWh4LmVncmVzcy53YzQ3bTEiLCJhY2NvdW50X2lkIjoiNjA1Nzk1NTg4NTAwMSIsImVobiI6ImZhc3RseS5saXZlLmJyaWdodGNvdmUuY29tIiwiaXNzIjoiYmxpdmUtcGxheWJhY2stc291cmNlLWFwaSIsInN1YiI6InBhdGhtYXB0b2tlbiIsImF1ZCI6WyI2MDU3OTU1ODg1MDAxIl0sImp0aSI6IjE4NDY3NTY0Nzk0MDgzMDMwNDUifQ.o6wb_VA-TVxl3ERgr7FKLlaTjY7smErmsf73QAydySE/playlist-hls-dvr.m3u8
-#EXTINF:-1 group-title="📰 Noticias",ESPAÑA - TELEVISIÓN Canaria
-https://www.youtube-nocookie.com/embed/DByMAYdYEmc
 #EXTINF:-1 group-title="📰 Noticias",ESPAÑA - Television Canaria
 https://d1oyt3v08gcy18.cloudfront.net/index-events.m3u8
 #EXTINF:-1 group-title="📰 Noticias",ESPAÑA - TVG2
@@ -59,7 +57,7 @@ https://eu1.servers10.com:8081/8116/index.m3u8
 https://mdstrm.com/live-stream-playlist/629a63ae8df27c082901f78b.m3u8
 #EXTINF:-1 group-title="Sin categoría",ESPAÑA - BBC Drama Spain
 https://amg00793-amg00793c40-rakuten-es-5444.playouts.now.amagi.tv/playlist.m3u8
-#EXTINF:-1 group-title="Sin categoría",ESPAÑA - Crímenes Reales
+#EXTINF:-1 group-title="📚 Cultura y Documentales",ESPAÑA - Crímenes Reales
 https://amg01796-amg01796c13-rakuten-gb-6739.playouts.now.amagi.tv/playlist.m3u8
 #EXTINF:-1 group-title="Sin categoría",ESPAÑA - MyTime Movie Network
 https://appletree-mytimespain-rakuten.amagi.tv/playlist.m3u8
@@ -81,8 +79,6 @@ https://canadaremar2.todostreaming.es/live/solidariatv-webhd.m3u8
 https://streaming-1.eltorotv.com/lb0/eltorotv-streaming-web/index.m3u8
 #EXTINF:-1 group-title="Sin categoría",ESPAÑA - Activa TV
 https://streamtv.mediasector.es/hls/activatv/index.m3u8
-#EXTINF:-1 group-title="Sin categoría",ESPAÑA - TVOMIX
-https://cloud.tvomix.com/TVOMIX/index.m3u8
 #EXTINF:-1 group-title="Sin categoría",ESPAÑA - Tito TV
 https://cloud.tvomix.com/TITOTV/index.m3u8
 #EXTINF:-1 group-title="Sin categoría",ESPAÑA - LiraTV
@@ -97,8 +93,6 @@ https://cloudvideo.servers10.com:8081/8004/index.m3u8
 https://cloudvideo.servers10.com:8081/8024/index.m3u8
 #EXTINF:-1 group-title="Sin categoría",ESPAÑA - Onda 15 TV
 https://cloudvideo.servers10.com:8081/8034/index.m3u8
-#EXTINF:-1 group-title="Sin categoría",ESPAÑA - Onda Valencia TV
-https://cloudvideo.servers10.com:8081/8116/index.m3u8
 #EXTINF:-1 group-title="Sin categoría",ESPAÑA - Onda Algeciras
 https://cloudtv.provideo.es/live/algecirastv-livestream.m3u8
 #EXTINF:-1 group-title="Sin categoría",ESPAÑA - 28 kanala
@@ -127,8 +121,6 @@ https://ingest1-video.streaming-pro.com/canaltaronja/osona/playlist.m3u8
 https://ingest2-video.streaming-pro.com/canalterrassa/stream/playlist.m3u8
 #EXTINF:-1 group-title="Sin categoría",ESPAÑA - Costa Noroeste TV
 https://limited31.todostreaming.es/live/noroestetv-livestream.m3u8
-#EXTINF:-1 group-title="Sin categoría",ESPAÑA - Diez TV Las Villas
-https://streaming.cloud.innovasur.es/mmj2/index.m3u8
 #EXTINF:-1 group-title="Sin categoría",ESPAÑA - Distrito TV
 https://nlb2-live.emitstream.com/hls/3mn7wpcv7hbmxmdzaxap/master.m3u8
 #EXTINF:-1 group-title="Sin categoría",ESPAÑA - Durangaldeko Telebista
@@ -181,7 +173,3 @@ https://5940924978228.streamlock.net/j_Directo2/mp4:j_Directo2/playlist.m3u8
 https://ventdelnord.tv:8080/hls/directe.m3u8
 #EXTINF:-1 group-title="Sin categoría",ESPAÑA - VOTV
 https://ingest2-video.streaming-pro.com/votv/streaming_web/playlist.m3u8
-#EXTINF:-1 group-title="Sin categoría",ESPAÑA - XPTV1
-https://janus.xpbroadcasting.com:8443/hls/xptv1.m3u8
-#EXTINF:-1 group-title="Sin categoría",ESPAÑA - XPTV2
-https://janus.xpbroadcasting.com:8443/hls/xptv2.m3u8
