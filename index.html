@@ -181,12 +181,6 @@
         }
         .canal-item:hover { background-color: #444; }
         .canal-item.seleccionado { background-color: #2e7d32; border-left-color: #2e7d32; color: #ffffff; }
-        .canal-item.seleccion-borrado { background-color: #4a2c00; border-left-color: #ff9800; }
-
-        .canal-item.draggable { cursor: grab; }
-        .canal-item.draggable:active { cursor: grabbing; }
-        .canal-item.dragging { opacity: 0.5; background-color: #555; border: 2px dashed #4CAF50; }
-        .canal-item.drag-over { border-top: 3px solid #4CAF50; }
 
         .canal-nombre {
             font-size: 18px; flex: 1; word-break: break-word; overflow-wrap: break-word;
@@ -194,80 +188,7 @@
         }
         .canal-tipo { font-size: 14px; margin-left: 8px; opacity: 0.7; flex-shrink: 0; }
 
-        .boton-quitar {
-            background-color: #f44336; color: white; border: none; padding: 8px 12px;
-            font-size: 14px; border-radius: 6px; cursor: pointer; margin-left: 8px;
-            display: none; font-family: Arial, sans-serif; flex-shrink: 0; white-space: nowrap;
-        }
-        .boton-quitar:hover { background-color: #d32f2f; }
-        .modo-limpieza .boton-quitar { display: inline-block; }
-
-        .boton-editar {
-            background-color: #2196F3; color: white; border: none; padding: 8px 12px;
-            font-size: 14px; border-radius: 6px; cursor: pointer; margin-left: 8px;
-            display: none; font-family: Arial, sans-serif; flex-shrink: 0; white-space: nowrap;
-        }
-        .boton-editar:hover { background-color: #1976D2; }
-        .modo-limpieza .boton-editar { display: inline-block; }
-
-        .drag-handle {
-            display: none; color: #888; font-size: 18px; margin-right: 8px;
-            cursor: grab; flex-shrink: 0; user-select: none;
-        }
-        .modo-limpieza .drag-handle { display: inline-block; }
-
         #info-canales { padding: 10px 12px; background-color: #2a2a2a; border-top: 1px solid #444; font-size: 16px; color: #aaa; }
-
-        /* Modales */
-        #modal-fullscreen {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 2000;
-        }
-        .modal-fullscreen-contenido {
-            background-color: #2a2a2a; padding: 40px; border-radius: 16px;
-            max-width: 550px; text-align: center; border: 3px solid #9C27B0;
-            box-shadow: 0 8px 32px rgba(156, 39, 176, 0.4);
-        }
-        .modal-fullscreen-contenido h3 { font-size: 28px; margin-bottom: 20px; color: #fff; }
-        .modal-fullscreen-contenido p { font-size: 20px; margin-bottom: 30px; color: #ccc; line-height: 1.5; }
-        .modal-fullscreen-botones { display: flex; gap: 20px; justify-content: center; }
-
-        .boton-si-fullscreen {
-            background-color: #4CAF50; color: white; border: none; padding: 16px 32px;
-            font-size: 20px; border-radius: 10px; cursor: pointer; font-family: Arial, sans-serif;
-            font-weight: bold; transition: background-color 0.2s;
-        }
-        .boton-si-fullscreen:hover { background-color: #45a049; }
-        .boton-no-fullscreen {
-            background-color: #666; color: white; border: none; padding: 16px 32px;
-            font-size: 20px; border-radius: 10px; cursor: pointer; font-family: Arial, sans-serif;
-            transition: background-color 0.2s;
-        }
-        .boton-no-fullscreen:hover { background-color: #555; }
-
-        #modal-canal {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 3000;
-        }
-        .modal-canal-contenido {
-            background-color: #2a2a2a; padding: 30px; border-radius: 12px;
-            max-width: 500px; width: 90%; border: 2px solid #4CAF50;
-        }
-        .modal-canal-contenido h3 { font-size: 24px; margin-bottom: 20px; color: #fff; text-align: center; }
-        
-        .form-grupo { margin-bottom: 20px; }
-        .form-grupo label { display: block; font-size: 16px; color: #ccc; margin-bottom: 8px; }
-        .form-grupo input, .form-grupo select {
-            width: 100%; padding: 12px; font-size: 16px; border: 2px solid #555;
-            border-radius: 8px; background-color: #333; color: #fff; font-family: Arial, sans-serif;
-        }
-        .form-grupo input:focus, .form-grupo select:focus { outline: none; border-color: #4CAF50; }
-        
-        .modal-canal-botones { display: flex; gap: 15px; justify-content: center; margin-top: 25px; }
-        .boton-guardar-canal { background-color: #4CAF50; color: white; border: none; padding: 14px 28px; font-size: 18px; border-radius: 8px; cursor: pointer; font-family: Arial, sans-serif; }
-        .boton-guardar-canal:hover { background-color: #45a049; }
-        .boton-cancelar-canal { background-color: #666; color: white; border: none; padding: 14px 28px; font-size: 18px; border-radius: 8px; cursor: pointer; font-family: Arial, sans-serif; }
-        .boton-cancelar-canal:hover { background-color: #555; }
 
         @media (max-width: 900px) {
             #contenedor-principal { flex-direction: column; }
@@ -278,7 +199,6 @@
         #lista-canales::-webkit-scrollbar { width: 12px; }
         #lista-canales::-webkit-scrollbar-track { background: #1a1a1a; }
         #lista-canales::-webkit-scrollbar-thumb { background: #555; border-radius: 6px; }
-        #lista-canales::-webkit-scrollbar-thumb:hover { background: #777; }
 
         #contenedor-principal.modo-cine,
         #contenedor-principal.modo-cine * { cursor: none !important; }
@@ -321,11 +241,6 @@
             <h2>📺 Mi Lista de TV</h2>
             <div class="controles-superior">
                 <button class="boton-mediano boton-fullscreen" id="btn-toggle-fullscreen">🖥️ Pantalla Completa</button>
-                <button class="boton-mediano" id="btn-modo-limpieza">✏️ Modo edición</button>
-                <button class="boton-mediano boton-agregar" id="btn-agregar-canal">➕ Agregar canal</button>
-                <button class="boton-mediano boton-combinar" id="btn-combinar-lista"> Combinar otra lista</button>
-                <button class="boton-mediano boton-peligro" id="btn-borrar-seleccionados">🗑️ Borrar seleccionados (<span id="contador-seleccionados">0</span>)</button>
-                <button class="boton-mediano boton-secundario" id="btn-guardar">💾 Guardar lista limpia</button>
                 <button class="boton-mediano" id="btn-volver">← Volver al inicio</button>
             </div>
         </div>
@@ -355,55 +270,16 @@
         </div>
     </div>
 
-    <div id="modal-fullscreen">
-        <div class="modal-fullscreen-contenido">
-            <h3>🖥️ ¿Querés ver en pantalla completa?</h3>
-            <p>Podés disfrutar del canal en pantalla completa como si apretaras F11.<br>Presioná <strong>ESC</strong> para salir cuando quieras.</p>
-            <div class="modal-fullscreen-botones">
-                <button class="boton-si-fullscreen" id="btn-si-fullscreen">✅ Sí, pantalla completa</button>
-                <button class="boton-no-fullscreen" id="btn-no-fullscreen">❌ No, así está bien</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="modal-canal">
-        <div class="modal-canal-contenido">
-            <h3 id="titulo-modal-canal">➕ Agregar canal</h3>
-            <div class="form-grupo">
-                <label for="input-nombre-canal">Nombre del canal:</label>
-                <input type="text" id="input-nombre-canal" placeholder="Ej: Mi canal favorito">
-            </div>
-            <div class="form-grupo">
-                <label for="input-categoria-canal">Categoría:</label>
-                <input type="text" id="input-categoria-canal" placeholder="Ej: FUTBOL, NOTICIAS, CINE">
-            </div>
-            <div class="form-grupo">
-                <label for="input-url-canal">Dirección URL:</label>
-                <input type="text" id="input-url-canal" placeholder="https://...">
-            </div>
-            <div class="modal-canal-botones">
-                <button class="boton-guardar-canal" id="btn-guardar-canal">💾 Guardar</button>
-                <button class="boton-cancelar-canal" id="btn-cancelar-canal">❌ Cancelar</button>
-            </div>
-        </div>
-    </div>
-
     <script>
         let canales = [];
         let canalesFiltrados = [];
         let categoriaActual = "";
         let canalSeleccionado = null;
-        let modoLimpieza = false;
         let hls = null;
         
         let timerInactividad = null;
         let estaEnModoCine = false;
-        let yaSePreguntoFullscreen = false;
         const TIEMPO_MODO_CINE = 30000;
-
-        let canalEditandoIndex = -1;
-        let canalesSeleccionados = [];
-        let canalAncla = null;
 
         let timerContadorCarga = null;
         let segundosCarga = 0;
@@ -426,14 +302,9 @@
                 if (!AudioContextClass) return;
 
                 audioCtx = new AudioContextClass();
-
-                // Conectar el elemento video al contexto de audio
                 fuenteAudio = audioCtx.createMediaElementSource(videoNativo);
-
-                // Crear compresor de dinámica para equilibrar el volumen
                 compNodo = audioCtx.createDynamicsCompressor();
                 
-                // Configuración optimizada para TV/Streams
                 compNodo.threshold.setValueAtTime(-24, audioCtx.currentTime);
                 compNodo.knee.setValueAtTime(30, audioCtx.currentTime);
                 compNodo.ratio.setValueAtTime(12, audioCtx.currentTime);
@@ -461,14 +332,7 @@
         const btnRestaurar = document.getElementById('btn-restaurar');
         
         const btnToggleFullscreen = document.getElementById('btn-toggle-fullscreen');
-        const btnModoLimpieza = document.getElementById('btn-modo-limpieza');
-        const btnAgregarCanal = document.getElementById('btn-agregar-canal');
-        const btnGuardar = document.getElementById('btn-guardar');
         const btnVolver = document.getElementById('btn-volver');
-        
-        const btnCombinarLista = document.getElementById('btn-combinar-lista');
-        const btnBorrarSeleccionados = document.getElementById('btn-borrar-seleccionados');
-        const contadorSeleccionados = document.getElementById('contador-seleccionados');
         
         const selectCategoria = document.getElementById('select-categoria');
         const inputBuscar = document.getElementById('input-buscar');
@@ -480,20 +344,8 @@
         const contenedorYoutube = document.getElementById('contenedor-youtube');
         const capaYoutubeOverlay = document.getElementById('capa-youtube-overlay');
         
-        const modalFullscreen = document.getElementById('modal-fullscreen');
-        const btnSiFullscreen = document.getElementById('btn-si-fullscreen');
-        const btnNoFullscreen = document.getElementById('btn-no-fullscreen');
-        
         const barraSuperior = document.getElementById('barra-superior');
         const contenedorPrincipal = document.getElementById('contenedor-principal');
-
-        const modalCanal = document.getElementById('modal-canal');
-        const tituloModalCanal = document.getElementById('titulo-modal-canal');
-        const inputNombreCanal = document.getElementById('input-nombre-canal');
-        const inputCategoriaCanal = document.getElementById('input-categoria-canal');
-        const inputUrlCanal = document.getElementById('input-url-canal');
-        const btnGuardarCanal = document.getElementById('btn-guardar-canal');
-        const btnCancelarCanal = document.getElementById('btn-cancelar-canal');
 
         videoNativo.addEventListener('play', () => {
             inicializarNormalizadorAudio();
@@ -542,7 +394,7 @@
         }
 
         function extraerCanalesDeM3U(contenido) {
-            const lineas = contenido.split('\n');
+            const lineas = contenido.split(/\r?\n/);
             const nuevos = [];
             for (let i = 0; i < lineas.length; i++) {
                 const linea = lineas[i].trim();
@@ -560,7 +412,7 @@
                         if (siguiente && !siguiente.startsWith('#')) { url = siguiente; i = j; break; }
                     }
                     if (nombre && url) { 
-                        nuevos.push({ nombre, url, tipo: detectarTipo(url), marcado: false, categoria: grupo }); 
+                        nuevos.push({ nombre, url, tipo: detectarTipo(url), categoria: grupo }); 
                     }
                 }
             }
@@ -572,7 +424,7 @@
                 if (document.documentElement.requestFullscreen) await document.documentElement.requestFullscreen();
                 else if (document.documentElement.webkitRequestFullscreen) await document.documentElement.webkitRequestFullscreen();
                 return true;
-            } catch (e) { console.log('No se pudo activar pantalla completa:', e); return false; }
+            } catch (e) { return false; }
         }
 
         async function salirPantallaCompletaReal() {
@@ -581,7 +433,7 @@
                     if (document.exitFullscreen) await document.exitFullscreen();
                     else if (document.webkitExitFullscreen) await document.webkitExitFullscreen();
                 }
-            } catch (e) { console.log('No se pudo salir de pantalla completa:', e); }
+            } catch (e) {}
         }
 
         function actualizarBotonFullscreen() {
@@ -599,13 +451,12 @@
 
         function iniciarTimerModoCine() {
             if (timerInactividad) clearTimeout(timerInactividad);
-            if (canalSeleccionado && !modoLimpieza) {
+            if (canalSeleccionado) {
                 timerInactividad = setTimeout(() => { activarModoCine(); }, TIEMPO_MODO_CINE);
             }
         }
 
         function activarModoCine() {
-            if (modoLimpieza) return;
             estaEnModoCine = true;
             contenedorPrincipal.classList.add('modo-cine');
             barraSuperior.classList.add('oculto');
@@ -620,106 +471,63 @@
         }
 
         function resetearActividad() {
-            if (modalFullscreen.style.display === 'flex') return;
             if (estaEnModoCine) desactivarModoCine();
             else iniciarTimerModoCine();
         }
 
         document.addEventListener('mousemove', resetearActividad);
         document.addEventListener('touchstart', resetearActividad);
-        
         capaYoutubeOverlay.addEventListener('mousemove', resetearActividad);
         capaYoutubeOverlay.addEventListener('click', resetearActividad);
 
         document.addEventListener('keydown', (e) => {
             const tagName = e.target.tagName.toLowerCase();
-            if (tagName === 'input' || tagName === 'textarea' || e.target.isContentEditable) return; 
-
-            if (e.key === 'Escape') {
-                if (modalFullscreen.style.display === 'flex') { btnNoFullscreen.click(); return; }
-                if (modalCanal.style.display === 'flex') { cerrarModalCanal(); return; }
-                if (modoLimpieza) { btnModoLimpieza.click(); return; }
-            }
-
-            if (e.code === 'Space' || e.key === ' ') {
-                e.preventDefault(); 
-                resetearActividad();
-                if (canalSeleccionado && (canalSeleccionado.tipo === 'hls' || canalSeleccionado.tipo === 'mp4')) {
-                    if (videoNativo.paused) videoNativo.play().catch(() => {});
-                    else videoNativo.pause();
-                }
-            } else {
-                resetearActividad();
-            }
+            if (tagName === 'input' || tagName === 'textarea') return; 
+            resetearActividad();
         });
 
         btnToggleFullscreen.addEventListener('click', async () => {
             const estaEnFullscreen = document.fullscreenElement || document.webkitFullscreenElement;
             if (estaEnFullscreen) await salirPantallaCompletaReal();
-            else {
-                const exito = await activarPantallaCompletaReal();
-                if (exito) { yaSePreguntoFullscreen = true; if (timerInactividad) clearTimeout(timerInactividad); }
-                else mostrarError('No se pudo activar la pantalla completa.');
-            }
+            else await activarPantallaCompletaReal();
         });
 
-        function manejarCambioFullscreen() {
-            actualizarBotonFullscreen();
-            if (!document.fullscreenElement && !document.webkitFullscreenElement) yaSePreguntoFullscreen = false;
-        }
-        document.addEventListener('fullscreenchange', manejarCambioFullscreen);
-        document.addEventListener('webkitfullscreenchange', manejarCambioFullscreen);
+        document.addEventListener('fullscreenchange', actualizarBotonFullscreen);
+        document.addEventListener('webkitfullscreenchange', actualizarBotonFullscreen);
 
-        async function cargarListaDesdeURL(url) {
-            if (!url || !url.trim()) { mostrarError('Por favor ingresa una URL válida.'); return; }
-            url = url.trim();
-            if (url.includes('github.com') && url.includes('/blob/')) {
-                url = url.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/');
-            }
-            try {
-                const response = await fetch(url);
-                if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
-                const contenido = await response.text();
-                if (!contenido.includes('#EXTINF') && !contenido.includes('.m3u8') && !contenido.includes('youtube')) {
-                    throw new Error('El contenido descargado no parece ser una lista M3U válida.');
-                }
-                procesarListaM3U(contenido);
-                localStorage.setItem('miListaTV_Url', url);
-                localStorage.removeItem('miListaTV_Local');
-            } catch (err) {
-                console.error(err);
-                let msg = 'No se pudo cargar la lista. ';
-                if (err.message.includes('Failed to fetch') || err.message.includes('NetworkError')) {
-                    msg += 'Posible bloqueo CORS. Asegúrate de usar la URL "Raw" (raw.githubusercontent.com).';
-                } else { msg += err.message; }
-                mostrarError(msg);
-            }
-        }
-
-        btnCargarUrl.addEventListener('click', () => cargarListaDesdeURL(inputUrlLista.value));
-        inputUrlLista.addEventListener('keypress', (e) => { if (e.key === 'Enter') cargarListaDesdeURL(inputUrlLista.value); });
-
-        // ===== CARGA DESDE ARCHIVO LOCAL (CORREGIDA) =====
+        // ===== CARGA DESDE ARCHIVO LOCAL (ROBUSTA Y CORREGIDA) =====
         fileInputLocal.addEventListener('change', (e) => {
             const archivo = e.target.files[0];
             if (!archivo) return;
+            
             const lector = new FileReader();
+            
             lector.onload = (evento) => {
                 const contenido = evento.target.result;
-                procesarListaM3U(contenido);
-                localStorage.setItem('miListaTV_Local', 'true');
-                localStorage.removeItem('miListaTV_Url');
-                // Limpiar el input para permitir recargar el mismo archivo si se desea
+                try {
+                    procesarListaM3U(contenido);
+                    localStorage.setItem('miListaTV_Local', 'true');
+                    localStorage.removeItem('miListaTV_Url');
+                } catch (err) {
+                    mostrarError('Error al procesar la estructura del archivo M3U.');
+                }
+                // Limpiar input para permitir re-subir el mismo archivo si se desea
                 fileInputLocal.value = '';
             };
-            lector.onerror = () => mostrarError('Error al leer el archivo local.');
-            try { 
-                lector.readAsText(archivo, 'UTF-8'); 
-            } catch (err) { 
+
+            lector.onerror = () => {
+                mostrarError('No se pudo leer el archivo local.');
+                fileInputLocal.value = '';
+            };
+
+            // Lectura tolerante con codificación estándar UTF-8 o fallback ISO
+            try {
+                lector.readAsText(archivo, 'UTF-8');
+            } catch (err) {
                 try {
                     lector.readAsText(archivo, 'ISO-8859-1');
                 } catch (e2) {
-                    mostrarError('Error al leer el archivo.'); 
+                    mostrarError('Formato de codificación de archivo no soportado.');
                 }
             }
         });
@@ -727,17 +535,13 @@
         function procesarListaM3U(contenido) {
             canales = extraerCanalesDeM3U(contenido);
             if (canales.length === 0) { 
-                mostrarError('No se encontraron canales válidos en la lista. Asegúrate de que tenga el formato #EXTINF.'); 
+                mostrarError('No se encontraron canales válidos. Verifique que el archivo contenga etiquetas #EXTINF.'); 
                 return; 
             }
             
             actualizarSelectCategorias();
-            
-            canalesSeleccionados = [];
-            canalAncla = null;
             categoriaActual = "";
             selectCategoria.value = "";
-            
             aplicarFiltros();
             mostrarPantallaPrincipal();
         }
@@ -755,16 +559,13 @@
 
         function aplicarFiltros() {
             let resultado = canales;
-            
             if (categoriaActual) {
                 resultado = resultado.filter(c => c.categoria === categoriaActual);
             }
-            
             const texto = inputBuscar.value.toLowerCase();
             if (texto) {
                 resultado = resultado.filter(c => c.nombre.toLowerCase().includes(texto));
             }
-            
             canalesFiltrados = resultado;
             renderizarLista();
         }
@@ -785,7 +586,7 @@
                 return;
             }
 
-            canalesFiltrados.forEach((canal, index) => {
+            canalesFiltrados.forEach((canal) => {
                 const item = document.createElement('div');
                 item.className = 'canal-item';
                 if (canalSeleccionado === canal) item.classList.add('seleccionado');
@@ -811,7 +612,6 @@
 
         function seleccionarCanal(canal) {
             canalSeleccionado = canal;
-            document.querySelectorAll('.canal-item').forEach(el => el.classList.remove('seleccionado'));
             renderizarLista();
             reproducirCanal(canal);
             iniciarTimerModoCine();
@@ -850,7 +650,6 @@
                     detenerContadorCarga();
                 });
             } else {
-                // HLS
                 mensajeSinVideo.style.display = 'none';
                 videoNativo.style.display = 'block';
                 if (Hls.isSupported()) {
@@ -905,19 +704,10 @@
             detenerReproduccion();
             pantallaPrincipal.style.display = 'none';
             pantallaBienvenida.style.display = 'flex';
-            yaSePreguntoFullscreen = false;
             if (timerInactividad) clearTimeout(timerInactividad);
         }
 
         btnVolver.addEventListener('click', mostrarPantallaBienvenida);
-
-        window.addEventListener('DOMContentLoaded', () => {
-            const urlGuardada = localStorage.getItem('miListaTV_Url');
-            if (urlGuardada) {
-                inputUrlLista.value = urlGuardada;
-                zonaRestaurar.style.display = 'block';
-            }
-        });
     </script>
 </body>
 </html>
