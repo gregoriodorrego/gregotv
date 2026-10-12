@@ -426,25 +426,18 @@
                 if (!AudioContextClass) return;
 
                 audioCtx = new AudioContextClass();
-
-                // Conectar el elemento video al contexto de audio
                 fuenteAudio = audioCtx.createMediaElementSource(videoNativo);
-
-                // Crear compresor de dinámica para equilibrar el volumen
                 compNodo = audioCtx.createDynamicsCompressor();
                 
-                // Configuración optimizada para TV/Streams
-                compNodo.threshold.setValueAtTime(-24, audioCtx.currentTime); // Límite donde empieza a comprimir
-                compNodo.knee.setValueAtTime(30, audioCtx.currentTime);       // Transición suave
-                compNodo.ratio.setValueAtTime(12, audioCtx.currentTime);      // Fuerza de compresión
-                compNodo.attack.setValueAtTime(0.003, audioCtx.currentTime);  // Tiempo de respuesta rápido
-                compNodo.release.setValueAtTime(0.25, audioCtx.currentTime);   // Retorno progresivo
+                compNodo.threshold.setValueAtTime(-24, audioCtx.currentTime);
+                compNodo.knee.setValueAtTime(30, audioCtx.currentTime);
+                compNodo.ratio.setValueAtTime(12, audioCtx.currentTime);
+                compNodo.attack.setValueAtTime(0.003, audioCtx.currentTime);
+                compNodo.release.setValueAtTime(0.25, audioCtx.currentTime);
 
-                // Crear nodo de ganancia suave para compensar
                 const gananciaNodo = audioCtx.createGain();
-                gananciaNodo.gain.setValueAtTime(1.8, audioCtx.currentTime); // Incrementa canales suaves
+                gananciaNodo.gain.setValueAtTime(1.8, audioCtx.currentTime);
 
-                // Encadenar: Video -> Compresor -> Ganancia -> Parlantes
                 fuenteAudio.connect(compNodo);
                 compNodo.connect(gananciaNodo);
                 gananciaNodo.connect(audioCtx.destination);
@@ -735,7 +728,7 @@
 
         function actualizarSelectCategorias() {
             const categorias = [...new Set(canales.map(c => c.categoria))].sort();
-            selectCategoria.innerHTML = '<option value=""> Todos los canales</option>';
+            selectCategoria.innerHTML = '<option value="">📂 Todos los canales</option>';
             categorias.forEach(cat => {
                 const opt = document.createElement('option');
                 opt.value = cat;
