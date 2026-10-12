@@ -33,8 +33,6 @@ https://rtvelivestream-rtveplayplus.rtve.es/rtvesec/int/star_main_1080.m3u8
 https://directes-tv-int.3catdirectes.cat/live-content/bondia-hls/master.m3u8
 #EXTINF:-1 group-title="📚 Cultura y Documentales",ESPAÑA - Historia
 https://d1k3vzh2ivy22k.cloudfront.net/Historia.m3u8
-#EXTINF:-1 group-title="📚 Cultura y Documentales",ESPAÑA - NatureTime
-https://amg00090-blueantmedia-naturetime-samsungse-axgcn.amagi.tv/playlist/amg00090-blueantmedia-naturetime-samsungse/playlist.m3u8
 #EXTINF:-1 group-title="⚽ Deportes",ESPAÑA - Teledeporte
 https://rtve01p.origin.c21livecloud.com/live-origin/tdp-hls/bitrate_1.m3u8
 #EXTINF:-1 group-title="⚽ Deportes",ESPAÑA - TOP Barça Spain
