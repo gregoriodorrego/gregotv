@@ -509,7 +509,15 @@
                     if (matchGrupo && matchGrupo[1]) grupo = matchGrupo[1];
                     
                     const partes = linea.split(',');
-                    const nombre = partes[partes.length - 1].trim();
+                    let nombreBruto = partes[partes.length - 1].trim();
+                    
+                    let pais = "Desconocido";
+                    let nombre = nombreBruto;
+                    if (nombreBruto.includes(' - ')) {
+                        const fragmentos = nombreBruto.split(' - ');
+                        pais = fragmentos[0].trim();
+                        nombre = nombreBruto;
+                    }
                     
                     let url = '';
                     for (let j = i + 1; j < lineas.length; j++) {
@@ -517,7 +525,7 @@
                         if (siguiente && !siguiente.startsWith('#')) { url = siguiente; i = j; break; }
                     }
                     if (nombre && url) { 
-                        nuevos.push({ nombre, url, tipo: detectarTipo(url), marcado: false, categoria: grupo }); 
+                        nuevos.push({ nombre, url, tipo: detectarTipo(url), marcado: false, categoria: grupo, pais }); 
                     }
                 }
             }
@@ -709,20 +717,45 @@
 
         function actualizarSelectCategorias() {
             const categorias = [...new Set(canales.map(c => c.categoria))].filter(cat => cat !== "Sin categoría").sort();
+            const paises = [...new Set(canales.map(c => c.pais))].filter(p => p && p !== "Desconocido").sort();
+            
             selectCategoria.innerHTML = '<option value="">📂 Todos los canales</option>';
-            categorias.forEach(cat => {
-                const opt = document.createElement('option');
-                opt.value = cat;
-                opt.textContent = cat;
-                selectCategoria.appendChild(opt);
-            });
+            
+            if (paises.length > 0) {
+                const grupoPaises = document.createElement('optgroup');
+                grupoPaises.label = '🌍 Países';
+                paises.forEach(pais => {
+                    const opt = document.createElement('option');
+                    opt.value = 'PAIS:' + pais;
+                    opt.textContent = '🌍 ' + pais;
+                    grupoPaises.appendChild(opt);
+                });
+                selectCategoria.appendChild(grupoPaises);
+            }
+            
+            if (categorias.length > 0) {
+                const grupoCat = document.createElement('optgroup');
+                grupoCat.label = '📁 Categorías';
+                categorias.forEach(cat => {
+                    const opt = document.createElement('option');
+                    opt.value = cat;
+                    opt.textContent = cat;
+                    grupoCat.appendChild(opt);
+                });
+                selectCategoria.appendChild(grupoCat);
+            }
         }
 
         function aplicarFiltros() {
             let resultado = canales;
             
             if (categoriaActual) {
-                resultado = resultado.filter(c => c.categoria === categoriaActual);
+                if (categoriaActual.startsWith('PAIS:')) {
+                    const paisBuscado = categoriaActual.replace('PAIS:', '');
+                    resultado = resultado.filter(c => c.pais === paisBuscado);
+                } else {
+                    resultado = resultado.filter(c => c.categoria === categoriaActual);
+                }
             }
             
             const texto = inputBuscar.value.toLowerCase();
@@ -978,10 +1011,18 @@
         }
 
         function guardarCanal() {
-            const nombre = inputNombreCanal.value.trim();
+            const nombreBruto = inputNombreCanal.value.trim();
             const categoria = inputCategoriaCanal.value.trim() || "Sin categoría";
             const url = inputUrlCanal.value.trim();
-            if (!nombre || !url) { alert('Completá nombre y URL.'); return; }
+            if (!nombreBruto || !url) { alert('Completá nombre y URL.'); return; }
+            
+            let pais = "Desconocido";
+            let nombre = nombreBruto;
+            if (nombreBruto.includes(' - ')) {
+                const fragmentos = nombreBruto.split(' - ');
+                pais = fragmentos[0].trim();
+                nombre = nombreBruto;
+            }
             
             const tipo = detectarTipo(url);
             if (canalEditandoIndex >= 0) {
@@ -989,8 +1030,9 @@
                 canales[canalEditandoIndex].categoria = categoria;
                 canales[canalEditandoIndex].url = url;
                 canales[canalEditandoIndex].tipo = tipo;
+                canales[canalEditandoIndex].pais = pais;
             } else {
-                canales.push({ nombre, url, tipo, marcado: false, categoria });
+                canales.push({ nombre, url, tipo, marcado: false, categoria, pais });
             }
             
             actualizarSelectCategorias();
