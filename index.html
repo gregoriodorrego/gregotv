@@ -104,6 +104,8 @@
         .boton-combinar:hover { background-color: #00796B; }
 
         #btn-guardar { display: none; }
+        #btn-guardar-eliminados { display: none; background-color: #e65100; }
+        #btn-guardar-eliminados:hover { background-color: #ef6c00; }
         #btn-borrar-seleccionados { display: none; }
 
         #contenedor-principal { display: flex; flex: 1; overflow: hidden; transition: all 0.3s ease; position: relative; }
@@ -325,6 +327,7 @@
                 <input type="file" id="file-input-combinar" accept=".m3u,.m3u8,.txt" style="display: none;">
                 <button class="boton-mediano boton-peligro" id="btn-borrar-seleccionados">🗑️ Borrar seleccionados (<span id="contador-seleccionados">0</span>)</button>
                 <button class="boton-mediano boton-secundario" id="btn-guardar">💾 Guardar lista limpia</button>
+                <button class="boton-mediano" id="btn-guardar-eliminados">💾 Guardar lista eliminada</button>
                 <button class="boton-mediano" id="btn-volver">← Volver al inicio</button>
             </div>
         </div>
@@ -389,6 +392,7 @@
 
     <script>
         let canales = [];
+        let canalesEliminados = [];
         let canalesFiltrados = [];
         let categoriaActual = "";
         let canalSeleccionado = null;
@@ -425,6 +429,7 @@
         const btnModoLimpieza = document.getElementById('btn-modo-limpieza');
         const btnAgregarCanal = document.getElementById('btn-agregar-canal');
         const btnGuardar = document.getElementById('btn-guardar');
+        const btnGuardarEliminados = document.getElementById('btn-guardar-eliminados');
         const btnVolver = document.getElementById('btn-volver');
         
         const btnCombinarLista = document.getElementById('btn-combinar-lista');
@@ -905,7 +910,10 @@
                 btnQuitar.addEventListener('click', (e) => {
                     e.stopPropagation();
                     const idx = canales.indexOf(canal);
-                    if (idx >= 0) canales.splice(idx, 1);
+                    if (idx >= 0) {
+                        canalesEliminados.push(canales[idx]);
+                        canales.splice(idx, 1);
+                    }
                     canalesSeleccionados = canalesSeleccionados.filter(c => c !== canal);
                     if (canalAncla === canal) canalAncla = null;
                     actualizarContadorSeleccion();
@@ -959,6 +967,7 @@
                 btnAgregarCanal.style.display = 'inline-block';
                 btnCombinarLista.style.display = 'inline-block';
                 btnGuardar.style.display = 'inline-block';
+                btnGuardarEliminados.style.display = 'inline-block';
                 if (timerInactividad) clearTimeout(timerInactividad);
             } else {
                 btnModoLimpieza.classList.remove('activo');
@@ -967,6 +976,7 @@
                 btnAgregarCanal.style.display = 'none';
                 btnCombinarLista.style.display = 'none';
                 btnGuardar.style.display = 'none';
+                btnGuardarEliminados.style.display = 'none';
                 canalesSeleccionados = [];
                 canalAncla = null;
                 actualizarContadorSeleccion();
@@ -978,6 +988,7 @@
         btnBorrarSeleccionados.addEventListener('click', () => {
             if (canalesSeleccionados.length === 0) return;
             if (canalesSeleccionados.includes(canalSeleccionado)) { canalSeleccionado = null; detenerReproduccion(); }
+            canalesSeleccionados.forEach(c => canalesEliminados.push(c));
             canales = canales.filter(c => !canalesSeleccionados.includes(c));
             canalesSeleccionados = [];
             canalAncla = null;
@@ -1055,6 +1066,23 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url; a.download = 'mi_lista_limpia.m3u';
+            document.body.appendChild(a); a.click(); document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        });
+
+        btnGuardarEliminados.addEventListener('click', () => {
+            if (canalesEliminados.length === 0) {
+                mostrarError('No hay canales eliminados para guardar.');
+                return;
+            }
+            let contenido = '#EXTM3U\n';
+            canalesEliminados.forEach(canal => { 
+                contenido += `#EXTINF:-1 group-title="${canal.categoria}",${canal.nombre}\n${canal.url}\n`; 
+            });
+            const blob = new Blob([contenido], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = 'mi_lista_eliminados.m3u';
             document.body.appendChild(a); a.click(); document.body.removeChild(a);
             URL.revokeObjectURL(url);
         });
