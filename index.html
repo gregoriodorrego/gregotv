@@ -96,17 +96,6 @@
         .boton-salir-fullscreen { background-color: #f44336; }
         .boton-salir-fullscreen:hover { background-color: #d32f2f; }
 
-        .boton-agregar { background-color: #4CAF50; }
-        .boton-agregar:hover { background-color: #45a049; }
-        #btn-agregar-canal { display: none; }
-
-        #btn-combinar-lista { display: none; }
-        .boton-combinar { background-color: #009688; }
-        .boton-combinar:hover { background-color: #00796B; }
-
-        #btn-guardar { display: none; }
-        #btn-borrar-seleccionados { display: none; }
-
         #contenedor-principal { display: flex; flex: 1; overflow: hidden; transition: all 0.3s ease; position: relative; }
         
         #area-video {
@@ -155,7 +144,6 @@
             position: absolute; right: 0; top: 0; height: 100%; z-index: 999;
         }
 
-        /* Selector de categorías */
         #filtro-categorias {
             padding: 12px; border-bottom: 1px solid #444; background: #2a2a2a;
         }
@@ -495,13 +483,12 @@
         document.addEventListener('fullscreenchange', actualizarBotonFullscreen);
         document.addEventListener('webkitfullscreenchange', actualizarBotonFullscreen);
 
-        // ===== CARGA DESDE ARCHIVO LOCAL (ROBUSTA Y CORREGIDA) =====
+        // ===== CARGA DESDE ARCHIVO LOCAL (COMPATIBLE CON EL CÓDIGO ANTERIOR) =====
         fileInputLocal.addEventListener('change', (e) => {
             const archivo = e.target.files[0];
             if (!archivo) return;
             
             const lector = new FileReader();
-            
             lector.onload = (evento) => {
                 const contenido = evento.target.result;
                 try {
@@ -511,24 +498,61 @@
                 } catch (err) {
                     mostrarError('Error al procesar la estructura del archivo M3U.');
                 }
-                // Limpiar input para permitir re-subir el mismo archivo si se desea
                 fileInputLocal.value = '';
             };
-
             lector.onerror = () => {
                 mostrarError('No se pudo leer el archivo local.');
                 fileInputLocal.value = '';
             };
+            lector.readAsText(archivo);
+        });
 
-            // Lectura tolerante con codificación estándar UTF-8 o fallback ISO
-            try {
-                lector.readAsText(archivo, 'UTF-8');
-            } catch (err) {
-                try {
-                    lector.readAsText(archivo, 'ISO-8859-1');
-                } catch (e2) {
-                    mostrarError('Formato de codificación de archivo no soportado.');
-                }
+        // ===== CARGA DESDE URL / GITHUB =====
+        btnCargarUrl.addEventListener('click', () => {
+            let url = inputUrlLista.value.trim();
+            if (!url) {
+                mostrarError('Por favor ingresa una URL válida.');
+                return;
+            }
+
+            if (url.includes('github.com') && url.includes('/blob/')) {
+                url = url.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/');
+            }
+
+            btnCargarUrl.textContent = 'Cargando...';
+            btnCargarUrl.disabled = true;
+
+            fetch(url)
+                .then(res => {
+                    if (!res.ok) throw new Error('No se pudo acceder al archivo (Error ' + res.status + ').');
+                    return res.text();
+                })
+                .then(contenido => {
+                    procesarListaM3U(contenido);
+                    localStorage.setItem('miListaTV_Url', url);
+                    localStorage.removeItem('miListaTV_Local');
+                    localStorage.setItem('miListaTV_UltimaUrl', url);
+                    zonaRestaurar.style.display = 'block';
+                    btnCargarUrl.textContent = '📂 Cargar URL';
+                    btnCargarUrl.disabled = false;
+                })
+                .catch(err => {
+                    mostrarError(err.message || 'Error al descargar la lista desde la URL.');
+                    btnCargarUrl.textContent = '📂 Cargar URL';
+                    btnCargarUrl.disabled = false;
+                });
+        });
+
+        // Restaurar última lista
+        if (localStorage.getItem('miListaTV_UltimaUrl')) {
+            zonaRestaurar.style.display = 'block';
+        }
+
+        btnRestaurar.addEventListener('click', () => {
+            const ultimaUrl = localStorage.getItem('miListaTV_UltimaUrl');
+            if (ultimaUrl) {
+                inputUrlLista.value = ultimaUrl;
+                btnCargarUrl.click();
             }
         });
 
