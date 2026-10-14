@@ -124,35 +124,26 @@
         }
         #contenedor-youtube iframe { width: 100%; height: 100%; border: none; position: absolute; top: 0; left: 0; z-index: 1; }
         
-        /* El iframe pertenece a otro origen: sus movimientos internos no llegan
-           al documento. Se reserva una pequeña franja propia y accesible para
-           recuperar el menú, sin superponer elementos al reproductor. */
-        #btn-menu-youtube { display: none; }
-        #contenedor-principal.modo-cine #area-video.youtube-activo { padding-right: 62px; }
-        #contenedor-principal.modo-cine #area-video.youtube-activo #btn-menu-youtube {
-            display: flex; flex-direction: column; align-items: center;
-            justify-content: center; gap: 4px; position: absolute;
-            top: 50%; right: 0; transform: translateY(-50%);
-            z-index: 5; width: 62px; min-height: 104px; padding: 12px 4px;
-            background: #26352e; color: #fff; border: 1px solid #60866a;
-            border-right: 0; border-radius: 10px 0 0 10px;
-            font-family: Arial, sans-serif; font-size: 13px;
-            cursor: pointer !important; touch-action: manipulation;
+        /* Interacción uniforme: una capa transparente recibe movimientos y
+           toques sin delegarlos al iframe de un origen distinto.
+           La región inferior derecha queda libre para intentar permitir
+           "Saltar anuncio" cuando YouTube lo ofrece en esa posición.
+           La ubicación del control depende de YouTube y del dispositivo. */
+        #capa-youtube-overlay {
+            position: absolute; inset: 0; z-index: 2;
+            pointer-events: none;
         }
-        #btn-menu-youtube > span { font-size: 30px; line-height: 1; }
-        #btn-menu-youtube > small { font-size: 12px; font-weight: bold; }
-        #btn-menu-youtube:focus-visible {
-            outline: 3px solid #b2f7c4; outline-offset: -3px;
+        #capa-youtube-overlay .zona-interaccion {
+            position: absolute; background: transparent;
+            pointer-events: auto; touch-action: manipulation;
         }
-        #contenedor-principal.modo-cine #btn-menu-youtube,
-        #contenedor-principal.modo-cine #btn-menu-youtube * {
-            cursor: pointer !important;
+        /* Dos superficies sencillas (sin clip-path) para compatibilidad
+           con navegadores de televisores más antiguos. */
+        #capa-youtube-overlay .zona-superior {
+            top: 0; left: 0; width: 100%; height: 62%;
         }
-        @media (max-width: 590px) {
-            #contenedor-principal.modo-cine #area-video.youtube-activo { padding-right: 54px; }
-            #contenedor-principal.modo-cine #area-video.youtube-activo #btn-menu-youtube {
-                width: 54px; min-height: 92px;
-            }
+        #capa-youtube-overlay .zona-inferior {
+            top: 62%; left: 0; width: 70%; height: 38%;
         }
 
         /* Estado de reproducción: siempre centrado SOBRE el video, nunca en
@@ -407,10 +398,6 @@
                 <div id="mensaje-sin-video">Selecciona un canal de la lista para reproducir</div>
                 <video id="video-nativo" controls playsinline></video>
                 <div id="contenedor-youtube" aria-label="Reproductor de YouTube"></div>
-                <!-- Acceso externo al iframe: no tapa anuncios ni controles de YouTube. -->
-                <button id="btn-menu-youtube" type="button" aria-label="Mostrar menú de canales" title="Mostrar canales">
-                    <span aria-hidden="true">☰</span><small>Canales</small>
-                </button>
             </div>
 
             <div id="area-lista">
@@ -522,7 +509,6 @@
         const mensajeSinVideo = document.getElementById('mensaje-sin-video');
         const videoNativo = document.getElementById('video-nativo');
         const contenedorYoutube = document.getElementById('contenedor-youtube');
-        const btnMenuYoutube = document.getElementById('btn-menu-youtube');
         // En algunos navegadores el inicio automático puede ser bloqueado.
         // No se añade un segundo botón: se conservan los controles nativos
         // y la cuenta progresiva, ambos en su sitio habitual.
@@ -581,7 +567,7 @@
             segundosCarga = 0;
             mensajeSinVideo.innerHTML =
                 '<div class="fila-carga"><span class="spinner-carga" aria-hidden="true"></span>' +
-                '<span>Cargando canal</span><span id="segundos-carga">0 s</span></div>' +
+                '<span id="segundos-carga">0 s</span></div>' +
                 '<div class="aviso-espera" id="aviso-espera">' +
                 'El canal tarda más de lo normal. Podés seguir esperando o elegir otro de la lista.</div>';
             mensajeSinVideo.style.display = 'flex';
@@ -705,26 +691,9 @@
         document.addEventListener('mousemove', resetearActividad);
         document.addEventListener('touchstart', resetearActividad, { passive: true });
 
-        // Un iframe de YouTube no transmite los movimientos internos del mouse
-        // a GregoTV. Este botón queda FUERA del video, permite recuperar el
-        // panel con mouse, tacto y Enter, sin impedir "Saltar anuncio".
-        btnMenuYoutube.addEventListener('pointerenter', (e) => {
-            if (e.pointerType === 'mouse') resetearActividad();
-        });
-        btnMenuYoutube.addEventListener('touchstart', () => {
-            resetearActividad();
-            selectCategoria.focus({ preventScroll: true });
-        }, { passive: true });
-        btnMenuYoutube.addEventListener('focus', () => {
-            resetearActividad();
-            selectCategoria.focus({ preventScroll: true });
-        });
-        btnMenuYoutube.addEventListener('click', () => {
-            resetearActividad();
-            selectCategoria.focus({ preventScroll: true });
-        });
-        
-
+        // YouTube se reproduce en un iframe de otro dominio. La capa
+        // transparente instalada al reproducir el canal reenvía la actividad
+        // a este mismo controlador, en lugar de dejar al usuario atrapado.
 
         document.addEventListener('keydown', (e) => {
             const tagName = e.target.tagName.toLowerCase();
@@ -1387,7 +1356,6 @@
                 }
             } catch (e) {}
             contenedorYoutube.replaceChildren();
-            document.getElementById('area-video').classList.add('youtube-activo');
             if (/^[a-zA-Z0-9_-]{11}$/.test(videoId)) {
                 const iframe = document.createElement('iframe');
                 iframe.title = 'Video de YouTube';
@@ -1396,14 +1364,26 @@
                 iframe.tabIndex = -1; // El teclado/control remoto navega por GregoTV.
                 iframe.referrerPolicy = 'strict-origin-when-cross-origin';
                 iframe.src = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&controls=0&disablekb=1&rel=0&playsinline=1`;
-                // La entrada al cuadro se detecta una sola vez. Los movimientos
-                // posteriores dentro de YouTube no son accesibles por seguridad.
-                iframe.addEventListener('pointerenter', () => {
-                    if (estaEnModoCine) resetearActividad();
-                });
+                // Un movimiento en la zona libre también recupera el menú
+                // cuando el puntero entra al iframe desde fuera.
+                iframe.addEventListener('pointerenter', resetearActividad);
                 contenedorYoutube.appendChild(iframe);
+
+                // Nueva capa por reproducción: evita referencias a elementos
+                // eliminados cuando se cambia de canal.
+                const capa = document.createElement('div');
+                capa.id = 'capa-youtube-overlay';
+                capa.setAttribute('aria-hidden', 'true');
+                const superior = document.createElement('div');
+                superior.className = 'zona-interaccion zona-superior';
+                const inferior = document.createElement('div');
+                inferior.className = 'zona-interaccion zona-inferior';
+                capa.append(superior, inferior);
+                capa.addEventListener('pointermove', resetearActividad);
+                capa.addEventListener('pointerdown', resetearActividad);
+                capa.addEventListener('touchstart', resetearActividad, { passive: true });
+                contenedorYoutube.appendChild(capa);
             } else {
-                document.getElementById('area-video').classList.remove('youtube-activo');
                 contenedorYoutube.style.display = 'none';
                 mostrarEstadoVideo('No se pudo identificar el video de YouTube.', 'error');
             }
@@ -1447,7 +1427,6 @@
             videoNativo.style.display = 'none';
             contenedorYoutube.replaceChildren();
             contenedorYoutube.style.display = 'none';
-            document.getElementById('area-video').classList.remove('youtube-activo');
             mensajeSinVideo.textContent = 'Seleccioná un canal de la lista para reproducir';
             mensajeSinVideo.style.display = 'flex';
             if (timerInactividad) { clearTimeout(timerInactividad); timerInactividad = null; }
