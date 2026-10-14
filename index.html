@@ -289,7 +289,6 @@
         #info-canales { font-size: 17px; }
         #barra-superior h2 { font-size: 26px; }
         .boton-mediano { font-size: 17px; }
-        #btn-favoritos[aria-pressed="true"] { background: #735411; color: white; }
         #mensaje-sin-video { line-height: 1.5; }
         @media (max-width: 900px) {
           #contenedor-principal { flex-direction: row; }
@@ -347,7 +346,6 @@
         <div id="barra-superior">
             <h2>📺 GregoTV</h2>
             <div class="controles-superior">
-                <button class="boton-mediano" id="btn-ultimo-canal" title="Volver al último canal visto">↩ Último canal</button>
                 <button class="boton-mediano boton-fullscreen" id="btn-toggle-fullscreen">🖥️ Pantalla Completa</button>
                 <button class="boton-mediano" id="btn-modo-limpieza">⚙️ Administrar canales</button>
                 <button class="boton-mediano boton-agregar" id="btn-agregar-canal">➕ Agregar canal</button>
@@ -369,7 +367,6 @@
 
             <div id="area-lista">
                 <div id="filtro-categorias">
-                    <button id="btn-favoritos" class="boton-mediano" type="button" aria-pressed="false" style="width:100%;margin-bottom:10px">☆ Mis favoritos</button>
                     <select id="select-categoria">
                         <option value="">📂 Todos los canales</option>
                     </select>
@@ -377,6 +374,14 @@
                 
                 <div id="buscador">
                     <input type="text" id="input-buscar" placeholder="🔍 Buscar canal...">
+                </div>
+                <div id="config-subtitulos" style="padding:10px 12px;border-bottom:1px solid #444">
+                    <label for="opcion-subtitulos" style="display:block;font-size:17px;margin-bottom:7px">💬 Subtítulos</label>
+                    <select id="opcion-subtitulos" style="width:100%;padding:11px;background:#333;color:white;border:2px solid #777;border-radius:9px;font-size:17px">
+                        <option value="es">Español disponible</option>
+                        <option value="off">Desactivados</option>
+                    </select>
+                    <div id="estado-subtitulos" role="status" aria-live="polite" style="font-size:14px;color:#ccc;margin-top:6px">Seleccioná un canal para comprobar subtítulos.</div>
                 </div>
                 <div id="lista-canales"></div>
                 <div id="info-canales">Total: <span id="total-canales">0</span> canales</div>
@@ -430,11 +435,10 @@
         let compressorNode = null;
         let sourceNode = null;
         let gainNode = null, analyserNode = null, audioInterval = null;
+        let vozNode = null, gravesNode = null, limitadorNode = null;
+        let audioSeguroParaCanal = false;
         let nivelSuavizado = 0.12;
         let reproduccionId = 0, reintentosHls = 0, temporizadorReintento = null;
-        let soloFavoritos = false;
-        let favoritos = new Set(JSON.parse(localStorage.getItem('gregotv_favoritos') || '[]'));
-        const guardarFavoritos = () => { try {localStorage.setItem('gregotv_favoritos', JSON.stringify([...favoritos]));}catch(e){} };
         
         let timerInactividad = null;
         let estaEnModoCine = false;
@@ -459,7 +463,6 @@
         const btnRestaurar = document.getElementById('btn-restaurar');
         
         const btnToggleFullscreen = document.getElementById('btn-toggle-fullscreen');
-        const btnUltimoCanal = document.getElementById('btn-ultimo-canal');
         const btnModoLimpieza = document.getElementById('btn-modo-limpieza');
         const btnAgregarCanal = document.getElementById('btn-agregar-canal');
         const btnGuardar = document.getElementById('btn-guardar');
@@ -478,7 +481,55 @@
         const mensajeSinVideo = document.getElementById('mensaje-sin-video');
         const videoNativo = document.getElementById('video-nativo');
         const contenedorYoutube = document.getElementById('contenedor-youtube');
-        const btnFavoritos = document.getElementById('btn-favoritos');
+        const opcionSubtitulos = document.getElementById('opcion-subtitulos');
+        const estadoSubtitulos = document.getElementById('estado-subtitulos');
+        let actualizadorSubtitulos = null;
+        let preferenciasSubtitulos = 'es';
+        try { preferenciasSubtitulos = localStorage.getItem('gregotv_subtitulos') || 'es'; } catch(e) {}
+        opcionSubtitulos.value = preferenciasSubtitulos;
+        opcionSubtitulos.addEventListener('change', () => {
+            preferenciasSubtitulos = opcionSubtitulos.value;
+            try { localStorage.setItem('gregotv_subtitulos', preferenciasSubtitulos); } catch(e) {}
+            aplicarSubtitulos();
+        });
+        function aplicarSubtitulos() {
+            if (!canalSeleccionado) {
+                estadoSubtitulos.textContent = 'Seleccioná un canal para comprobar subtítulos.';
+                return;
+            }
+            if (canalSeleccionado.tipo === 'youtube') {
+                estadoSubtitulos.textContent = 'En YouTube los subtítulos dependen del reproductor y del video.';
+                return;
+            }
+            const pistas = videoNativo.textTracks;
+            let escogida = -1;
+            // Solo seleccionar subtítulos realmente identificados como español.
+            for (let i = 0; i < pistas.length; i++) {
+                const t = pistas[i];
+                const lang = (t.language || '').toLowerCase();
+                if (t.kind === 'subtitles' || t.kind === 'captions') {
+                    if (preferenciasSubtitulos === 'es' && (lang === 'es' || lang.startsWith('es-') || /espa[nñ]ol|spanish/i.test(t.label || ''))) { escogida = i; break; }
+                }
+            }
+            for (let i = 0; i < pistas.length; i++) {
+                try { pistas[i].mode = i === escogida ? 'showing' : 'disabled'; } catch(e) {}
+            }
+            if (preferenciasSubtitulos === 'off') estadoSubtitulos.textContent = 'Subtítulos desactivados.';
+            else if (escogida >= 0) estadoSubtitulos.textContent = 'Subtítulos en español disponibles y activados.';
+            else estadoSubtitulos.textContent = 'No se detectaron subtítulos en español. No se realiza traducción automática de voz.';
+        }
+        videoNativo.textTracks.addEventListener?.('addtrack', () => setTimeout(aplicarSubtitulos, 150));
+        videoNativo.textTracks.addEventListener?.('removetrack', () => setTimeout(aplicarSubtitulos, 150));
+        function iniciarRevisionSubtitulos() {
+            if (actualizadorSubtitulos) clearInterval(actualizadorSubtitulos);
+            aplicarSubtitulos();
+            // Algunas pistas HLS llegan después del inicio del video.
+            let comprobaciones = 0;
+            actualizadorSubtitulos = setInterval(() => {
+                aplicarSubtitulos();
+                if (++comprobaciones >= 20) {clearInterval(actualizadorSubtitulos); actualizadorSubtitulos = null;}
+            }, 1000);
+        }
         
         const modalFullscreen = document.getElementById('modal-fullscreen');
         const btnSiFullscreen = document.getElementById('btn-si-fullscreen');
@@ -801,7 +852,6 @@
                 }
             }
             
-            if (soloFavoritos) resultado = resultado.filter(c => favoritos.has(c.url));
             const texto = inputBuscar.value.toLowerCase();
             if (texto) {
                 resultado = resultado.filter(c => c.nombre.toLowerCase().includes(texto));
@@ -817,12 +867,6 @@
         });
 
         inputBuscar.addEventListener('input', () => aplicarFiltros());
-        btnFavoritos.addEventListener('click', () => {
-            soloFavoritos = !soloFavoritos;
-            btnFavoritos.setAttribute('aria-pressed', String(soloFavoritos));
-            btnFavoritos.textContent = soloFavoritos ? '★ Ver todos los canales' : '☆ Mis favoritos';
-            aplicarFiltros();
-        });
 
         function detectarTipo(url) {
             if (url.includes('youtube.com') || url.includes('youtu.be') || url.includes('youtube-nocookie.com')) return 'youtube';
@@ -833,7 +877,6 @@
         function mostrarPantallaPrincipal() {
             pantallaBienvenida.style.display = 'none';
             pantallaPrincipal.style.display = 'flex';
-            btnUltimoCanal.style.display = canales.some(c => c.url === localStorage.getItem('gregotv_ultimo_canal')) ? 'inline-block' : 'none';
         }
 
         function mostrarPantallaBienvenida() {
@@ -845,12 +888,6 @@
         }
 
         btnVolver.addEventListener('click', mostrarPantallaBienvenida);
-        btnUltimoCanal.addEventListener('click', () => {
-            const url = localStorage.getItem('gregotv_ultimo_canal');
-            const canal = canales.find(c => c.url === url);
-            if (canal) reproducirCanal(canal);
-            else mostrarError('El último canal ya no está en esta lista.');
-        });
 
         window.addEventListener('DOMContentLoaded', () => {
             const urlGuardada = localStorage.getItem('miListaTV_Url');
@@ -983,20 +1020,6 @@
                 item.appendChild(dragHandle);
                 item.appendChild(nombreSpan);
                 item.appendChild(tipoSpan);
-                if (!modoLimpieza) {
-                    const favorito = document.createElement('button');
-                    favorito.type = 'button';
-                    favorito.className = 'boton-mediano';
-                    favorito.style.cssText = 'padding:6px 10px;margin-left:5px;min-width:48px;background:transparent';
-                    favorito.textContent = favoritos.has(canal.url) ? '★' : '☆';
-                    favorito.setAttribute('aria-label', favoritos.has(canal.url) ? 'Quitar de favoritos' : 'Agregar a favoritos');
-                    favorito.addEventListener('click', e => {
-                        e.stopPropagation();
-                        if (favoritos.has(canal.url)) favoritos.delete(canal.url); else favoritos.add(canal.url);
-                        guardarFavoritos(); aplicarFiltros();
-                    });
-                    item.appendChild(favorito);
-                }
                 item.appendChild(btnEditar);
                 item.appendChild(btnQuitar);
                 
@@ -1172,6 +1195,12 @@
                 analyserNode = audioCtx.createAnalyser();
                 analyserNode.fftSize = 2048;
                 gainNode = audioCtx.createGain();
+                vozNode = audioCtx.createBiquadFilter();
+                vozNode.type = 'peaking'; vozNode.frequency.value = 2200;
+                vozNode.Q.value = 0.9; vozNode.gain.value = 2.2;
+                gravesNode = audioCtx.createBiquadFilter();
+                gravesNode.type = 'lowshelf'; gravesNode.frequency.value = 140;
+                gravesNode.gain.value = -1;
                 compressorNode = audioCtx.createDynamicsCompressor();
                 compressorNode.threshold.value = -16;
                 compressorNode.knee.value = 16;
@@ -1180,7 +1209,10 @@
                 compressorNode.release.value = 0.3;
                 sourceNode.connect(analyserNode);
                 analyserNode.connect(gainNode);
-                gainNode.connect(compressorNode);
+                gainNode.connect(gravesNode);
+                gravesNode.connect(vozNode);
+                vozNode.connect(compressorNode);
+                // Compresión y techo de picos sin alterar el códec del archivo.
                 compressorNode.connect(audioCtx.destination);
                 // Nivelación de ganancia gradual para HLS/MP4 que permita procesamiento web.
                 const muestras = new Float32Array(analyserNode.fftSize);
@@ -1205,16 +1237,20 @@
             detenerReproduccion();
             canalSeleccionado = canal;
             renderizarLista();
-            try { localStorage.setItem('gregotv_ultimo_canal', canal.url); } catch(e) {}
-            btnUltimoCanal.style.display = 'inline-block';
             yaSePreguntoFullscreen = false;
             if (canal.tipo === 'youtube') {
                 reproducirYouTube(canal.url);
             } else {
-                inicializarControlAudio();
+                // Prioridad: que el canal se oiga. WebAudio solo para fuentes de mismo origen,
+                // porque una fuente remota sin CORS puede quedar silenciada al conectarla.
+                let mismoOrigen = false;
+                try { mismoOrigen = new URL(canal.url, location.href).origin === location.origin; } catch(e) {}
+                audioSeguroParaCanal = mismoOrigen && canales.every(c => c.tipo === 'youtube' || (() => { try { return new URL(c.url, location.href).origin === location.origin; } catch(e) { return false; } })());
+                if (audioSeguroParaCanal) inicializarControlAudio();
                 if (canal.tipo === 'mp4') reproducirMP4(canal.url);
                 else reproducirHLS(canal.url);
             }
+            iniciarRevisionSubtitulos();
             iniciarTimerModoCine();
         }
 
@@ -1276,6 +1312,7 @@
             mensajeSinVideo.style.display = 'none';
             videoNativo.style.display = 'none';
             contenedorYoutube.style.display = 'block';
+            estadoSubtitulos.textContent = 'YouTube administra sus propios subtítulos.';
             let videoId = '';
             try {
                 const u = new URL(url);
@@ -1318,6 +1355,7 @@
 
         function detenerReproduccion() {
             reproduccionId++;
+            if (actualizadorSubtitulos) {clearInterval(actualizadorSubtitulos); actualizadorSubtitulos = null;}
             if (temporizadorReintento) { clearTimeout(temporizadorReintento); temporizadorReintento = null; }
             if (gainNode && audioCtx) gainNode.gain.setTargetAtTime(1, audioCtx.currentTime, 0.05);
             nivelSuavizado = 0.12;
@@ -1330,6 +1368,7 @@
             contenedorYoutube.replaceChildren();
             contenedorYoutube.style.display = 'none';
 
+            estadoSubtitulos.textContent = 'Seleccioná un canal para comprobar subtítulos.';
             mensajeSinVideo.textContent = 'Selecciona un canal de la lista para reproducir';
             mensajeSinVideo.style.display = 'block';
             if (timerInactividad) clearTimeout(timerInactividad);
