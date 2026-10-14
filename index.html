@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mi Lista de TV - GitHub & Local Edition</title>
+    <title>GregoTV — Mi televisión</title>
     <!-- HLS.js para streams .m3u8 -->
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@1.6.13"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         
@@ -124,10 +124,7 @@
         }
         #contenedor-youtube iframe { width: 100%; height: 100%; border: none; position: absolute; top: 0; left: 0; z-index: 1; }
         
-        #capa-youtube-overlay {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 2; cursor: pointer; display: none;
-        }
+        /* YouTube debe permanecer accesible, sin capas superpuestas. */
 
         #mensaje-sin-video { color: #888; font-size: 22px; text-align: center; padding: 20px; }
 
@@ -280,6 +277,36 @@
         #lista-canales::-webkit-scrollbar-thumb { background: #555; border-radius: 6px; }
         #lista-canales::-webkit-scrollbar-thumb:hover { background: #777; }
 
+        /* Legibilidad y objetivos grandes para personas mayores. */
+        button, select, input { min-height: 48px; }
+        button:focus-visible, input:focus-visible, select:focus-visible,
+        .canal-item:focus-visible { outline: 3px solid #f8dc78; outline-offset: 3px; }
+        .canal-nombre { font-size: 22px; line-height: 1.4; }
+        .canal-item { min-height: 66px; align-items: center; padding: 16px; }
+        .canal-item.seleccionado { border-left-color: #a6f3b1; box-shadow: inset 0 0 0 2px #a6f3b1; }
+        .canal-item:focus-visible { background: #34523c; }
+        #area-lista { width: min(440px, 38vw); }
+        #info-canales { font-size: 17px; }
+        #barra-superior h2 { font-size: 26px; }
+        .boton-mediano { font-size: 17px; }
+        #btn-favoritos[aria-pressed="true"] { background: #735411; color: white; }
+        #mensaje-sin-video { line-height: 1.5; }
+        @media (max-width: 900px) {
+          #contenedor-principal { flex-direction: row; }
+          #area-lista { width: min(46vw, 360px); max-height: none; border-left: 2px solid #444; border-top: 0; }
+          #area-video { min-width: 0; }
+          .canal-nombre { font-size: 19px; }
+        }
+        @media (max-width: 590px) {
+          #area-lista { width: 44vw; }
+          .canal-nombre { font-size: 18px; }
+          .canal-item { padding: 10px; }
+          #barra-superior { padding: 8px; }
+          .boton-mediano { padding: 9px; font-size: 15px; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+        }
         #contenedor-principal.modo-cine,
         #contenedor-principal.modo-cine * { cursor: none !important; }
     </style>
@@ -287,7 +314,7 @@
 <body>
 
     <div id="pantalla-bienvenida">
-        <h1>📺 Mi Lista de TV</h1>
+        <h1>📺 GregoTV</h1>
         <p>Reproductor compatible con GitHub y archivos locales. Ingresa la URL de tu lista o selecciona un archivo M3U desde tu dispositivo.</p>
         
         <div class="input-container">
@@ -318,10 +345,11 @@
 
     <div id="pantalla-principal">
         <div id="barra-superior">
-            <h2>📺 Mi Lista de TV</h2>
+            <h2>📺 GregoTV</h2>
             <div class="controles-superior">
+                <button class="boton-mediano" id="btn-ultimo-canal" title="Volver al último canal visto">↩ Último canal</button>
                 <button class="boton-mediano boton-fullscreen" id="btn-toggle-fullscreen">🖥️ Pantalla Completa</button>
-                <button class="boton-mediano" id="btn-modo-limpieza">✏️ Modo edición</button>
+                <button class="boton-mediano" id="btn-modo-limpieza">⚙️ Administrar canales</button>
                 <button class="boton-mediano boton-agregar" id="btn-agregar-canal">➕ Agregar canal</button>
                 <button class="boton-mediano boton-combinar" id="btn-combinar-lista">🔗 Combinar otra lista</button>
                 <input type="file" id="file-input-combinar" accept=".m3u,.m3u8,.txt" style="display: none;">
@@ -335,14 +363,13 @@
         <div id="contenedor-principal">
             <div id="area-video">
                 <div id="mensaje-sin-video">Selecciona un canal de la lista para reproducir</div>
-                <video id="video-nativo" controls></video>
-                <div id="contenedor-youtube">
-                    <div id="capa-youtube-overlay"></div>
-                </div>
+                <video id="video-nativo" controls playsinline></video>
+                <div id="contenedor-youtube" aria-label="Reproductor de YouTube"></div>
             </div>
 
             <div id="area-lista">
                 <div id="filtro-categorias">
+                    <button id="btn-favoritos" class="boton-mediano" type="button" aria-pressed="false" style="width:100%;margin-bottom:10px">☆ Mis favoritos</button>
                     <select id="select-categoria">
                         <option value="">📂 Todos los canales</option>
                     </select>
@@ -402,6 +429,12 @@
         let audioCtx = null;
         let compressorNode = null;
         let sourceNode = null;
+        let gainNode = null, analyserNode = null, audioInterval = null;
+        let nivelSuavizado = 0.12;
+        let reproduccionId = 0, reintentosHls = 0, temporizadorReintento = null;
+        let soloFavoritos = false;
+        let favoritos = new Set(JSON.parse(localStorage.getItem('gregotv_favoritos') || '[]'));
+        const guardarFavoritos = () => { try {localStorage.setItem('gregotv_favoritos', JSON.stringify([...favoritos]));}catch(e){} };
         
         let timerInactividad = null;
         let estaEnModoCine = false;
@@ -426,6 +459,7 @@
         const btnRestaurar = document.getElementById('btn-restaurar');
         
         const btnToggleFullscreen = document.getElementById('btn-toggle-fullscreen');
+        const btnUltimoCanal = document.getElementById('btn-ultimo-canal');
         const btnModoLimpieza = document.getElementById('btn-modo-limpieza');
         const btnAgregarCanal = document.getElementById('btn-agregar-canal');
         const btnGuardar = document.getElementById('btn-guardar');
@@ -444,7 +478,7 @@
         const mensajeSinVideo = document.getElementById('mensaje-sin-video');
         const videoNativo = document.getElementById('video-nativo');
         const contenedorYoutube = document.getElementById('contenedor-youtube');
-        const capaYoutubeOverlay = document.getElementById('capa-youtube-overlay');
+        const btnFavoritos = document.getElementById('btn-favoritos');
         
         const modalFullscreen = document.getElementById('modal-fullscreen');
         const btnSiFullscreen = document.getElementById('btn-si-fullscreen');
@@ -590,7 +624,7 @@
         }
 
         function resetearActividad() {
-            if (modalFullscreen.style.display === 'flex') return;
+            if (modalFullscreen.style.display === 'flex' || modoLimpieza) return;
             if (estaEnModoCine) desactivarModoCine();
             else iniciarTimerModoCine();
         }
@@ -598,12 +632,11 @@
         document.addEventListener('mousemove', resetearActividad);
         document.addEventListener('touchstart', resetearActividad);
         
-        capaYoutubeOverlay.addEventListener('mousemove', resetearActividad);
-        capaYoutubeOverlay.addEventListener('click', resetearActividad);
+
 
         document.addEventListener('keydown', (e) => {
             const tagName = e.target.tagName.toLowerCase();
-            if (tagName === 'input' || tagName === 'textarea' || e.target.isContentEditable) return; 
+            if (['input','textarea','select','button'].includes(tagName) || e.target.isContentEditable) return; 
 
             if (e.key === 'Escape') {
                 if (modalFullscreen.style.display === 'flex') { btnNoFullscreen.click(); return; }
@@ -696,7 +729,12 @@
                     mostrarError('No se encontraron canales válidos en la lista a combinar.');
                     return;
                 }
-                canales = canales.concat(nuevosCanales);
+                const existentes = new Set(canales.map(c => c.url));
+                canales = canales.concat(nuevosCanales.filter(c => {
+                    if (existentes.has(c.url)) return false;
+                    existentes.add(c.url);
+                    return true;
+                }));
                 actualizarSelectCategorias();
                 aplicarFiltros();
             };
@@ -763,6 +801,7 @@
                 }
             }
             
+            if (soloFavoritos) resultado = resultado.filter(c => favoritos.has(c.url));
             const texto = inputBuscar.value.toLowerCase();
             if (texto) {
                 resultado = resultado.filter(c => c.nombre.toLowerCase().includes(texto));
@@ -778,6 +817,12 @@
         });
 
         inputBuscar.addEventListener('input', () => aplicarFiltros());
+        btnFavoritos.addEventListener('click', () => {
+            soloFavoritos = !soloFavoritos;
+            btnFavoritos.setAttribute('aria-pressed', String(soloFavoritos));
+            btnFavoritos.textContent = soloFavoritos ? '★ Ver todos los canales' : '☆ Mis favoritos';
+            aplicarFiltros();
+        });
 
         function detectarTipo(url) {
             if (url.includes('youtube.com') || url.includes('youtu.be') || url.includes('youtube-nocookie.com')) return 'youtube';
@@ -788,6 +833,7 @@
         function mostrarPantallaPrincipal() {
             pantallaBienvenida.style.display = 'none';
             pantallaPrincipal.style.display = 'flex';
+            btnUltimoCanal.style.display = canales.some(c => c.url === localStorage.getItem('gregotv_ultimo_canal')) ? 'inline-block' : 'none';
         }
 
         function mostrarPantallaBienvenida() {
@@ -799,6 +845,12 @@
         }
 
         btnVolver.addEventListener('click', mostrarPantallaBienvenida);
+        btnUltimoCanal.addEventListener('click', () => {
+            const url = localStorage.getItem('gregotv_ultimo_canal');
+            const canal = canales.find(c => c.url === url);
+            if (canal) reproducirCanal(canal);
+            else mostrarError('El último canal ya no está en esta lista.');
+        });
 
         window.addEventListener('DOMContentLoaded', () => {
             const urlGuardada = localStorage.getItem('miListaTV_Url');
@@ -871,6 +923,12 @@
             canalesFiltrados.forEach((canal, index) => {
                 const item = document.createElement('div');
                 item.className = 'canal-item';
+                item.tabIndex = 0;
+                item.setAttribute('role', 'button');
+                item.setAttribute('aria-label', 'Reproducir ' + canal.nombre);
+                item.addEventListener('keydown', e => {
+                    if (e.key === 'Enter') { e.preventDefault(); item.click(); }
+                });
                 if (canalSeleccionado === canal) item.classList.add('seleccionado');
                 if (canalesSeleccionados.includes(canal)) item.classList.add('seleccion-borrado');
                 
@@ -925,6 +983,20 @@
                 item.appendChild(dragHandle);
                 item.appendChild(nombreSpan);
                 item.appendChild(tipoSpan);
+                if (!modoLimpieza) {
+                    const favorito = document.createElement('button');
+                    favorito.type = 'button';
+                    favorito.className = 'boton-mediano';
+                    favorito.style.cssText = 'padding:6px 10px;margin-left:5px;min-width:48px;background:transparent';
+                    favorito.textContent = favoritos.has(canal.url) ? '★' : '☆';
+                    favorito.setAttribute('aria-label', favoritos.has(canal.url) ? 'Quitar de favoritos' : 'Agregar a favoritos');
+                    favorito.addEventListener('click', e => {
+                        e.stopPropagation();
+                        if (favoritos.has(canal.url)) favoritos.delete(canal.url); else favoritos.add(canal.url);
+                        guardarFavoritos(); aplicarFiltros();
+                    });
+                    item.appendChild(favorito);
+                }
                 item.appendChild(btnEditar);
                 item.appendChild(btnQuitar);
                 
@@ -962,7 +1034,7 @@
             if (modoLimpieza) {
                 if (estaEnModoCine) desactivarModoCine();
                 btnModoLimpieza.classList.add('activo');
-                btnModoLimpieza.textContent = '✏️ Modo edición ACTIVO';
+                btnModoLimpieza.textContent = '⚙️ Administrar canales ACTIVO';
                 listaCanales.classList.add('modo-limpieza');
                 btnAgregarCanal.style.display = 'inline-block';
                 btnCombinarLista.style.display = 'inline-block';
@@ -971,7 +1043,7 @@
                 if (timerInactividad) clearTimeout(timerInactividad);
             } else {
                 btnModoLimpieza.classList.remove('activo');
-                btnModoLimpieza.textContent = '✏️ Modo edición';
+                btnModoLimpieza.textContent = '⚙️ Administrar canales';
                 listaCanales.classList.remove('modo-limpieza');
                 btnAgregarCanal.style.display = 'none';
                 btnCombinarLista.style.display = 'none';
@@ -1088,36 +1160,53 @@
         });
 
         function inicializarControlAudio() {
-            if (audioCtx) {
-                if (audioCtx.state === 'suspended') {
-                    audioCtx.resume();
-                }
-                return;
-            }
             try {
-                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-                if (!AudioContextClass) return;
-                audioCtx = new AudioContextClass();
-                
-                compressorNode = audioCtx.createDynamicsCompressor();
-                compressorNode.threshold.setValueAtTime(-25, audioCtx.currentTime);
-                compressorNode.knee.setValueAtTime(30, audioCtx.currentTime);
-                compressorNode.ratio.setValueAtTime(12, audioCtx.currentTime);
-                compressorNode.attack.setValueAtTime(0.003, audioCtx.currentTime);
-                compressorNode.release.setValueAtTime(0.25, audioCtx.currentTime);
-                
+                if (audioCtx) {
+                    if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
+                    return;
+                }
+                const AC = window.AudioContext || window.webkitAudioContext;
+                if (!AC) return;
+                audioCtx = new AC();
                 sourceNode = audioCtx.createMediaElementSource(videoNativo);
-                sourceNode.connect(compressorNode);
+                analyserNode = audioCtx.createAnalyser();
+                analyserNode.fftSize = 2048;
+                gainNode = audioCtx.createGain();
+                compressorNode = audioCtx.createDynamicsCompressor();
+                compressorNode.threshold.value = -16;
+                compressorNode.knee.value = 16;
+                compressorNode.ratio.value = 5;
+                compressorNode.attack.value = 0.008;
+                compressorNode.release.value = 0.3;
+                sourceNode.connect(analyserNode);
+                analyserNode.connect(gainNode);
+                gainNode.connect(compressorNode);
                 compressorNode.connect(audioCtx.destination);
+                // Nivelación de ganancia gradual para HLS/MP4 que permita procesamiento web.
+                const muestras = new Float32Array(analyserNode.fftSize);
+                audioInterval = setInterval(() => {
+                    if (videoNativo.paused || videoNativo.readyState < 2 || !gainNode) return;
+                    analyserNode.getFloatTimeDomainData(muestras);
+                    let suma = 0;
+                    for (const v of muestras) suma += v * v;
+                    const rms = Math.sqrt(suma / muestras.length);
+                    if (rms < 0.006) return; // No amplificar silencios o pausas.
+                    nivelSuavizado = nivelSuavizado * 0.9 + rms * 0.1;
+                    const objetivo = 0.14;
+                    const nuevaGanancia = Math.max(0.65, Math.min(2.2, objetivo / Math.max(0.015, nivelSuavizado)));
+                    gainNode.gain.setTargetAtTime(nuevaGanancia, audioCtx.currentTime, 1.2);
+                }, 350);
             } catch (e) {
-                console.log("Error al inicializar Web Audio API:", e);
+                console.warn('Nivelación de audio no disponible para este canal:', e);
             }
         }
 
         function reproducirCanal(canal) {
+            detenerReproduccion();
             canalSeleccionado = canal;
             renderizarLista();
-            detenerReproduccion();
+            try { localStorage.setItem('gregotv_ultimo_canal', canal.url); } catch(e) {}
+            btnUltimoCanal.style.display = 'inline-block';
             yaSePreguntoFullscreen = false;
             if (canal.tipo === 'youtube') {
                 reproducirYouTube(canal.url);
@@ -1132,31 +1221,42 @@
         function reproducirHLS(url) {
             videoNativo.style.display = 'none';
             contenedorYoutube.style.display = 'none';
-            capaYoutubeOverlay.style.display = 'none';
+
             iniciarContadorCarga();
             if (typeof Hls !== 'undefined' && Hls.isSupported()) {
-                hls = new Hls();
+                const id = reproduccionId;
+                reintentosHls = 0;
+                hls = new Hls({ enableWorker: true });
                 hls.loadSource(url);
                 hls.attachMedia(videoNativo);
-                hls.on(Hls.Events.MANIFEST_PARSED, () => { videoNativo.play().catch(e => console.log('Autoplay bloqueado:', e)); });
+                hls.on(Hls.Events.MANIFEST_PARSED, () => { videoNativo.play().catch(e => { console.log('Reproducción bloqueada:', e); mensajeSinVideo.textContent = 'Tocá el video para comenzar la reproducción.'; mensajeSinVideo.style.display = 'block'; videoNativo.style.display = 'block'; }); });
                 hls.on(Hls.Events.ERROR, (event, data) => {
+                    if (id !== reproduccionId) return;
+                    if (data.fatal && reintentosHls < 2) {
+                        reintentosHls++;
+                        if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
+                            temporizadorReintento = setTimeout(() => { if (id === reproduccionId && hls) hls.startLoad(); }, 1000 * reintentosHls);
+                            return;
+                        }
+                        if (data.type === Hls.ErrorTypes.MEDIA_ERROR) { hls.recoverMediaError(); return; }
+                    }
                     if (data.fatal) {
                         detenerContadorCarga();
                         videoNativo.style.display = 'none';
                         contenedorYoutube.style.display = 'none';
-                        capaYoutubeOverlay.style.display = 'none';
+            
                         mensajeSinVideo.textContent = '❌ No se pudo cargar este canal. Intenta con otro.';
                         mensajeSinVideo.style.display = 'block';
                     }
                 });
             } else if (videoNativo.canPlayType('application/vnd.apple.mpegurl')) {
                 videoNativo.src = url;
-                videoNativo.play().catch(e => console.log('Autoplay bloqueado:', e));
+                videoNativo.play().catch(e => { console.log('Reproducción bloqueada:', e); mensajeSinVideo.textContent = 'Tocá el video para comenzar la reproducción.'; mensajeSinVideo.style.display = 'block'; videoNativo.style.display = 'block'; });
             } else {
                 detenerContadorCarga();
                 videoNativo.style.display = 'none';
                 contenedorYoutube.style.display = 'none';
-                capaYoutubeOverlay.style.display = 'none';
+    
                 mensajeSinVideo.textContent = '❌ Tu navegador no soporta reproducción HLS.';
                 mensajeSinVideo.style.display = 'block';
             }
@@ -1165,10 +1265,10 @@
         function reproducirMP4(url) {
             videoNativo.style.display = 'none';
             contenedorYoutube.style.display = 'none';
-            capaYoutubeOverlay.style.display = 'none';
+
             iniciarContadorCarga();
             videoNativo.src = url;
-            videoNativo.play().catch(e => console.log('Autoplay bloqueado:', e));
+            videoNativo.play().catch(e => { console.log('Reproducción bloqueada:', e); mensajeSinVideo.textContent = 'Tocá el video para comenzar la reproducción.'; mensajeSinVideo.style.display = 'block'; videoNativo.style.display = 'block'; });
         }
 
         function reproducirYouTube(url) {
@@ -1176,21 +1276,27 @@
             mensajeSinVideo.style.display = 'none';
             videoNativo.style.display = 'none';
             contenedorYoutube.style.display = 'block';
-            capaYoutubeOverlay.style.display = 'block'; 
-            
             let videoId = '';
-            if (url.includes('youtube-nocookie.com/embed/')) videoId = url.split('/embed/')[1].split('?')[0];
-            else if (url.includes('youtube.com/watch')) { const params = new URLSearchParams(url.split('?')[1]); videoId = params.get('v'); }
-            else if (url.includes('youtu.be/')) videoId = url.split('youtu.be/')[1].split('?')[0];
-            else if (url.includes('youtube.com/embed/')) videoId = url.split('/embed/')[1].split('?')[0];
-            
-            if (videoId) {
-                contenedorYoutube.innerHTML = `<div id="capa-youtube-overlay"></div><iframe src="https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
-                const nuevoOverlay = document.getElementById('capa-youtube-overlay');
-                nuevoOverlay.addEventListener('mousemove', resetearActividad);
-                nuevoOverlay.addEventListener('click', resetearActividad);
+            try {
+                const u = new URL(url);
+                const host = u.hostname.toLowerCase();
+                if (host === 'youtu.be') videoId = u.pathname.split('/')[1] || '';
+                else if (['youtube.com','www.youtube.com','m.youtube.com','youtube-nocookie.com','www.youtube-nocookie.com'].includes(host)) {
+                    if (u.pathname === '/watch') videoId = u.searchParams.get('v') || '';
+                    else if (u.pathname.startsWith('/embed/') || u.pathname.startsWith('/shorts/') || u.pathname.startsWith('/live/')) videoId = u.pathname.split('/')[2] || '';
+                }
+            } catch (e) {}
+            contenedorYoutube.replaceChildren();
+            if (/^[a-zA-Z0-9_-]{11}$/.test(videoId)) {
+                const iframe = document.createElement('iframe');
+                iframe.title = 'Video de YouTube';
+                iframe.allow = 'autoplay; encrypted-media; picture-in-picture';
+                iframe.setAttribute('allowfullscreen','');
+                iframe.referrerPolicy = 'strict-origin-when-cross-origin';
+                iframe.src = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&controls=0&disablekb=1&rel=0&playsinline=1`;
+                contenedorYoutube.appendChild(iframe);
             } else {
-                contenedorYoutube.innerHTML = '<p style="color:#fff; padding:20px;">No se pudo identificar el video de YouTube.</p>';
+                contenedorYoutube.textContent = 'No se pudo identificar el video de YouTube.';
             }
         }
 
@@ -1205,24 +1311,30 @@
             detenerContadorCarga();
             videoNativo.style.display = 'none';
             contenedorYoutube.style.display = 'none';
-            capaYoutubeOverlay.style.display = 'none';
+
             mensajeSinVideo.textContent = '❌ No se pudo cargar este canal. Intenta con otro.';
             mensajeSinVideo.style.display = 'block';
         });
 
         function detenerReproduccion() {
+            reproduccionId++;
+            if (temporizadorReintento) { clearTimeout(temporizadorReintento); temporizadorReintento = null; }
+            if (gainNode && audioCtx) gainNode.gain.setTargetAtTime(1, audioCtx.currentTime, 0.05);
+            nivelSuavizado = 0.12;
             if (hls) { hls.destroy(); hls = null; }
             detenerContadorCarga();
             videoNativo.pause();
-            videoNativo.src = '';
+            videoNativo.removeAttribute('src');
+            videoNativo.load();
             videoNativo.style.display = 'none';
-            contenedorYoutube.innerHTML = '';
+            contenedorYoutube.replaceChildren();
             contenedorYoutube.style.display = 'none';
-            capaYoutubeOverlay.style.display = 'none';
+
             mensajeSinVideo.textContent = 'Selecciona un canal de la lista para reproducir';
             mensajeSinVideo.style.display = 'block';
             if (timerInactividad) clearTimeout(timerInactividad);
             if (estaEnModoCine) desactivarModoCine();
+            canalSeleccionado = null;
         }
     </script>
 </body>
