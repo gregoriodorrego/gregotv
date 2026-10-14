@@ -130,8 +130,8 @@
            "Saltar anuncio" cuando YouTube lo ofrece en esa posición.
            La ubicación del control depende de YouTube y del dispositivo. */
         #capa-youtube-overlay {
-            position: absolute; inset: 0; z-index: 2;
-            pointer-events: none;
+            position: absolute; top: 0; right: 0; bottom: 0; left: 0;
+            z-index: 2; pointer-events: none;
         }
         #capa-youtube-overlay .zona-interaccion {
             position: absolute; background: transparent;
@@ -149,7 +149,8 @@
         /* Estado de reproducción: siempre centrado SOBRE el video, nunca en
            una columna a su izquierda. No captura los clics del reproductor. */
         #mensaje-sin-video {
-            position: absolute; inset: 0; z-index: 3;
+            position: absolute; top: 0; right: 0; bottom: 0; left: 0;
+            z-index: 3;
             display: flex; flex-direction: column; align-items: center;
             justify-content: center; gap: 12px;
             width: 100%; min-width: 0; padding: 24px;
@@ -159,7 +160,7 @@
         .fila-carga {
             display: flex; align-items: center; justify-content: center;
             flex-wrap: wrap; gap: 12px; width: 100%;
-            font-size: clamp(18px, 2.5vw, 26px); font-weight: bold;
+            font-size: 24px; font-size: clamp(18px, 2.5vw, 26px); font-weight: bold;
         }
 
         .spinner-carga {
@@ -170,17 +171,18 @@
         @keyframes girar { to { transform: rotate(360deg); } }
         #segundos-carga {
             display: inline-block; min-width: 100px; font-weight: 700;
-            font-size: clamp(42px, 5vw, 60px); line-height: 1.15;
+            font-size: 52px; font-size: clamp(42px, 5vw, 60px); line-height: 1.15;
             color: #ffffff; font-variant-numeric: tabular-nums;
             text-shadow: 0 2px 8px rgba(0, 0, 0, 0.85);
         }
         .aviso-espera {
             display: none; max-width: 640px; margin-top: 12px;
-            font-size: clamp(16px, 2vw, 20px); line-height: 1.5; color: #ffcc80;
+            font-size: 18px; font-size: clamp(16px, 2vw, 20px); line-height: 1.5; color: #ffcc80;
         }
 
         #area-lista {
-            width: min(440px, 38vw); background-color: #222; border-left: 2px solid #444;
+            width: 38vw; max-width: 440px; width: min(440px, 38vw);
+            background-color: #222; border-left: 2px solid #444;
             display: flex; flex-direction: column; transition: transform 0.3s ease, opacity 0.3s ease;
             z-index: 1001;
         }
@@ -289,7 +291,7 @@
         .canal-item:focus-visible { outline: 3px solid #f8dc78; outline-offset: 3px; }
         .canal-item:focus-visible { background: #34523c; }
         @media (max-width: 900px) {
-          #area-lista { width: min(46vw, 360px); max-height: none; border-left: 2px solid #444; border-top: 0; }
+          #area-lista { width: 46vw; max-width: 360px; width: min(46vw, 360px); max-height: none; border-left: 2px solid #444; border-top: 0; }
           #area-video { min-width: 0; }
           .canal-nombre { font-size: 19px; }
         }
@@ -402,6 +404,7 @@
         let canalesEliminados = [];
         let canalesFiltrados = [];
         let elementosCanal = new Map();
+        let ultimaSeleccionTV = 0;
         let categoriaActual = "";
         let canalSeleccionado = null;
         let modoLimpieza = false;
@@ -955,7 +958,7 @@
         }
 
         function renderizarLista() {
-            listaCanales.replaceChildren();
+            listaCanales.innerHTML = '';
             elementosCanal = new Map();
             const fragmento = document.createDocumentFragment();
             totalCanales.textContent = canalesFiltrados.length;
@@ -968,7 +971,16 @@
                 item.setAttribute('role', 'button');
                 item.setAttribute('aria-label', 'Reproducir ' + canal.nombre);
                 item.addEventListener('keydown', e => {
-                    if (e.key === 'Enter') { e.preventDefault(); item.click(); }
+                    // En televisores el control remoto suele informar keyCode 13,
+                    // aunque e.key no sea "Enter". Mantener también el mouse.
+                    if (e.key === 'Enter' || e.keyCode === 13 || e.which === 13) {
+                        e.preventDefault();
+                        // Evitar que ciertos controles generen selección doble
+                        // (keydown seguido por un click sintético).
+                        if (Date.now() - ultimaSeleccionTV < 300) return;
+                        ultimaSeleccionTV = Date.now();
+                        item.click();
+                    }
                 });
                 if (canalSeleccionado === canal) item.classList.add('seleccionado');
                 if (canalesSeleccionados.includes(canal)) item.classList.add('seleccion-borrado');
@@ -1287,6 +1299,16 @@
             }, 2000);
         }
 
+        // En Smart TV se prioriza el reproductor HTML5 que ya funcionaba.
+        // Algunos navegadores de televisor no admiten de forma fiable dos
+        // elementos de video y un grafo WebAudio sobre la misma reproducción.
+        // La PC conserva la mejora de audio si el navegador la permite.
+        function esNavegadorTelevisor() {
+            return /Tizen|SMART[-_ ]?TV|SmartTV|Web0S|webOS|NetCast|HbbTV|BRAVIA|Viera|AFT[B-UV]|Hisense|VIDAA/i.test(navigator.userAgent || '') ||
+                // Navegadores antiguos sin APIs DOM modernas: usar ruta directa.
+                typeof Element.prototype.replaceChildren !== 'function';
+        }
+
         function reproducirCanal(canal) {
             detenerReproduccion();
             canalSeleccionado = canal;
@@ -1299,14 +1321,14 @@
                 let delMismoOrigen = false;
                 try { delMismoOrigen = new URL(canal.url, location.href).origin === location.origin; }
                 catch (error) {}
-                audioSeguroParaCanal = delMismoOrigen && inicializarControlAudio();
+                audioSeguroParaCanal = !esNavegadorTelevisor() && delMismoOrigen && inicializarControlAudio();
                 videoActivo = audioSeguroParaCanal ? videoProcesado : videoNativo;
                 reproducirMP4(canal.url);
             } else {
                 // HLS.js trabaja con MediaSource del sitio; un elemento separado
                 // permite procesarlo y deja el otro disponible como ruta directa.
                 const usandoHlsJs = typeof Hls !== 'undefined' && Hls.isSupported();
-                audioSeguroParaCanal = usandoHlsJs && inicializarControlAudio();
+                audioSeguroParaCanal = !esNavegadorTelevisor() && usandoHlsJs && inicializarControlAudio();
                 videoActivo = audioSeguroParaCanal ? videoProcesado : videoNativo;
                 reproducirHLS(canal.url);
             }
@@ -1418,7 +1440,7 @@
                     else if (u.pathname.startsWith('/embed/') || u.pathname.startsWith('/shorts/') || u.pathname.startsWith('/live/')) videoId = u.pathname.split('/')[2] || '';
                 }
             } catch (e) {}
-            contenedorYoutube.replaceChildren();
+            contenedorYoutube.innerHTML = '';
             if (/^[a-zA-Z0-9_-]{11}$/.test(videoId)) {
                 const iframe = document.createElement('iframe');
                 iframe.title = 'Video de YouTube';
@@ -1445,7 +1467,8 @@
                 superior.className = 'zona-interaccion zona-superior';
                 const inferior = document.createElement('div');
                 inferior.className = 'zona-interaccion zona-inferior';
-                capa.append(superior, inferior);
+                capa.appendChild(superior);
+                capa.appendChild(inferior);
                 capa.addEventListener('pointermove', resetearActividad);
                 capa.addEventListener('pointerdown', resetearActividad);
                 capa.addEventListener('touchstart', resetearActividad, { passive: true });
@@ -1458,7 +1481,7 @@
                 // YouTube continúa reproduciéndose y el menú sigue accesible.
                 const idSesion = reproduccionId;
                 cargarAPIYouTube().then(YTDisponible => {
-                    if (idSesion !== reproduccionId || !iframe.isConnected ||
+                    if (idSesion !== reproduccionId || !document.documentElement.contains(iframe) ||
                         !canalSeleccionado || canalSeleccionado.tipo !== 'youtube') return;
                     try {
                         reproductorYouTube = new YTDisponible.Player(iframe, {
@@ -1545,14 +1568,22 @@
             nivelSuavizado = 0.12;
             if (hls) { const instancia = hls; hls = null; instancia.destroy(); }
             for (const video of [videoNativo, videoProcesado]) {
-                video.pause();
-                video.removeAttribute('src');
-                video.load();
+                // Hay televisores que fallan si se invoca load() sobre un
+                // segundo video sin fuente; no debe impedir cambiar de canal.
+                try {
+                    video.pause();
+                    if (video.hasAttribute('src') || video.currentSrc) {
+                        video.removeAttribute('src');
+                        video.load();
+                    }
+                } catch (error) {
+                    console.warn('Limpieza de video ignorada:', error);
+                }
                 video.style.display = 'none';
             }
             videoActivo = videoNativo;
             desvincularYouTube();
-            contenedorYoutube.replaceChildren();
+            contenedorYoutube.innerHTML = '';
             contenedorYoutube.style.display = 'none';
             mensajeSinVideo.textContent = 'Seleccioná un canal de la lista para reproducir';
             mensajeSinVideo.style.display = 'flex';
