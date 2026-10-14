@@ -482,6 +482,12 @@
         let segundosCarga = 0;
         let estadoReproduccion = 'sin_canal'; // sin_canal | cargando | reproduciendo | youtube | error
 
+        // Solo controla la pausa/reanudación de YouTube. Si la API no está
+        // disponible, el video sigue usando el iframe y el menú sigue funcionando.
+        let reproductorYouTube = null;
+        let youtubeApiLista = false;
+        let promesaAPIYouTube = null;
+
         const pantallaBienvenida = document.getElementById('pantalla-bienvenida');
         const pantallaPrincipal = document.getElementById('pantalla-principal');
         const btnCargarUrl = document.getElementById('btn-cargar-url');
@@ -694,8 +700,53 @@
         document.addEventListener('touchstart', resetearActividad, { passive: true });
 
         // YouTube se reproduce en un iframe de otro dominio. La capa
-        // transparente instalada al reproducir el canal reenvía la actividad
-        // a este mismo controlador, en lugar de dejar al usuario atrapado.
+        // transparente mantiene la navegación de GregoTV. La API oficial
+        // únicamente permite pausar/reanudar sin tocar el interior del iframe.
+        function cargarAPIYouTube() {
+            if (window.YT && typeof window.YT.Player === 'function') return Promise.resolve(window.YT);
+            if (promesaAPIYouTube) return promesaAPIYouTube;
+            promesaAPIYouTube = new Promise((resolver, rechazar) => {
+                // La API llama a esta función cuando está lista.
+                window.onYouTubeIframeAPIReady = () => {
+                    if (window.YT && typeof window.YT.Player === 'function') resolver(window.YT);
+                    else rechazar(new Error('API de YouTube no disponible'));
+                };
+                const script = document.createElement('script');
+                script.src = 'https://www.youtube.com/iframe_api';
+                script.async = true;
+                script.onerror = () => rechazar(new Error('No se pudo cargar la API de YouTube'));
+                document.head.appendChild(script);
+            }).catch(error => {
+                promesaAPIYouTube = null;
+                throw error;
+            });
+            return promesaAPIYouTube;
+        }
+
+        function alternarPausaYouTube() {
+            // Importante: los clics no deben impedir abrir el menú lateral.
+            resetearActividad();
+            if (!canalSeleccionado || canalSeleccionado.tipo !== 'youtube' ||
+                !youtubeApiLista || !reproductorYouTube) return;
+            try {
+                const estado = reproductorYouTube.getPlayerState();
+                // 1 = reproduciendo, 3 = almacenando en búfer.
+                if (estado === 1 || estado === 3) reproductorYouTube.pauseVideo();
+                else reproductorYouTube.playVideo();
+            } catch (error) {
+                console.warn('No se pudo alternar pausa de YouTube:', error);
+            }
+        }
+
+        function desvincularYouTube() {
+            youtubeApiLista = false;
+            if (!reproductorYouTube) return;
+            const anterior = reproductorYouTube;
+            reproductorYouTube = null;
+            try { anterior.destroy(); } catch (error) {
+                console.warn('No se pudo liberar el reproductor YouTube:', error);
+            }
+        }
 
         document.addEventListener('keydown', (e) => {
             const tagName = e.target.tagName.toLowerCase();
@@ -713,6 +764,8 @@
                 if (canalSeleccionado && (canalSeleccionado.tipo === 'hls' || canalSeleccionado.tipo === 'mp4')) {
                     if (videoNativo.paused) videoNativo.play().catch(() => {});
                     else videoNativo.pause();
+                } else if (canalSeleccionado && canalSeleccionado.tipo === 'youtube') {
+                    alternarPausaYouTube();
                 }
             } else {
                 resetearActividad();
@@ -1365,7 +1418,11 @@
                 iframe.setAttribute('allowfullscreen','');
                 iframe.tabIndex = -1; // El teclado/control remoto navega por GregoTV.
                 iframe.referrerPolicy = 'strict-origin-when-cross-origin';
-                iframe.src = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&controls=0&disablekb=1&rel=0&playsinline=1`;
+                // enablejsapi habilita playVideo/pauseVideo; origin protege
+                // el reproductor cuando se publica en GitHub Pages o por HTTPS.
+                const origen = (location.protocol === 'https:' || location.protocol === 'http:')
+                    ? `&origin=${encodeURIComponent(location.origin)}` : '';
+                iframe.src = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&controls=0&disablekb=1&rel=0&playsinline=1&enablejsapi=1${origen}`;
                 // Un movimiento en la zona libre también recupera el menú
                 // cuando el puntero entra al iframe desde fuera.
                 iframe.addEventListener('pointerenter', resetearActividad);
@@ -1384,7 +1441,37 @@
                 capa.addEventListener('pointermove', resetearActividad);
                 capa.addEventListener('pointerdown', resetearActividad);
                 capa.addEventListener('touchstart', resetearActividad, { passive: true });
+                // El clic en la zona central del video alterna pausa/reanudar.
+                // La zona inferior derecha sigue libre para «Saltar anuncio».
+                capa.addEventListener('click', alternarPausaYouTube);
                 contenedorYoutube.appendChild(capa);
+
+                // Nunca retrasar la imagen por la carga de la API. Si falla,
+                // YouTube continúa reproduciéndose y el menú sigue accesible.
+                const idSesion = reproduccionId;
+                cargarAPIYouTube().then(YTDisponible => {
+                    if (idSesion !== reproduccionId || !iframe.isConnected ||
+                        !canalSeleccionado || canalSeleccionado.tipo !== 'youtube') return;
+                    try {
+                        reproductorYouTube = new YTDisponible.Player(iframe, {
+                            events: {
+                                onReady: (evento) => {
+                                    if (idSesion === reproduccionId &&
+                                        canalSeleccionado && canalSeleccionado.tipo === 'youtube') {
+                                        youtubeApiLista = true;
+                                    }
+                                },
+                                onError: (evento) => {
+                                    if (idSesion === reproduccionId) {
+                                        console.warn('YouTube informó un error de reproducción:', evento.data);
+                                    }
+                                }
+                            }
+                        });
+                    } catch (error) {
+                        console.warn('Control de pausa de YouTube no disponible:', error);
+                    }
+                }).catch(error => console.warn('API de pausa de YouTube no disponible:', error));
             } else {
                 contenedorYoutube.style.display = 'none';
                 mostrarEstadoVideo('No se pudo identificar el video de YouTube.', 'error');
@@ -1427,6 +1514,7 @@
             videoNativo.removeAttribute('src');
             videoNativo.load();
             videoNativo.style.display = 'none';
+            desvincularYouTube();
             contenedorYoutube.replaceChildren();
             contenedorYoutube.style.display = 'none';
             mensajeSinVideo.textContent = 'Seleccioná un canal de la lista para reproducir';
