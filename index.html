@@ -125,6 +125,27 @@
         #contenedor-youtube iframe { width: 100%; height: 100%; border: none; position: absolute; top: 0; left: 0; z-index: 1; }
         
         /* YouTube debe permanecer accesible, sin capas superpuestas. */
+        #controles-subtitulos { position:absolute;left:18px;bottom:68px;z-index:8;display:none; }
+        #btn-subtitulos { background:rgba(19,25,30,.72); color:#fff; border:1px solid rgba(255,255,255,.55);
+            backdrop-filter:blur(5px);border-radius:9px;padding:10px 15px;font-size:17px;font-weight:bold;cursor:pointer; }
+        #btn-subtitulos:focus-visible, .opcion-pista:focus-visible { outline:3px solid #a6e2ff;outline-offset:2px; }
+        #panel-subtitulos {position:absolute;bottom:52px;left:0;min-width:245px;max-width:min(340px,85vw);
+            background:rgba(20,25,30,.96);border:1px solid #7c858d;border-radius:10px;padding:10px;
+            box-shadow:0 6px 22px #0009;display:none;max-height:45vh;overflow-y:auto; }
+        #panel-subtitulos.abierto {display:block;}
+        #panel-subtitulos .opcion-pista {display:block;width:100%;text-align:left; padding:12px;
+            background:#323940;color:white;border:1px solid #606a70;border-radius:8px;margin:5px 0;font-size:16px;cursor:pointer;}
+        #panel-subtitulos .opcion-pista[aria-pressed="true"] {background:#245d40;border-color:#a4e1b7;}
+        #mensaje-pistas {font-size:14px;color:#d6dce1;padding:8px 4px;}
+        #texto-subtitulos {position:absolute;left:12%;right:12%;bottom:22px;z-index:5;
+            pointer-events:none;text-align:center;color:white;font-size:clamp(19px,2.3vw,30px);
+            line-height:1.35;font-weight:700;text-shadow:0 2px 5px #000,0 0 12px #000;white-space:pre-line;}
+        #accion-reproducir {position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:10;
+            display:none;background:rgba(23,55,38,.96);color:white;border:2px solid #b6e6c7;
+            border-radius:12px;padding:16px 24px;font-size:20px;font-weight:bold;cursor:pointer;}
+        #contenedor-principal.modo-cine #controles-subtitulos { display:none !important; }
+        #contenedor-principal.modo-cine #texto-subtitulos {bottom:34px;}
+        @media(max-width:600px) { #controles-subtitulos{bottom:58px;left:8px;} #btn-subtitulos{font-size:15px;padding:9px;} }
 
         #mensaje-sin-video { color: #888; font-size: 22px; text-align: center; padding: 20px; }
 
@@ -362,6 +383,12 @@
             <div id="area-video">
                 <div id="mensaje-sin-video">Selecciona un canal de la lista para reproducir</div>
                 <video id="video-nativo" controls playsinline></video>
+                <div id="texto-subtitulos" aria-live="off"></div>
+                <div id="controles-subtitulos">
+                    <button id="btn-subtitulos" type="button" aria-expanded="false" aria-controls="panel-subtitulos">💬 Subtítulos</button>
+                    <div id="panel-subtitulos" role="group" aria-label="Pistas de subtítulos"></div>
+                </div>
+                <button id="accion-reproducir" type="button">▶ Reproducir canal</button>
                 <div id="contenedor-youtube" aria-label="Reproductor de YouTube"></div>
             </div>
 
@@ -374,14 +401,6 @@
                 
                 <div id="buscador">
                     <input type="text" id="input-buscar" placeholder="🔍 Buscar canal...">
-                </div>
-                <div id="config-subtitulos" style="padding:10px 12px;border-bottom:1px solid #444">
-                    <label for="opcion-subtitulos" style="display:block;font-size:17px;margin-bottom:7px">💬 Subtítulos</label>
-                    <select id="opcion-subtitulos" style="width:100%;padding:11px;background:#333;color:white;border:2px solid #777;border-radius:9px;font-size:17px">
-                        <option value="es">Español disponible</option>
-                        <option value="off">Desactivados</option>
-                    </select>
-                    <div id="estado-subtitulos" role="status" aria-live="polite" style="font-size:14px;color:#ccc;margin-top:6px">Seleccioná un canal para comprobar subtítulos.</div>
                 </div>
                 <div id="lista-canales"></div>
                 <div id="info-canales">Total: <span id="total-canales">0</span> canales</div>
@@ -481,56 +500,105 @@
         const mensajeSinVideo = document.getElementById('mensaje-sin-video');
         const videoNativo = document.getElementById('video-nativo');
         const contenedorYoutube = document.getElementById('contenedor-youtube');
-        const opcionSubtitulos = document.getElementById('opcion-subtitulos');
-        const estadoSubtitulos = document.getElementById('estado-subtitulos');
+        const controlesSubtitulos = document.getElementById('controles-subtitulos');
+        const btnSubtitulos = document.getElementById('btn-subtitulos');
+        const panelSubtitulos = document.getElementById('panel-subtitulos');
+        const textoSubtitulos = document.getElementById('texto-subtitulos');
+        const accionReproducir = document.getElementById('accion-reproducir');
         let actualizadorSubtitulos = null;
-        let preferenciasSubtitulos = 'es';
-        try { preferenciasSubtitulos = localStorage.getItem('gregotv_subtitulos') || 'es'; } catch(e) {}
-        opcionSubtitulos.value = preferenciasSubtitulos;
-        opcionSubtitulos.addEventListener('change', () => {
-            preferenciasSubtitulos = opcionSubtitulos.value;
-            try { localStorage.setItem('gregotv_subtitulos', preferenciasSubtitulos); } catch(e) {}
-            aplicarSubtitulos();
-        });
-        function aplicarSubtitulos() {
-            if (!canalSeleccionado) {
-                estadoSubtitulos.textContent = 'Seleccioná un canal para comprobar subtítulos.';
-                return;
-            }
-            if (canalSeleccionado.tipo === 'youtube') {
-                estadoSubtitulos.textContent = 'En YouTube los subtítulos dependen del reproductor y del video.';
-                return;
-            }
-            const pistas = videoNativo.textTracks;
-            let escogida = -1;
-            // Solo seleccionar subtítulos realmente identificados como español.
-            for (let i = 0; i < pistas.length; i++) {
-                const t = pistas[i];
-                const lang = (t.language || '').toLowerCase();
-                if (t.kind === 'subtitles' || t.kind === 'captions') {
-                    if (preferenciasSubtitulos === 'es' && (lang === 'es' || lang.startsWith('es-') || /espa[nñ]ol|spanish/i.test(t.label || ''))) { escogida = i; break; }
-                }
-            }
-            for (let i = 0; i < pistas.length; i++) {
-                try { pistas[i].mode = i === escogida ? 'showing' : 'disabled'; } catch(e) {}
-            }
-            if (preferenciasSubtitulos === 'off') estadoSubtitulos.textContent = 'Subtítulos desactivados.';
-            else if (escogida >= 0) estadoSubtitulos.textContent = 'Subtítulos en español disponibles y activados.';
-            else estadoSubtitulos.textContent = 'No se detectaron subtítulos en español. No se realiza traducción automática de voz.';
+        let preferenciaSubtitulos = 'es';
+        let pistaElegida = null;
+        try { preferenciaSubtitulos = localStorage.getItem('gregotv_subtitulos') || 'es'; } catch(e) {}
+
+        function pistasDisponibles() {
+            return Array.from(videoNativo.textTracks || []).filter(t => t.kind === 'subtitles' || t.kind === 'captions');
         }
-        videoNativo.textTracks.addEventListener?.('addtrack', () => setTimeout(aplicarSubtitulos, 150));
-        videoNativo.textTracks.addEventListener?.('removetrack', () => setTimeout(aplicarSubtitulos, 150));
+        function idPista(t, index) { return `${t.language || ''}|${t.label || ''}|${index}`; }
+        function etiquetaPista(t, index) {
+            return (t.label || t.language || `Pista ${index + 1}`).trim();
+        }
+        function mostrarTextoSubtitulos() {
+            const pista = pistasDisponibles().find((t, i) => idPista(t, i) === pistaElegida);
+            if (!pista || pista.mode === 'disabled') { textoSubtitulos.textContent = ''; return; }
+            const cues = pista.activeCues ? Array.from(pista.activeCues) : [];
+            textoSubtitulos.textContent = cues.map(c => c.text || '').join('\n');
+        }
+        function actualizarPistas() {
+            const pistas = pistasDisponibles();
+            const previa = pistaElegida;
+            if (preferenciaSubtitulos === 'off') pistaElegida = null;
+            else if (!pistas.some((t,i) => idPista(t,i) === pistaElegida)) {
+                const espanola = pistas.findIndex(t => /^es(?:-|$)/i.test(t.language || '') || /español|espanol|spanish/i.test(t.label || ''));
+                pistaElegida = espanola >= 0 ? idPista(pistas[espanola], espanola) : null;
+            }
+            pistas.forEach((t,i) => {
+                const activa = idPista(t,i) === pistaElegida;
+                try { t.mode = activa ? 'hidden' : 'disabled'; } catch(e) {}
+                t.oncuechange = activa ? mostrarTextoSubtitulos : null;
+            });
+            if (previa !== pistaElegida || !pistaElegida) mostrarTextoSubtitulos();
+            panelSubtitulos.replaceChildren();
+            function opcion(etiqueta, id) {
+                const b = document.createElement('button');
+                b.type = 'button';b.className = 'opcion-pista';b.textContent = etiqueta;
+                b.setAttribute('aria-pressed', String(id === pistaElegida));
+                b.addEventListener('click', () => {
+                    pistaElegida = id;
+                    preferenciaSubtitulos = id === null ? 'off' : 'es';
+                    try {localStorage.setItem('gregotv_subtitulos', preferenciaSubtitulos);} catch(e) {}
+                    actualizarPistas();cerrarPanelSubtitulos();
+                });
+                panelSubtitulos.appendChild(b);
+            }
+            opcion('Desactivados', null);
+            pistas.forEach((t,i) => opcion(etiquetaPista(t,i), idPista(t,i)));
+            if (pistas.some(t => /^es(?:-|$)/i.test(t.language || '') || /español|espanol|spanish/i.test(t.label || ''))) {
+                const info = document.createElement('div'); info.id='mensaje-pistas';
+                info.textContent='Subtítulos en español disponibles.';
+                panelSubtitulos.appendChild(info);
+            }
+            if (!pistas.length) {
+                const info = document.createElement('div');info.id = 'mensaje-pistas';
+                info.textContent = 'No hay pistas de subtítulos detectadas en este canal.';
+                panelSubtitulos.appendChild(info);
+            }
+            btnSubtitulos.textContent = pistaElegida ? '💬 Subtítulos ✓' : '💬 Subtítulos';
+            btnSubtitulos.title = 'Elegir subtítulos disponibles';
+        }
+        function cerrarPanelSubtitulos() {
+            panelSubtitulos.classList.remove('abierto');btnSubtitulos.setAttribute('aria-expanded','false');
+        }
+        btnSubtitulos.addEventListener('click', () => {
+            resetearActividad();actualizarPistas();
+            const abierto = panelSubtitulos.classList.toggle('abierto');
+            btnSubtitulos.setAttribute('aria-expanded',String(abierto));
+        });
+        document.addEventListener('pointerdown', (e) => {
+            if (!controlesSubtitulos.contains(e.target)) cerrarPanelSubtitulos();
+        });
         function iniciarRevisionSubtitulos() {
             if (actualizadorSubtitulos) clearInterval(actualizadorSubtitulos);
-            aplicarSubtitulos();
-            // Algunas pistas HLS llegan después del inicio del video.
+            pistaElegida = null;
+            actualizarPistas();
             let comprobaciones = 0;
             actualizadorSubtitulos = setInterval(() => {
-                aplicarSubtitulos();
-                if (++comprobaciones >= 20) {clearInterval(actualizadorSubtitulos); actualizadorSubtitulos = null;}
-            }, 1000);
+                if (!canalSeleccionado || canalSeleccionado.tipo === 'youtube') return;
+                actualizarPistas();
+                if (++comprobaciones >= 30) {clearInterval(actualizadorSubtitulos);actualizadorSubtitulos = null;}
+            },1000);
         }
-        
+        videoNativo.textTracks.addEventListener?.('addtrack', () => setTimeout(actualizarPistas,150));
+        videoNativo.textTracks.addEventListener?.('removetrack', () => setTimeout(actualizarPistas,150));
+        accionReproducir.addEventListener('click', () => {
+            videoNativo.play().then(() => {accionReproducir.style.display='none';}).catch(() => {
+                accionReproducir.textContent='▶ Intentar reproducir';
+            });
+        });
+        function pedirInicioManual() {
+            detenerContadorCarga();mensajeSinVideo.style.display='none';
+            videoNativo.style.display='block';accionReproducir.style.display='block';
+        }
+
         const modalFullscreen = document.getElementById('modal-fullscreen');
         const btnSiFullscreen = document.getElementById('btn-si-fullscreen');
         const btnNoFullscreen = document.getElementById('btn-no-fullscreen');
@@ -1250,7 +1318,8 @@
                 if (canal.tipo === 'mp4') reproducirMP4(canal.url);
                 else reproducirHLS(canal.url);
             }
-            iniciarRevisionSubtitulos();
+            controlesSubtitulos.style.display = canal.tipo === 'youtube' ? 'none' : 'block';
+            if (canal.tipo !== 'youtube') iniciarRevisionSubtitulos();
             iniciarTimerModoCine();
         }
 
@@ -1265,7 +1334,7 @@
                 hls = new Hls({ enableWorker: true });
                 hls.loadSource(url);
                 hls.attachMedia(videoNativo);
-                hls.on(Hls.Events.MANIFEST_PARSED, () => { videoNativo.play().catch(e => { console.log('Reproducción bloqueada:', e); mensajeSinVideo.textContent = 'Tocá el video para comenzar la reproducción.'; mensajeSinVideo.style.display = 'block'; videoNativo.style.display = 'block'; }); });
+                hls.on(Hls.Events.MANIFEST_PARSED, () => { videoNativo.play().catch(e => { console.log('Reproducción bloqueada:', e); pedirInicioManual(); }); });
                 hls.on(Hls.Events.ERROR, (event, data) => {
                     if (id !== reproduccionId) return;
                     if (data.fatal && reintentosHls < 2) {
@@ -1287,7 +1356,7 @@
                 });
             } else if (videoNativo.canPlayType('application/vnd.apple.mpegurl')) {
                 videoNativo.src = url;
-                videoNativo.play().catch(e => { console.log('Reproducción bloqueada:', e); mensajeSinVideo.textContent = 'Tocá el video para comenzar la reproducción.'; mensajeSinVideo.style.display = 'block'; videoNativo.style.display = 'block'; });
+                videoNativo.play().catch(e => { console.log('Reproducción bloqueada:', e); pedirInicioManual(); });
             } else {
                 detenerContadorCarga();
                 videoNativo.style.display = 'none';
@@ -1304,7 +1373,7 @@
 
             iniciarContadorCarga();
             videoNativo.src = url;
-            videoNativo.play().catch(e => { console.log('Reproducción bloqueada:', e); mensajeSinVideo.textContent = 'Tocá el video para comenzar la reproducción.'; mensajeSinVideo.style.display = 'block'; videoNativo.style.display = 'block'; });
+            videoNativo.play().catch(e => { console.log('Reproducción bloqueada:', e); pedirInicioManual(); });
         }
 
         function reproducirYouTube(url) {
@@ -1312,7 +1381,7 @@
             mensajeSinVideo.style.display = 'none';
             videoNativo.style.display = 'none';
             contenedorYoutube.style.display = 'block';
-            estadoSubtitulos.textContent = 'YouTube administra sus propios subtítulos.';
+            controlesSubtitulos.style.display = 'none'; textoSubtitulos.textContent=''; cerrarPanelSubtitulos();
             let videoId = '';
             try {
                 const u = new URL(url);
@@ -1340,6 +1409,7 @@
         videoNativo.addEventListener('playing', () => {
             detenerContadorCarga();
             mensajeSinVideo.style.display = 'none';
+            accionReproducir.style.display = 'none';
             videoNativo.style.display = 'block';
         });
 
@@ -1368,7 +1438,8 @@
             contenedorYoutube.replaceChildren();
             contenedorYoutube.style.display = 'none';
 
-            estadoSubtitulos.textContent = 'Seleccioná un canal para comprobar subtítulos.';
+            controlesSubtitulos.style.display='none';textoSubtitulos.textContent='';
+            accionReproducir.style.display='none';cerrarPanelSubtitulos();
             mensajeSinVideo.textContent = 'Selecciona un canal de la lista para reproducir';
             mensajeSinVideo.style.display = 'block';
             if (timerInactividad) clearTimeout(timerInactividad);
