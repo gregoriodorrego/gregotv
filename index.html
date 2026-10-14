@@ -169,8 +169,10 @@
         }
         @keyframes girar { to { transform: rotate(360deg); } }
         #segundos-carga {
-            display: inline-block; min-width: 52px; font-weight: bold;
-            font-size: 26px; color: #ffffff; font-variant-numeric: tabular-nums;
+            display: inline-block; min-width: 100px; font-weight: 700;
+            font-size: clamp(42px, 5vw, 60px); line-height: 1.15;
+            color: #ffffff; font-variant-numeric: tabular-nums;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.85);
         }
         .aviso-espera {
             display: none; max-width: 640px; margin-top: 12px;
@@ -353,17 +355,17 @@
         
         <div class="input-container">
             <div class="tab-group">
-                <button class="tab-btn active" onclick="switchTab('local')">📁 Desde archivo local</button>
-                <button class="tab-btn" onclick="switchTab('url')">🌐 Desde URL / GitHub</button>
+                <button class="tab-btn" onclick="switchTab('local')">📁 Desde archivo local</button>
+                <button class="tab-btn active" onclick="switchTab('url')">🌐 Desde URL / GitHub</button>
             </div>
             
-            <div id="tab-local" class="input-area active">
+            <div id="tab-local" class="input-area">
                 <p style="color:#aaa; font-size:16px;">Sube un archivo .m3u o .txt guardado en tu computadora o celular.</p>
                 <input type="file" id="file-input-local" accept=".m3u,.m3u8,.txt">
             </div>
             
-            <div id="tab-url" class="input-area">
-                <p style="color:#aaa; font-size:16px;">Pega el enlace directo o la URL Raw de tu repositorio de GitHub.</p>
+            <div id="tab-url" class="input-area active">
+                <p style="color:#aaa; font-size:16px;">Pegá el enlace directo a una lista M3U (de GitHub o de otro sitio compatible).</p>
                 <input type="text" id="input-url-lista" value="https://raw.githubusercontent.com/gregoriodorrego/gregotv/refs/heads/main/Lista.m3u" placeholder="https://raw.githubusercontent.com/usuario/repo/main/lista.m3u">
                 <button class="boton-grande" id="btn-cargar-url">📂 Cargar URL</button>
             </div>
