@@ -694,6 +694,84 @@
                en filas nuevas, sin comprimir los botones principales. */
             #barra-superior.oculto { display: none; }
         }
+
+        /* ==============================================================
+           SOLO CELULARES (hasta 600px): video y cabecera siempre visibles.
+           Desplazar SOLO los canales: evita superposiciones de Safari
+           provocadas por un video con position: sticky.
+           No se alteran selectores fuera de esta media query.
+           ============================================================== */
+        @media screen and (max-width: 600px) {
+            html, body {
+                height: 100%;
+                overflow: hidden;
+            }
+            /* La bienvenida mantiene su desplazamiento interno propio. */
+            #pantalla-principal {
+                height: 100vh; /* alternativa para Safari anterior a dvh */
+                height: 100dvh;
+                min-height: 0;
+                overflow: hidden;
+            }
+            /* El encabezado queda en el flujo normal, siempre visible. */
+            #barra-superior {
+                position: relative;
+                top: auto;
+                flex: 0 0 auto;
+                z-index: 1200;
+            }
+            #contenedor-principal {
+                display: flex;
+                flex-direction: column;
+                flex: 1 1 auto;
+                height: auto;
+                min-height: 0;
+                overflow: hidden;
+            }
+            #area-video {
+                position: relative;
+                top: auto;
+                z-index: auto;
+                flex: 0 0 auto;
+                width: 100%;
+                min-height: 140px;
+                height: 56.25vw;
+                max-height: 39vh;
+                overflow: hidden;
+                background: #000;
+            }
+            #area-lista {
+                display: grid;
+                flex: 1 1 auto;
+                min-height: 0;
+                height: auto;
+                overflow: hidden;
+                grid-template-rows: auto minmax(0, 1fr) auto;
+            }
+            #lista-canales {
+                height: auto;
+                max-height: none;
+                min-height: 0;
+                overflow-y: auto;
+                overflow-x: hidden;
+                -webkit-overflow-scrolling: touch;
+            }
+            /* En modo cine se conserva el video ampliado, sin lista. */
+            #contenedor-principal.modo-cine {
+                height: auto;
+                flex: 1 1 auto;
+                overflow: hidden;
+            }
+            #contenedor-principal.modo-cine #area-video {
+                flex: 1 1 auto;
+                height: 100%;
+                min-height: 0;
+                max-height: none;
+            }
+            #contenedor-principal.modo-cine #area-lista {
+                display: none;
+            }
+        }
     </style>
 </head>
 <body>
@@ -795,7 +873,7 @@
                     </aside>
                 </div>
             </section>
-            <footer class="gregotv-version" aria-label="Versión de GregoTV">GregoTV · v2026.10.15.4</footer>
+            <footer class="gregotv-version" aria-label="Versión de GregoTV">GregoTV · v2026.10.15.5</footer>
         </div>
     </div>
 
