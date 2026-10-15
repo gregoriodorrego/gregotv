@@ -587,6 +587,29 @@
                 padding: 16px; max-height: 92vh; overflow-y: auto;
             }
         }
+        /* Identificador de publicación: se actualiza manualmente en cada entrega.
+           Solo aparece en la pantalla inicial TV/Cine, no tapa los reproductores. */
+        #pantalla-bienvenida .gregotv-version {
+            display:block; width:100%; margin:9px auto 0;
+            padding:3px 5px; text-align:center; font-size:11px;
+            line-height:1.4; letter-spacing:.04em; font-weight:normal;
+            color:#8f9792; pointer-events:none;
+        }
+        /* Icono de identificación de YouTube en ambas distribuciones. */
+        .canal-tipo.icono-youtube-canal { opacity:1; display:inline-flex; align-items:center; flex-shrink:0; }
+        .canal-tipo .icono-youtube-svg { display:block; width:29px; height:21px; }
+        @media screen and (max-width:600px) {
+            .canal-tipo .icono-youtube-svg { width:25px; height:18px; }
+            #pantalla-bienvenida .gregotv-version { margin-top:6px; font-size:10px; }
+            /* Solo se usa si un navegador móvil bloquea el autoplay con sonido. */
+            #contenedor-youtube .youtube-iniciar-movil {
+                position:absolute; z-index:4; left:50%; bottom:15px;
+                transform:translateX(-50%); border:1px solid #a4aaa7;
+                background:rgba(20,20,20,.91); color:white; border-radius:9px;
+                padding:10px 16px; min-height:43px; font-size:15px;
+                font-family:Arial,sans-serif; white-space:nowrap; cursor:pointer;
+            }
+        }
     </style>
 </head>
 <body>
@@ -688,6 +711,7 @@
                     </aside>
                 </div>
             </section>
+            <footer class="gregotv-version" aria-label="Versión de GregoTV">GregoTV · v2026.10.15.1</footer>
         </div>
     </div>
 
@@ -1317,7 +1341,7 @@
             elementosCanal = new Map();
             const fragmento = document.createDocumentFragment();
             totalCanales.textContent = canalesFiltrados.length;
-            const iconosTipo = { 'hls': '', 'youtube': '▶️', 'mp4': '🎬' };
+            const iconosTipo = { 'hls': '', 'mp4': '🎬' }; // YouTube usa su icono reconocible.
             
             canalesFiltrados.forEach(canal => {
                 const item = document.createElement('div');
@@ -1363,7 +1387,13 @@
                 
                 const tipoSpan = document.createElement('span');
                 tipoSpan.className = 'canal-tipo';
-                tipoSpan.textContent = iconosTipo[canal.tipo] || '📺';
+                if (canal.tipo === 'youtube') {
+                    tipoSpan.classList.add('icono-youtube-canal');
+                    tipoSpan.title = 'YouTube';
+                    tipoSpan.innerHTML = '<svg class="icono-youtube-svg" viewBox="0 0 28 20" role="img" aria-label="YouTube" focusable="false"><rect x="0" y="1" width="28" height="18" rx="5" fill="#FF0033"/><path d="M11 5.5 L19 10 L11 14.5 Z" fill="#FFF"/></svg>';
+                } else {
+                    tipoSpan.textContent = iconosTipo[canal.tipo] || '📺';
+                }
                 
                 const btnEditar = document.createElement('button');
                 btnEditar.className = 'boton-editar';
@@ -1834,6 +1864,32 @@
                 capa.addEventListener('click', alternarPausaYouTube);
                 contenedorYoutube.appendChild(capa);
 
+                // En pantallas móviles, el navegador puede bloquear autoplay
+                // con sonido. El control de respaldo se muestra SOLO si YouTube
+                // informa un bloqueo. En TV y computadora no se crea.
+                const esPantallaMovilYT = window.innerWidth <= 600;
+                let botonInicioMovil = null;
+                if (esPantallaMovilYT) {
+                    botonInicioMovil = document.createElement('button');
+                    botonInicioMovil.type = 'button';
+                    botonInicioMovil.className = 'youtube-iniciar-movil';
+                    botonInicioMovil.textContent = '▶ Iniciar YouTube';
+                    botonInicioMovil.style.display = 'none';
+                    botonInicioMovil.addEventListener('click', evento => {
+                        evento.stopPropagation();
+                        if (reproductorYouTube && youtubeApiLista) {
+                            try { reproductorYouTube.playVideo(); } catch(error) {
+                                console.warn('YouTube no pudo iniciarse desde el botón móvil:', error);
+                            }
+                        }
+                    });
+                    contenedorYoutube.appendChild(botonInicioMovil);
+                }
+                function mostrarInicioYouTubeMovil(mostrar) {
+                    if (!botonInicioMovil || !document.documentElement.contains(botonInicioMovil)) return;
+                    botonInicioMovil.style.display = mostrar ? 'block' : 'none';
+                }
+
                 // Nunca retrasar la imagen por la carga de la API. Si falla,
                 // YouTube continúa reproduciéndose y el menú sigue accesible.
                 const idSesion = reproduccionId;
@@ -1847,7 +1903,22 @@
                                     if (idSesion === reproduccionId &&
                                         canalSeleccionado && canalSeleccionado.tipo === 'youtube') {
                                         youtubeApiLista = true;
+                                        // Autoplay ya se solicita con autoplay=1. En móvil
+                                        // también se pide al quedar lista la API (sin silenciar).
+                                        if (esPantallaMovilYT) {
+                                            try { evento.target.playVideo(); } catch (error) {
+                                                mostrarInicioYouTubeMovil(true);
+                                            }
+                                        }
                                     }
+                                },
+                                onStateChange: (evento) => {
+                                    if (idSesion === reproduccionId && evento.data === 1) {
+                                        mostrarInicioYouTubeMovil(false);
+                                    }
+                                },
+                                onAutoplayBlocked: () => {
+                                    if (idSesion === reproduccionId) mostrarInicioYouTubeMovil(true);
                                 },
                                 onError: (evento) => {
                                     if (idSesion === reproduccionId) {
@@ -1859,7 +1930,15 @@
                     } catch (error) {
                         console.warn('Control de pausa de YouTube no disponible:', error);
                     }
-                }).catch(error => console.warn('API de pausa de YouTube no disponible:', error));
+                }).catch(error => {
+                    console.warn('API de pausa de YouTube no disponible:', error);
+                    // Si la API falla en celular, permitir tocar directamente
+                    // el reproductor de YouTube en lugar de bloquear el video.
+                    if (esPantallaMovilYT && idSesion === reproduccionId) {
+                        superior.style.pointerEvents = 'none';
+                        inferior.style.pointerEvents = 'none';
+                    }
+                });
             } else {
                 contenedorYoutube.style.display = 'none';
                 mostrarEstadoVideo('No se pudo identificar el video de YouTube.', 'error');
@@ -1952,7 +2031,8 @@
     </script>
 
     <script>
-    /* Navegación inicial y catálogo: módulo independiente del reproductor TV. */
+    /* Orquestador de Cine: navegación, categoría, búsqueda y estado.
+       Independiente del orquestador de TV; preparado para ampliar el catálogo. */
     (function () {
         var bTV=document.getElementById('inicio-tab-tv');
         var bCine=document.getElementById('inicio-tab-cine');
@@ -1964,8 +2044,9 @@
         var categorias=document.querySelectorAll('#inicio-contenido-cine .cine-categoria');
         var contador=document.getElementById('cine-contar');
         var sinResultados=document.getElementById('cine-no-resultados');
-        var filtro='todos';
+        var estadoCine={seccion:'tv', categoria:'todos'};
         function cambiarSeccion(seccion) {
+            estadoCine.seccion=seccion;
             var cine=seccion==='cine';
             pTV.style.display=cine?'none':'block';
             pCine.style.display=cine?'block':'none';
@@ -1982,7 +2063,7 @@
             for(var i=0;i<fichas.length;i++) {
                 var tipo=fichas[i].getAttribute('data-tipo')||'';
                 var nombre=fichas[i].getAttribute('data-busca')||'';
-                var mostrar=(filtro==='todos'||tipo===filtro)&&(!texto||nombre.indexOf(texto)!==-1);
+                var mostrar=(estadoCine.categoria==='todos'||tipo===estadoCine.categoria)&&(!texto||nombre.indexOf(texto)!==-1);
                 fichas[i].style.display=mostrar?'flex':'none';
                 if(mostrar)visibles++;
             }
@@ -1994,7 +2075,7 @@
         volver.addEventListener('click',function(){cambiarSeccion('tv');bTV.focus();});
         for(var i=0;i<categorias.length;i++) {
             categorias[i].addEventListener('click',function() {
-                filtro=this.getAttribute('data-cine-filtro')||'todos';
+                estadoCine.categoria=this.getAttribute('data-cine-filtro')||'todos';
                 for(var j=0;j<categorias.length;j++) {
                     var activo=categorias[j]===this;
                     categorias[j].className=activo?'cine-categoria activa':'cine-categoria';
