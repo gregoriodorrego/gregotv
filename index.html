@@ -646,6 +646,54 @@
             }
             #contenedor-principal.modo-cine #area-lista { display:none; }
         }
+
+        /* ===========================================================
+           MOVIL: controles en una sola fila y cabecera siempre a mano.
+           No fijar el VIDEO: en Safari provocaba una franja superpuesta.
+           Todos los ajustes son visuales y exclusivamente <= 600 px.
+           =========================================================== */
+        @media screen and (max-width: 600px) {
+            #barra-superior {
+                position: -webkit-sticky;
+                position: sticky;
+                top: 0;
+                z-index: 1200;
+                width: 100%;
+                padding: 5px 7px 7px;
+                gap: 4px;
+                background-color: #2a2a2a;
+                border-bottom: 2px solid #444;
+            }
+            #barra-superior h2 {
+                width: 100%;
+                font-size: 16px;
+                line-height: 1.15;
+                text-align: center;
+                margin: 0;
+            }
+            #barra-superior .controles-superior {
+                display: grid;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 5px;
+                align-items: stretch;
+                width: 100%;
+                min-width: 0;
+            }
+            #barra-superior .controles-superior > button {
+                width: 100%;
+                min-width: 0;
+                min-height: 44px;
+                padding: 6px 3px;
+                font-size: 11px;
+                line-height: 1.15;
+                white-space: normal;
+                overflow-wrap: break-word;
+                text-align: center;
+            }
+            /* Mientras se edita la lista aparecen controles adicionales
+               en filas nuevas, sin comprimir los botones principales. */
+            #barra-superior.oculto { display: none; }
+        }
     </style>
 </head>
 <body>
@@ -747,7 +795,7 @@
                     </aside>
                 </div>
             </section>
-            <footer class="gregotv-version" aria-label="Versión de GregoTV">GregoTV · v2026.10.15.3</footer>
+            <footer class="gregotv-version" aria-label="Versión de GregoTV">GregoTV · v2026.10.15.4</footer>
         </div>
     </div>
 
