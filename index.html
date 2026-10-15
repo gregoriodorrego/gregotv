@@ -308,44 +308,65 @@
         #contenedor-principal.modo-cine,
         #contenedor-principal.modo-cine * { cursor: none !important; }
 
-        /* ===== INICIO TV / CINE UNIFICADO - sin modificar el reproductor ===== */
+        /* ===== INICIO TV / CINE: distribución compacta para televisor =====
+           Solo cambia la presentación inicial; no toca audio ni reproductores. */
         #pantalla-bienvenida {
             display:flex; flex-direction:column; justify-content:flex-start; align-items:center;
-            overflow-x:hidden; overflow-y:auto; height:100vh; padding:26px 20px 42px;
-            background:#151515; color:#f3f3f3; text-align:left;
+            height:100vh; overflow-x:hidden; overflow-y:auto;
+            padding:12px 16px 16px; background:#151515; color:#f3f3f3; text-align:left;
+            -webkit-text-size-adjust:100%;
         }
-        #pantalla-bienvenida .inicio-marco { width:100%; max-width:1230px; margin:0 auto; }
-        #pantalla-bienvenida .inicio-cabecera { text-align:center; margin:3px 0 20px; }
-        #pantalla-bienvenida .inicio-cabecera h1 { font-size:32px; color:#ffffff; margin:0 0 4px; }
-        #pantalla-bienvenida .inicio-cabecera p { color:#c4c9c7; font-size:17px; margin:0; max-width:none; }
+        #pantalla-bienvenida .inicio-marco { width:100%; max-width:1230px; margin:auto; }
+        #pantalla-bienvenida .inicio-cabecera { text-align:center; margin:0 0 9px; }
+        #pantalla-bienvenida .inicio-cabecera h1 { font-size:28px; line-height:1.1; color:#fff; margin:0 0 3px; }
+        #pantalla-bienvenida .inicio-cabecera p { color:#c4c9c7; font-size:15px; line-height:1.2; margin:0; max-width:none; }
         #pantalla-bienvenida .inicio-opciones {
-            display:flex; gap:14px; background:#222222; border:1px solid #414141;
-            border-radius:15px; padding:12px; margin:0 auto 20px; max-width:990px;
+            display:flex; gap:9px; background:#222; border:1px solid #414141;
+            border-radius:12px; padding:6px; margin:0 auto 10px; max-width:990px;
         }
         #pantalla-bienvenida .inicio-opcion {
-            flex:1; min-width:0; min-height:142px; display:flex; flex-direction:column;
-            align-items:center; justify-content:center; gap:8px; cursor:pointer;
-            background:#262626; border:2px solid transparent; border-radius:12px;
-            padding:14px 8px; color:#f7f7f7; font-family:Arial,sans-serif;
+            flex:1; min-width:0; min-height:88px; display:flex; flex-direction:column;
+            align-items:center; justify-content:center; gap:3px; cursor:pointer;
+            background:#262626; border:2px solid transparent; border-radius:9px;
+            padding:8px 7px; color:#f7f7f7; font-family:Arial,sans-serif;
         }
-        #pantalla-bienvenida .inicio-opcion svg { width:38px; height:38px; fill:none; stroke:#f0f2f1; stroke-width:2.4; stroke-linecap:round; stroke-linejoin:round; }
-        #pantalla-bienvenida .inicio-opcion strong { font-size:22px; }
-        #pantalla-bienvenida .inicio-opcion span { color:#c9d0cb; font-size:15px; line-height:1.35; }
+        #pantalla-bienvenida .inicio-opcion svg {
+            width:29px; height:29px; fill:none; stroke:#f0f2f1; stroke-width:2.4;
+            stroke-linecap:round; stroke-linejoin:round;
+        }
+        #pantalla-bienvenida .inicio-opcion strong { font-size:20px; line-height:1.15; }
+        #pantalla-bienvenida .inicio-opcion span { color:#c9d0cb; font-size:13px; line-height:1.2; }
         #pantalla-bienvenida .inicio-opcion:hover { background:#353e38; }
         #pantalla-bienvenida .inicio-opcion.activa { background:#234630; border-color:#7dd99a; }
-        #pantalla-bienvenida button:focus, #pantalla-bienvenida input:focus, #pantalla-bienvenida a:focus { outline:3px solid #8de6aa; outline-offset:3px; }
-        #pantalla-bienvenida .inicio-panel { background:#222222; border:1px solid #414141; border-radius:15px; padding:24px; margin:0 auto; max-width:990px; }
+        #pantalla-bienvenida button:focus, #pantalla-bienvenida input:focus,
+        #pantalla-bienvenida a:focus { outline:3px solid #8de6aa; outline-offset:2px; }
+        #pantalla-bienvenida .inicio-panel {
+            background:#222; border:1px solid #414141; border-radius:12px;
+            padding:13px 18px; margin:0 auto; max-width:990px;
+        }
         #pantalla-bienvenida #inicio-contenido-cine { max-width:1230px; }
-        #pantalla-bienvenida .inicio-panel h2 { margin:0 0 6px; font-size:26px; color:#f7f7f7; }
-        #pantalla-bienvenida p.inicio-descripcion { font-size:17px; margin:0 0 19px; color:#c3cac7; max-width:none; }
-        #pantalla-bienvenida .input-container { max-width:710px; margin:0 auto; }
-        #pantalla-bienvenida .tab-group { margin-bottom:15px; }
-        #pantalla-bienvenida .tab-btn { background:#353535; color:#e9ecea; font-size:17px; font-weight:600; min-height:55px; }
+        #pantalla-bienvenida .inicio-panel h2 { margin:0 0 4px; font-size:23px; color:#f7f7f7; }
+        #pantalla-bienvenida p.inicio-descripcion { font-size:15px; line-height:1.25; margin:0 0 10px; color:#c3cac7; max-width:none; }
+        #pantalla-bienvenida .input-container { width:100%; max-width:720px; margin:0 auto; }
+        #pantalla-bienvenida .tab-group { margin-bottom:8px; gap:8px; }
+        #pantalla-bienvenida .tab-btn {
+            background:#353535; color:#e9ecea; font-size:16px; font-weight:600;
+            min-height:48px; padding:8px 15px;
+        }
         #pantalla-bienvenida .tab-btn.active { background:#267f47; color:#fff; }
-        #pantalla-bienvenida .input-area p { color:#c9ceca !important; font-size:16px !important; margin:0 0 4px; max-width:none; }
-        #pantalla-bienvenida #input-url-lista, #pantalla-bienvenida #file-input-local { background:#2b2b2b; color:#fafafa; border-color:#747d77; }
-        #pantalla-bienvenida #btn-cargar-url { min-height:58px; }
-        #pantalla-bienvenida #mensaje-error { margin:14px auto 0; }
+        #pantalla-bienvenida .input-area { gap:7px; }
+        #pantalla-bienvenida .input-area p {
+            color:#c9ceca !important; font-size:14px !important;
+            line-height:1.25; margin:0; max-width:none; text-align:center;
+        }
+        #pantalla-bienvenida #input-url-lista, #pantalla-bienvenida #file-input-local {
+            background:#2b2b2b; color:#fafafa; border-color:#747d77;
+            padding:10px 12px; font-size:16px; min-height:48px;
+        }
+        #pantalla-bienvenida #btn-cargar-url {
+            min-height:48px; padding:10px 28px; font-size:18px; border-radius:9px;
+        }
+        #pantalla-bienvenida #mensaje-error { margin:9px auto 0; }
         /* Catálogo compacto (aislado de la UI de canales) */
         #pantalla-bienvenida .cine-encabezado { display:flex; justify-content:space-between; align-items:center; gap:16px; margin-bottom:10px; }
         #pantalla-bienvenida .cine-volver-tv { background:#287544; border:2px solid #1d6335; color:white; border-radius:9px; padding:13px 17px; font-size:20px; font-weight:700; white-space:nowrap; cursor:pointer; }
@@ -378,19 +399,52 @@
             #pantalla-bienvenida .cine-ficha { width:calc(100% - 12px); }
             #pantalla-bienvenida .cine-lateral { width:215px; flex-basis:215px; }
         }
+        /* Teléfonos: solo reglas visuales, separadas del reproductor TV. */
         @media(max-width:670px) {
-            #pantalla-bienvenida { padding:13px 10px 28px; }
-            #pantalla-bienvenida .inicio-cabecera h1 { font-size:27px; }
-            #pantalla-bienvenida .inicio-opciones { padding:6px; gap:5px; }
-            #pantalla-bienvenida .inicio-opcion { min-height:125px; padding:10px 5px; }
-            #pantalla-bienvenida .inicio-opcion strong { font-size:17px; }
-            #pantalla-bienvenida .inicio-opcion span { font-size:12px; }
-            #pantalla-bienvenida .inicio-panel { padding:15px 10px; }
+            #pantalla-bienvenida { padding:10px 9px 18px; }
+            #pantalla-bienvenida .inicio-cabecera { margin-bottom:8px; }
+            #pantalla-bienvenida .inicio-cabecera h1 { font-size:25px; }
+            #pantalla-bienvenida .inicio-cabecera p { font-size:14px; }
+            #pantalla-bienvenida .inicio-opciones { padding:5px; gap:5px; margin-bottom:9px; }
+            #pantalla-bienvenida .inicio-opcion { min-height:84px; padding:7px 4px; }
+            #pantalla-bienvenida .inicio-opcion svg { width:25px; height:25px; }
+            #pantalla-bienvenida .inicio-opcion strong { font-size:16px; text-align:center; }
+            #pantalla-bienvenida .inicio-opcion span { font-size:12px; text-align:center; }
+            #pantalla-bienvenida .inicio-panel { padding:12px 11px; }
+            #pantalla-bienvenida .inicio-panel h2 { font-size:21px; }
+            #pantalla-bienvenida .tab-btn { font-size:14px; padding:8px 7px; }
+            #pantalla-bienvenida p.inicio-descripcion { font-size:14px; }
             #pantalla-bienvenida .cine-encabezado { flex-direction:column; align-items:stretch; }
             #pantalla-bienvenida .cine-distribucion { flex-direction:column-reverse; }
             #pantalla-bienvenida .cine-lateral { width:100%; flex:0 0 auto; }
             #pantalla-bienvenida .cine-ficha { min-height:115px; }
-            #pantalla-bienvenida .tab-btn { font-size:14px; padding:8px; }
+            /* En celular el video queda arriba y los canales debajo, sin
+               estrechar el video a solo media pantalla. */
+            #contenedor-principal { flex-direction:column; min-height:0; }
+            #area-video { width:100%; min-height:180px; height:37vh; flex:0 0 37vh; }
+            #area-lista {
+                width:100%; max-width:none; min-height:0; max-height:none;
+                flex:1 1 auto; border-left:0; border-top:2px solid #444;
+            }
+            #contenedor-principal.modo-cine #area-video { width:100%; height:100%; flex:1 1 auto; }
+            #barra-superior h2 { font-size:20px; }
+            #barra-superior .controles-superior { gap:5px; }
+            #barra-superior .boton-mediano { font-size:14px; min-height:42px; padding:7px 9px; }
+        }
+        /* Pantallas de televisor de poca altura: todo el acceso a canales
+           debe caber sin esconder el botón Cargar URL. */
+        @media (min-width:671px) and (max-height:650px) {
+            #pantalla-bienvenida { padding:8px 13px; }
+            #pantalla-bienvenida .inicio-cabecera { margin-bottom:6px; }
+            #pantalla-bienvenida .inicio-cabecera h1 { font-size:25px; }
+            #pantalla-bienvenida .inicio-opciones { margin-bottom:7px; padding:4px; }
+            #pantalla-bienvenida .inicio-opcion { min-height:71px; padding:5px; }
+            #pantalla-bienvenida .inicio-opcion svg { width:24px; height:24px; }
+            #pantalla-bienvenida .inicio-opcion strong { font-size:18px; }
+            #pantalla-bienvenida .inicio-panel { padding:10px 15px; }
+            #pantalla-bienvenida p.inicio-descripcion { margin-bottom:7px; }
+            #pantalla-bienvenida .tab-group { margin-bottom:6px; }
+            #pantalla-bienvenida .tab-btn { min-height:44px; }
         }
     </style>
 </head>
