@@ -602,6 +602,47 @@
             .canal-tipo .icono-youtube-svg { width:25px; height:18px; }
             #pantalla-bienvenida .gregotv-version { margin-top:6px; font-size:10px; }
         }
+
+        /* Corrección de desplazamiento en celulares (Safari/Chrome móvil):
+           evitar la lista anidada dentro de un contenedor de alto fijo.
+           En TV y TV Box no se modifican estas reglas. */
+        @media screen and (max-width:600px) {
+            body {
+                height:auto; min-height:100vh;
+                overflow-x:hidden; overflow-y:auto;
+                -webkit-overflow-scrolling:touch;
+            }
+            #pantalla-principal {
+                height:auto; min-height:0;
+            }
+            #contenedor-principal {
+                flex:0 0 auto; overflow:visible;
+            }
+            #area-video {
+                position:sticky; top:0; z-index:1002;
+            }
+            #area-lista {
+                flex:0 0 auto; overflow:visible;
+                grid-template-rows:auto auto auto;
+            }
+            #lista-canales {
+                height:auto; max-height:none;
+                overflow:visible;
+            }
+            /* Conservar el modo cine a pantalla de video completa y
+               ocultar el encabezado mientras permanece activo. */
+            #barra-superior.oculto { display:none; }
+            #contenedor-principal.modo-cine {
+                height:100vh; height:100dvh;
+                overflow:hidden;
+                flex:1 1 auto;
+            }
+            #contenedor-principal.modo-cine #area-video {
+                position:relative; top:auto;
+                flex:1 1 auto; height:100%; max-height:none;
+            }
+            #contenedor-principal.modo-cine #area-lista { display:none; }
+        }
     </style>
 </head>
 <body>
@@ -703,7 +744,7 @@
                     </aside>
                 </div>
             </section>
-            <footer class="gregotv-version" aria-label="Versión de GregoTV">GregoTV · v2026.10.15.1</footer>
+            <footer class="gregotv-version" aria-label="Versión de GregoTV">GregoTV · v2026.10.15.2</footer>
         </div>
     </div>
 
