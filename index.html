@@ -601,14 +601,6 @@
         @media screen and (max-width:600px) {
             .canal-tipo .icono-youtube-svg { width:25px; height:18px; }
             #pantalla-bienvenida .gregotv-version { margin-top:6px; font-size:10px; }
-            /* Solo se usa si un navegador móvil bloquea el autoplay con sonido. */
-            #contenedor-youtube .youtube-iniciar-movil {
-                position:absolute; z-index:4; left:50%; bottom:15px;
-                transform:translateX(-50%); border:1px solid #a4aaa7;
-                background:rgba(20,20,20,.91); color:white; border-radius:9px;
-                padding:10px 16px; min-height:43px; font-size:15px;
-                font-family:Arial,sans-serif; white-space:nowrap; cursor:pointer;
-            }
         }
     </style>
 </head>
@@ -1864,31 +1856,7 @@
                 capa.addEventListener('click', alternarPausaYouTube);
                 contenedorYoutube.appendChild(capa);
 
-                // En pantallas móviles, el navegador puede bloquear autoplay
-                // con sonido. El control de respaldo se muestra SOLO si YouTube
-                // informa un bloqueo. En TV y computadora no se crea.
                 const esPantallaMovilYT = window.innerWidth <= 600;
-                let botonInicioMovil = null;
-                if (esPantallaMovilYT) {
-                    botonInicioMovil = document.createElement('button');
-                    botonInicioMovil.type = 'button';
-                    botonInicioMovil.className = 'youtube-iniciar-movil';
-                    botonInicioMovil.textContent = '▶ Iniciar YouTube';
-                    botonInicioMovil.style.display = 'none';
-                    botonInicioMovil.addEventListener('click', evento => {
-                        evento.stopPropagation();
-                        if (reproductorYouTube && youtubeApiLista) {
-                            try { reproductorYouTube.playVideo(); } catch(error) {
-                                console.warn('YouTube no pudo iniciarse desde el botón móvil:', error);
-                            }
-                        }
-                    });
-                    contenedorYoutube.appendChild(botonInicioMovil);
-                }
-                function mostrarInicioYouTubeMovil(mostrar) {
-                    if (!botonInicioMovil || !document.documentElement.contains(botonInicioMovil)) return;
-                    botonInicioMovil.style.display = mostrar ? 'block' : 'none';
-                }
 
                 // Nunca retrasar la imagen por la carga de la API. Si falla,
                 // YouTube continúa reproduciéndose y el menú sigue accesible.
@@ -1907,18 +1875,10 @@
                                         // también se pide al quedar lista la API (sin silenciar).
                                         if (esPantallaMovilYT) {
                                             try { evento.target.playVideo(); } catch (error) {
-                                                mostrarInicioYouTubeMovil(true);
+                                                console.warn('YouTube no pudo iniciarse automáticamente en el celular:', error);
                                             }
                                         }
                                     }
-                                },
-                                onStateChange: (evento) => {
-                                    if (idSesion === reproduccionId && evento.data === 1) {
-                                        mostrarInicioYouTubeMovil(false);
-                                    }
-                                },
-                                onAutoplayBlocked: () => {
-                                    if (idSesion === reproduccionId) mostrarInicioYouTubeMovil(true);
                                 },
                                 onError: (evento) => {
                                     if (idSesion === reproduccionId) {
