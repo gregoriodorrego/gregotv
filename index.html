@@ -800,36 +800,50 @@
         }
 
         /* ===============================================================
-           PELÍCULAS Y SERIES EN CELULAR: el catálogo tiene su propio scroll.
-           Esta regla se activa únicamente si la sección Cine está abierta.
-           Televisión, el reproductor y pantallas mayores a 600px no cambian.
-           ============================================================== */
+           CINE MÓVIL: estructura visual independiente de Televisión.
+           Solo se activa en <= 600px Y cuando el controlador de Cine
+           añade .inicio-cine-activo. Nunca altera el reproductor ni TV.
+           El encabezado y las pestañas permanecen visibles; el catálogo
+           se desplaza en su propio contenedor para evitar recortes.
+           =============================================================== */
         @media screen and (max-width: 600px) {
-            #pantalla-bienvenida:has(#inicio-contenido-cine[style*="display: block"]) {
-                height: 100vh;     /* respaldo para Safari más antiguo */
-                height: 100dvh;    /* altura real visible al mostrar barras */
+            #pantalla-bienvenida.inicio-cine-activo {
+                height: 100vh;  /* Respaldo para WebKit sin dvh */
+                height: 100dvh;
                 min-height: 0;
-                display: flex;
-                flex-direction: column;
+                padding-top: 24px;
+                padding-top: calc(24px + env(safe-area-inset-top, 0px));
+                padding-bottom: 12px;
+                padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
                 justify-content: flex-start;
                 align-items: center;
+                overflow: hidden;
+            }
+            #pantalla-bienvenida.inicio-cine-activo .inicio-marco {
+                display: flex;
+                flex-direction: column;
+                flex: 1 1 auto;
+                width: 100%;
+                height: 100%;
+                min-height: 0;
+                margin: 0 auto;
+            }
+            #pantalla-bienvenida.inicio-cine-activo .inicio-cabecera,
+            #pantalla-bienvenida.inicio-cine-activo .inicio-opciones,
+            #pantalla-bienvenida.inicio-cine-activo .gregotv-version {
+                flex-shrink: 0;
+            }
+            #pantalla-bienvenida.inicio-cine-activo .inicio-cabecera {
+                margin-top: 0;
+                text-align: center;
+            }
+            #pantalla-bienvenida.inicio-cine-activo #inicio-contenido-cine {
+                flex: 1 1 auto;
+                min-height: 0;
                 overflow-x: hidden;
                 overflow-y: auto;
                 -webkit-overflow-scrolling: touch;
-                padding-top: 28px;
-                padding-top: calc(28px + env(safe-area-inset-top, 0px));
-                padding-bottom: 20px;
-                padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
-            }
-            #pantalla-bienvenida:has(#inicio-contenido-cine[style*="display: block"]) .inicio-marco {
-                width: 100%;
-                flex: 0 0 auto;
-                margin: 0 auto;
-            }
-            #pantalla-bienvenida:has(#inicio-contenido-cine[style*="display: block"]) .inicio-cabecera {
-                flex: 0 0 auto;
-                text-align: center;
-                margin-top: 0;
+                overscroll-behavior: contain;
             }
         }
     </style>
@@ -933,7 +947,7 @@
                     </aside>
                 </div>
             </section>
-            <footer class="gregotv-version" aria-label="Versión de GregoTV">GregoTV · v2026.10.16.3</footer>
+            <footer class="gregotv-version" aria-label="Versión de GregoTV">GregoTV · v2026.10.16.4</footer>
         </div>
     </div>
 
@@ -2245,7 +2259,13 @@
             bTV.setAttribute('aria-pressed',cine?'false':'true');
             bCine.setAttribute('aria-pressed',cine?'true':'false');
             var inicio=document.getElementById('pantalla-bienvenida');
-            if(inicio)inicio.scrollTop=0;
+            if(inicio) {
+                // Solo cambia el estilo del catálogo móvil; TV conserva su diseño.
+                if(cine) inicio.classList.add('inicio-cine-activo');
+                else inicio.classList.remove('inicio-cine-activo');
+                inicio.scrollTop=0;
+                if(cine) pCine.scrollTop=0;
+            }
         }
         function filtrar() {
             var texto=(buscar.value||'').toLowerCase().replace(/^\s+|\s+$/g,'');
