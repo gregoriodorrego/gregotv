@@ -772,6 +772,29 @@
                 display: none;
             }
         }
+
+        /* ============================================================
+           INICIO MÓVIL: centrado seguro, sin modificar la vista de TV.
+           El margen automático centra cuando sobra altura y se reduce
+           a cero si la pantalla es pequeña para evitar cortar el título.
+           ============================================================ */
+        @media screen and (max-width: 600px) {
+            #pantalla-bienvenida {
+                justify-content: flex-start;
+                padding-top: 12px;
+                padding-top: calc(12px + env(safe-area-inset-top, 0px));
+                padding-bottom: 16px;
+                padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+            }
+            #pantalla-bienvenida .inicio-marco {
+                width: 100%;
+                flex: 0 0 auto;
+                margin: auto;
+            }
+            #pantalla-bienvenida .inicio-cabecera {
+                text-align: center;
+            }
+        }
     </style>
 </head>
 <body>
@@ -873,7 +896,7 @@
                     </aside>
                 </div>
             </section>
-            <footer class="gregotv-version" aria-label="Versión de GregoTV">GregoTV · v2026.10.15.5</footer>
+            <footer class="gregotv-version" aria-label="Versión de GregoTV">GregoTV · v2026.10.16.1</footer>
         </div>
     </div>
 
