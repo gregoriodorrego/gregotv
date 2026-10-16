@@ -6,7 +6,38 @@
     <title>GregoTV — Mi televisión</title>
     <!-- HLS.js para streams .m3u8 -->
     <script src="https://cdn.jsdelivr.net/npm/hls.js@1.6.13"></script>
-    <style>
+    <!-- BLOQUE DE ESTILOS: BASE GREGOTV: estilos historicos comunes, controles y variables ya existentes -->
+    <style id="estilos-base-compartida">
+        /* ===============================================================
+           GREGOTV / CONTRATO VISUAL POR PANTALLAS - VERSION 1
+           ---------------------------------------------------------------
+           CELULAR (<=600px):
+             A. INICIO / TV: #inicio-contenido-tv, .vista-celular-principal
+             B. REPRODUCTOR: #pantalla-principal, .vista-celular-reproductor
+             C. CINE: #inicio-contenido-cine, .vista-celular-cine
+                Estado de navegación: .inicio-cine-activo en la bienvenida.
+           COMPARTIDO: #pantalla-bienvenida, .inicio-cabecera,
+                       .inicio-opciones, .inicio-opcion, .gregotv-version.
+           TELEVISOR (>600px): estilos originales protegidos.
+           TELEVISION (>=671px):
+             A. PRINCIPAL: #inicio-contenido-tv
+             B. REPRODUCTOR: #pantalla-principal
+             C. PELICULAS Y SERIES: #inicio-contenido-cine
+             Las reglas base y de adaptacion existentes se CONSERVAN.
+             Las tres zonas tv-*-reglas-protegidas son reservas vacias,
+             destinadas a estilos de cada pantalla dentro de @media(min-width:671px).
+             Estas reservas no cambian el aspecto ni el comportamiento actual.
+
+           REGLAS DE MANTENIMIENTO:
+           - Todo cambio celular DEBE estar en @media (max-width:600px).
+           - Cada pantalla usa su raíz: NO usar #pantalla-bienvenida para
+             modificar un elemento exclusivo de TV o Cine.
+           - Los elementos compartidos solo se editan con permiso explícito.
+           - Ningún cambio visual altera scripts de video, YouTube o audio.
+           - Comparar TV 1280x720, 960x540 y móvil 390x844 y 320x568.
+           - Mismo index.html: no hay página adicional ni dependencias.
+           =============================================================== */
+
         * { box-sizing: border-box; margin: 0; padding: 0; }
         
         body {
@@ -68,7 +99,9 @@
             background: #3a1a1a; border-radius: 8px; display: none; max-width: 600px;
         }
 
-        #pantalla-principal { display: none; height: 100vh; flex-direction: column; }
+        </style>
+    <!-- BLOQUE DE ESTILOS: TELEVISION / REPRODUCTOR — estilos de base compartidos. No modificar reglas de reproduccion. -->
+    <style id="estilos-reproductor-tv-base">#pantalla-principal { display: none; height: 100vh; flex-direction: column; }
 
         #barra-superior {
             background-color: #2a2a2a; padding: 12px 20px; display: flex;
@@ -308,7 +341,9 @@
         #contenedor-principal.modo-cine,
         #contenedor-principal.modo-cine * { cursor: none !important; }
 
-        /* ===== INICIO TV / CINE: distribución compacta para televisor =====
+        </style>
+    <!-- BLOQUE DE ESTILOS: TELEVISION / PANTALLA PRINCIPAL — base de bienvenida y navegacion compartida con celular. -->
+    <style id="estilos-inicio-navegacion-base">/* ===== INICIO TV / CINE: distribución compacta para televisor =====
            Solo cambia la presentación inicial; no toca audio ni reproductores. */
         #pantalla-bienvenida {
             display:flex; flex-direction:column; justify-content:flex-start; align-items:center;
@@ -347,59 +382,63 @@
         #pantalla-bienvenida #inicio-contenido-cine { max-width:1230px; }
         #pantalla-bienvenida .inicio-panel h2 { margin:0 0 4px; font-size:23px; color:#f7f7f7; }
         #pantalla-bienvenida p.inicio-descripcion { font-size:15px; line-height:1.25; margin:0 0 10px; color:#c3cac7; max-width:none; }
-        #pantalla-bienvenida .input-container { width:100%; max-width:720px; margin:0 auto; }
-        #pantalla-bienvenida .tab-group { margin-bottom:8px; gap:8px; }
-        #pantalla-bienvenida .tab-btn {
+        #inicio-contenido-tv .input-container { width:100%; max-width:720px; margin:0 auto; }
+        #inicio-contenido-tv .tab-group { margin-bottom:8px; gap:8px; }
+        #inicio-contenido-tv .tab-btn {
             background:#353535; color:#e9ecea; font-size:16px; font-weight:600;
             min-height:48px; padding:8px 15px;
         }
-        #pantalla-bienvenida .tab-btn.active { background:#267f47; color:#fff; }
-        #pantalla-bienvenida .input-area { gap:7px; }
-        #pantalla-bienvenida .input-area p {
+        #inicio-contenido-tv .tab-btn.active { background:#267f47; color:#fff; }
+        #inicio-contenido-tv .input-area { gap:7px; }
+        #inicio-contenido-tv .input-area p {
             color:#c9ceca !important; font-size:14px !important;
             line-height:1.25; margin:0; max-width:none; text-align:center;
         }
-        #pantalla-bienvenida #input-url-lista, #pantalla-bienvenida #file-input-local {
+        #inicio-contenido-tv #input-url-lista, #inicio-contenido-tv #file-input-local {
             background:#2b2b2b; color:#fafafa; border-color:#747d77;
             padding:10px 12px; font-size:16px; min-height:48px;
         }
-        #pantalla-bienvenida #btn-cargar-url {
+        #inicio-contenido-tv #btn-cargar-url {
             min-height:48px; padding:10px 28px; font-size:18px; border-radius:9px;
         }
-        #pantalla-bienvenida #mensaje-error { margin:9px auto 0; }
-        /* Catálogo compacto (aislado de la UI de canales) */
-        #pantalla-bienvenida .cine-encabezado { display:flex; justify-content:space-between; align-items:center; gap:16px; margin-bottom:10px; }
-        #pantalla-bienvenida .cine-volver-tv { background:#287544; border:2px solid #1d6335; color:white; border-radius:9px; padding:13px 17px; font-size:20px; font-weight:700; white-space:nowrap; cursor:pointer; }
-        #pantalla-bienvenida .cine-distribucion { display:flex; gap:18px; align-items:stretch; }
-        #pantalla-bienvenida .cine-principal { flex:1; min-width:0; }
-        #pantalla-bienvenida .cine-contar { margin:0 0 13px; color:#92e0a9; font-size:16px; font-weight:bold; max-width:none; }
-        #pantalla-bienvenida .cine-rejilla { display:flex; flex-wrap:wrap; margin:-6px; }
-        #pantalla-bienvenida .cine-ficha {
+        #inicio-contenido-tv #mensaje-error { margin:9px auto 0; }
+        </style>
+    <!-- BLOQUE DE ESTILOS: TELEVISION / PELICULAS Y SERIES — catalogo, fichas y buscador; base compartida con celular. -->
+    <style id="estilos-cine-base">/* Catálogo compacto (aislado de la UI de canales) */
+        #inicio-contenido-cine .cine-encabezado { display:flex; justify-content:space-between; align-items:center; gap:16px; margin-bottom:10px; }
+        #inicio-contenido-cine .cine-volver-tv { background:#287544; border:2px solid #1d6335; color:white; border-radius:9px; padding:13px 17px; font-size:20px; font-weight:700; white-space:nowrap; cursor:pointer; }
+        #inicio-contenido-cine .cine-distribucion { display:flex; gap:18px; align-items:stretch; }
+        #inicio-contenido-cine .cine-principal { flex:1; min-width:0; }
+        #inicio-contenido-cine .cine-contar { margin:0 0 13px; color:#92e0a9; font-size:16px; font-weight:bold; max-width:none; }
+        #inicio-contenido-cine .cine-rejilla { display:flex; flex-wrap:wrap; margin:-6px; }
+        #inicio-contenido-cine .cine-ficha {
             display:flex; width:calc(50% - 12px); min-width:0; min-height:121px;
             margin:6px; overflow:hidden; align-items:stretch; text-decoration:none;
             border:2px solid #474c49; border-radius:11px; background:#303030; color:#f3f3f3;
         }
-        #pantalla-bienvenida .cine-ficha:hover, #pantalla-bienvenida .cine-ficha:focus { background:#35483d; border-color:#86d7a0; }
-        #pantalla-bienvenida .cine-portada, #pantalla-bienvenida .cine-portada img { display:block; width:85px; height:119px; }
-        #pantalla-bienvenida .cine-portada { flex:0 0 85px; background:#393939; overflow:hidden; }
-        #pantalla-bienvenida .cine-portada img { object-fit:cover; }
-        #pantalla-bienvenida .cine-info { flex:1; min-width:0; padding:11px 12px; display:flex; flex-direction:column; align-items:flex-start; justify-content:center; }
-        #pantalla-bienvenida .cine-info h3 { font-size:19px; margin:0 0 6px; color:#fafafa; line-height:1.25; overflow-wrap:break-word; }
-        #pantalla-bienvenida .cine-info p { font-size:14px; margin:0 0 9px; max-width:none; color:#c5cbc7; line-height:1.3; }
-        #pantalla-bienvenida .cine-ver { color:#99e2af; font-size:16px; font-weight:bold; }
-        #pantalla-bienvenida .cine-lateral { width:228px; flex:0 0 228px; background:#2b2b2b; border:1px solid #474c49; border-radius:10px; padding:15px; }
-        #pantalla-bienvenida .cine-lateral label { display:block; font-size:17px; font-weight:bold; margin:0 0 10px; }
-        #pantalla-bienvenida #cine-buscar { width:100%; background:#242424; border:2px solid #828f86; border-radius:9px; padding:12px; color:#f7f7f7; font-size:17px; margin:0 0 24px; }
-        #pantalla-bienvenida .cine-lateral h3 { font-size:20px; margin:0 0 13px; }
-        #pantalla-bienvenida .cine-categoria { display:block; width:100%; margin:0 0 9px; border:2px solid #555d58; border-radius:9px; padding:12px; text-align:left; background:#353535; color:#f6f6f6; cursor:pointer; font-size:18px; }
-        #pantalla-bienvenida .cine-categoria.activa { border-color:#8ce0a6; background:#284d34; font-weight:bold; }
-        #pantalla-bienvenida .cine-no-resultados { padding:22px; border:2px dashed #899b8e; border-radius:10px; font-size:19px; }
-        #pantalla-bienvenida p.cine-nota { color:#bfc8c2; font-size:14px; line-height:1.5; margin:18px 0 0; max-width:none; }
+        #inicio-contenido-cine .cine-ficha:hover, #inicio-contenido-cine .cine-ficha:focus { background:#35483d; border-color:#86d7a0; }
+        #inicio-contenido-cine .cine-portada, #inicio-contenido-cine .cine-portada img { display:block; width:85px; height:119px; }
+        #inicio-contenido-cine .cine-portada { flex:0 0 85px; background:#393939; overflow:hidden; }
+        #inicio-contenido-cine .cine-portada img { object-fit:cover; }
+        #inicio-contenido-cine .cine-info { flex:1; min-width:0; padding:11px 12px; display:flex; flex-direction:column; align-items:flex-start; justify-content:center; }
+        #inicio-contenido-cine .cine-info h3 { font-size:19px; margin:0 0 6px; color:#fafafa; line-height:1.25; overflow-wrap:break-word; }
+        #inicio-contenido-cine .cine-info p { font-size:14px; margin:0 0 9px; max-width:none; color:#c5cbc7; line-height:1.3; }
+        #inicio-contenido-cine .cine-ver { color:#99e2af; font-size:16px; font-weight:bold; }
+        #inicio-contenido-cine .cine-lateral { width:228px; flex:0 0 228px; background:#2b2b2b; border:1px solid #474c49; border-radius:10px; padding:15px; }
+        #inicio-contenido-cine .cine-lateral label { display:block; font-size:17px; font-weight:bold; margin:0 0 10px; }
+        #inicio-contenido-cine #cine-buscar { width:100%; background:#242424; border:2px solid #828f86; border-radius:9px; padding:12px; color:#f7f7f7; font-size:17px; margin:0 0 24px; }
+        #inicio-contenido-cine .cine-lateral h3 { font-size:20px; margin:0 0 13px; }
+        #inicio-contenido-cine .cine-categoria { display:block; width:100%; margin:0 0 9px; border:2px solid #555d58; border-radius:9px; padding:12px; text-align:left; background:#353535; color:#f6f6f6; cursor:pointer; font-size:18px; }
+        #inicio-contenido-cine .cine-categoria.activa { border-color:#8ce0a6; background:#284d34; font-weight:bold; }
+        #inicio-contenido-cine .cine-no-resultados { padding:22px; border:2px dashed #899b8e; border-radius:10px; font-size:19px; }
+        #inicio-contenido-cine p.cine-nota { color:#bfc8c2; font-size:14px; line-height:1.5; margin:18px 0 0; max-width:none; }
         @media(max-width:1080px) {
-            #pantalla-bienvenida .cine-ficha { width:calc(100% - 12px); }
-            #pantalla-bienvenida .cine-lateral { width:215px; flex-basis:215px; }
+            #inicio-contenido-cine .cine-ficha { width:calc(100% - 12px); }
+            #inicio-contenido-cine .cine-lateral { width:215px; flex-basis:215px; }
         }
-        /* Teléfonos: solo reglas visuales, separadas del reproductor TV. */
+        </style>
+    <!-- BLOQUE DE ESTILOS: ADAPTACION INTERMEDIA — conservada; no reescalar contenidos en esta refactorizacion. -->
+    <style id="estilos-adaptacion-intermedia">/* Teléfonos: solo reglas visuales, separadas del reproductor TV. */
         @media(max-width:670px) {
             #pantalla-bienvenida { padding:10px 9px 18px; }
             #pantalla-bienvenida .inicio-cabecera { margin-bottom:8px; }
@@ -412,12 +451,12 @@
             #pantalla-bienvenida .inicio-opcion span { font-size:12px; text-align:center; }
             #pantalla-bienvenida .inicio-panel { padding:12px 11px; }
             #pantalla-bienvenida .inicio-panel h2 { font-size:21px; }
-            #pantalla-bienvenida .tab-btn { font-size:14px; padding:8px 7px; }
+            #inicio-contenido-tv .tab-btn { font-size:14px; padding:8px 7px; }
             #pantalla-bienvenida p.inicio-descripcion { font-size:14px; }
-            #pantalla-bienvenida .cine-encabezado { flex-direction:column; align-items:stretch; }
-            #pantalla-bienvenida .cine-distribucion { flex-direction:column-reverse; }
-            #pantalla-bienvenida .cine-lateral { width:100%; flex:0 0 auto; }
-            #pantalla-bienvenida .cine-ficha { min-height:115px; }
+            #inicio-contenido-cine .cine-encabezado { flex-direction:column; align-items:stretch; }
+            #inicio-contenido-cine .cine-distribucion { flex-direction:column-reverse; }
+            #inicio-contenido-cine .cine-lateral { width:100%; flex:0 0 auto; }
+            #inicio-contenido-cine .cine-ficha { min-height:115px; }
             /* En celular el video queda arriba y los canales debajo, sin
                estrechar el video a solo media pantalla. */
             #contenedor-principal { flex-direction:column; min-height:0; }
@@ -431,7 +470,9 @@
             #barra-superior .controles-superior { gap:5px; }
             #barra-superior .boton-mediano { font-size:14px; min-height:42px; padding:7px 9px; }
         }
-        /* Pantallas de televisor de poca altura: todo el acceso a canales
+        </style>
+    <!-- BLOQUE DE ESTILOS: TELEVISION / PANTALLA PRINCIPAL — ajustes de altura ya aprobados en TV. -->
+    <style id="estilos-tv-altura-reducida">/* Pantallas de televisor de poca altura: todo el acceso a canales
            debe caber sin esconder el botón Cargar URL. */
         @media (min-width:671px) and (max-height:650px) {
             #pantalla-bienvenida { padding:8px 13px; }
@@ -443,15 +484,22 @@
             #pantalla-bienvenida .inicio-opcion strong { font-size:18px; }
             #pantalla-bienvenida .inicio-panel { padding:10px 15px; }
             #pantalla-bienvenida p.inicio-descripcion { margin-bottom:7px; }
-            #pantalla-bienvenida .tab-group { margin-bottom:6px; }
-            #pantalla-bienvenida .tab-btn { min-height:44px; }
+            #inicio-contenido-tv .tab-group { margin-bottom:6px; }
+            #inicio-contenido-tv .tab-btn { min-height:44px; }
         }
 
-        /* ===============================================================
+        </style>
+    <!-- BLOQUE DE ESTILOS: CELULAR — estilos ya aprobados, aislados de los contratos futuros de TV. -->
+    <style id="estilos-celular-vistas">/* ===============================================================
            AJUSTE EXCLUSIVO PARA CELULARES (hasta 600 px de ancho)
            Solo presentación: sin modificar HTML, JavaScript ni reproductores.
            Mantener las reglas de TV y TV Box fuera de este bloque.
            =============================================================== */
+        /* [CELULAR / PANTALLA PRINCIPAL Y CABECERA COMPARTIDA]
+           Solo inicio y carga M3U. Los selectores #inicio-contenido-tv
+           no deben utilizarse para modificar Cine ni el reproductor.
+           El título y las dos pestañas son componentes COMPARTIDOS:
+           requieren autorización si se quiere cambiar su aspecto. */
         @media screen and (max-width: 600px) {
             /* Navegación de inicio: opciones visibles sin ocupar media pantalla. */
             #pantalla-bienvenida {
@@ -475,19 +523,23 @@
             #pantalla-bienvenida .inicio-panel { padding: 10px; }
             #pantalla-bienvenida .inicio-panel h2 { font-size: 19px; }
             #pantalla-bienvenida p.inicio-descripcion { margin-bottom: 7px; font-size: 13px; }
-            #pantalla-bienvenida .tab-group { gap: 5px; margin-bottom: 6px; }
-            #pantalla-bienvenida .tab-btn {
+            #inicio-contenido-tv .tab-group { gap: 5px; margin-bottom: 6px; }
+            #inicio-contenido-tv .tab-btn {
                 font-size: 12px; padding: 6px 7px; min-height: 40px; white-space: normal;
             }
-            #pantalla-bienvenida .input-area p { font-size: 12px !important; }
-            #pantalla-bienvenida #input-url-lista,
-            #pantalla-bienvenida #file-input-local {
+            #inicio-contenido-tv .input-area p { font-size: 12px !important; }
+            #inicio-contenido-tv #input-url-lista,
+            #inicio-contenido-tv #file-input-local {
                 min-height: 43px; font-size: 14px; padding: 8px 9px;
             }
-            #pantalla-bienvenida #btn-cargar-url {
+            #inicio-contenido-tv #btn-cargar-url {
                 min-height: 43px; font-size: 16px; padding: 8px 18px;
             }
 
+        }
+        /* [CELULAR / REPRODUCTOR DE TELEVISION]
+           Visual exclusivamente. No tocar el orquestador TV ni YouTube. */
+        @media screen and (max-width: 600px) {
             /* Encabezado de canales: compacto, pero botones pulsables. */
             #barra-superior { padding: 6px 8px; gap: 5px; }
             #barra-superior h2 { font-size: 18px; line-height: 1.2; }
@@ -546,43 +598,51 @@
             .modo-limpieza .boton-quitar {
                 font-size: 12px; padding: 7px; margin-left: 4px; min-height: 38px;
             }
+        }
+        /* [CELULAR / PELICULAS Y SERIES]
+           Las reglas del catálogo están limitadas a #inicio-contenido-cine.
+           No variar portada, fichas ni filtros sin petición expresa. */
+        @media screen and (max-width: 600px) {
             /* La vista de cine también ahorra altura y mantiene sus enlaces. */
-            #pantalla-bienvenida .cine-encabezado { gap: 6px; margin-bottom: 7px; }
-            #pantalla-bienvenida .cine-volver-tv {
+            #inicio-contenido-cine .cine-encabezado { gap: 6px; margin-bottom: 7px; }
+            #inicio-contenido-cine .cine-volver-tv {
                 min-height: 42px; padding: 7px 10px; font-size: 15px;
             }
-            #pantalla-bienvenida .cine-distribucion { gap: 8px; }
-            #pantalla-bienvenida .cine-lateral {
+            #inicio-contenido-cine .cine-distribucion { gap: 8px; }
+            #inicio-contenido-cine .cine-lateral {
                 display: flex; flex-wrap: wrap; align-items: center;
                 gap: 6px; padding: 8px;
             }
-            #pantalla-bienvenida .cine-lateral label {
+            #inicio-contenido-cine .cine-lateral label {
                 flex: 0 0 auto; margin: 0; font-size: 14px;
             }
-            #pantalla-bienvenida #cine-buscar {
+            #inicio-contenido-cine #cine-buscar {
                 flex: 1 1 55%; min-width: 0; min-height: 40px;
                 padding: 7px; margin: 0; font-size: 14px;
             }
-            #pantalla-bienvenida .cine-lateral h3 {
+            #inicio-contenido-cine .cine-lateral h3 {
                 flex: 0 0 100%; font-size: 14px; margin: 2px 0 0;
             }
-            #pantalla-bienvenida .cine-categoria {
+            #inicio-contenido-cine .cine-categoria {
                 flex: 1 1 28%; width: auto; min-height: 40px;
                 padding: 6px 5px; margin: 0; font-size: 13px; text-align: center;
             }
-            #pantalla-bienvenida .cine-contar { font-size: 14px; margin-bottom: 7px; }
-            #pantalla-bienvenida .cine-rejilla { margin: -4px; }
-            #pantalla-bienvenida .cine-ficha {
+            #inicio-contenido-cine .cine-contar { font-size: 14px; margin-bottom: 7px; }
+            #inicio-contenido-cine .cine-rejilla { margin: -4px; }
+            #inicio-contenido-cine .cine-ficha {
                 width: calc(100% - 8px); min-height: 94px; margin: 4px;
             }
-            #pantalla-bienvenida .cine-portada,
-            #pantalla-bienvenida .cine-portada img { width: 65px; height: 92px; }
-            #pantalla-bienvenida .cine-portada { flex: 0 0 65px; }
-            #pantalla-bienvenida .cine-info { padding: 7px 9px; }
-            #pantalla-bienvenida .cine-info h3 { font-size: 16px; margin-bottom: 3px; }
-            #pantalla-bienvenida .cine-info p { font-size: 12px; margin-bottom: 4px; }
-            #pantalla-bienvenida .cine-ver { font-size: 14px; }
-            #pantalla-bienvenida p.cine-nota { font-size: 12px; margin-top: 9px; }
+            #inicio-contenido-cine .cine-portada,
+            #inicio-contenido-cine .cine-portada img { width: 65px; height: 92px; }
+            #inicio-contenido-cine .cine-portada { flex: 0 0 65px; }
+            #inicio-contenido-cine .cine-info { padding: 7px 9px; }
+            #inicio-contenido-cine .cine-info h3 { font-size: 16px; margin-bottom: 3px; }
+            #inicio-contenido-cine .cine-info p { font-size: 12px; margin-bottom: 4px; }
+            #inicio-contenido-cine .cine-ver { font-size: 14px; }
+            #inicio-contenido-cine p.cine-nota { font-size: 12px; margin-top: 9px; }
+        }
+        /* [CELULAR / VENTANAS DE ADMINISTRACION DE TELEVISION] */
+        @media screen and (max-width: 600px) {
             #modal-canal .modal-canal-contenido {
                 padding: 16px; max-height: 92vh; overflow-y: auto;
             }
@@ -846,10 +906,42 @@
                 overscroll-behavior: contain;
             }
         }
+</style>
+    <!--
+      CONTRATOS DE TELEVISION — reservas para futuras modificaciones AUTORIZADAS.
+      Cada zona se mantiene vacia: el aspecto actual de TV y movil es identico.
+      Solo incorporar cambios despues de aprobacion, con reglas limitadas a
+      @media screen and (min-width: 671px) y a su raiz de pantalla especifica.
+      Los estilos base mas arriba estan compartidos y deben conservarse.
+    -->
+    <style id="tv-pantalla-principal-reglas-protegidas">
+      /* TV / PRINCIPAL: #inicio-contenido-tv. Reservado, sin reglas activas. */
+    </style>
+    <style id="tv-reproductor-reglas-protegidas">
+      /* TV / REPRODUCTOR: #pantalla-principal. NO modificar YouTube, HLS, audio o temporizadores. */
+    </style>
+    <style id="tv-cine-reglas-protegidas">
+      /* TV / CINE: #inicio-contenido-cine. Reservado, sin reglas activas. */
     </style>
 </head>
 <body>
 
+    <!--
+       GREGOTV / REGISTRO DE PANTALLAS
+       1) Celular/Principal: #inicio-contenido-tv
+       2) Celular/Reproductor: #pantalla-principal
+       3) Celular/Peliculas y series: #inicio-contenido-cine
+       Navegación entre inicio y Cine: cambiarSeccion(), estado inicio-cine-activo.
+       La cabecera de bienvenida es compartida, NO pertenece a Cine.
+       TV/TV Box: reproductores y diseño existentes están protegidos.
+       TELEVISION / PRINCIPAL: #inicio-contenido-tv [data-vista-television="principal"]
+       TELEVISION / REPRODUCTOR: #pantalla-principal [data-vista-television="reproductor"]
+       TELEVISION / PELICULAS Y SERIES: #inicio-contenido-cine [data-vista-television="cine"]
+       REGLA: no mezclar estilos entre pantallas; los bloques con reglas
+       protegidas de television quedan sin reglas activas hasta autorizacion.
+       Para TV validar 960x540, 1280x720 y 1920x1080.
+       Contratos visuales CSS al principio de <style>.
+    -->
     <!-- Inicio unificado: el reproductor de TV permanece intacto. -->
     <div id="pantalla-bienvenida">
         <div class="inicio-marco">
@@ -870,7 +962,7 @@
                     <span>Elegir una película o serie</span>
                 </button>
             </nav>
-            <section id="inicio-contenido-tv" class="inicio-panel" aria-labelledby="inicio-tab-tv">
+            <section id="inicio-contenido-tv" class="inicio-panel vista-celular-principal" data-vista-television="principal" aria-labelledby="inicio-tab-tv">
                 <h2>📺 Televisión</h2>
                 <p class="inicio-descripcion">Cargá tu lista de canales para empezar a mirar.</p>
         <div class="input-container">
@@ -893,7 +985,7 @@
         
         <div id="mensaje-error"></div>
             </section>
-            <section id="inicio-contenido-cine" class="inicio-panel" aria-labelledby="inicio-tab-cine" style="display:none;">
+            <section id="inicio-contenido-cine" class="inicio-panel vista-celular-cine" data-vista-television="cine" aria-labelledby="inicio-tab-cine" style="display:none;">
                 <div class="cine-encabezado">
                     <div>
                         <h2>🎬 Películas y series</h2>
@@ -947,11 +1039,11 @@
                     </aside>
                 </div>
             </section>
-            <footer class="gregotv-version" aria-label="Versión de GregoTV">GregoTV · v2026.10.16.4</footer>
+            <footer class="gregotv-version" aria-label="Versión de GregoTV">GregoTV · v2026.10.16.6</footer>
         </div>
     </div>
 
-    <div id="pantalla-principal">
+    <div id="pantalla-principal" class="vista-celular-reproductor" data-vista-television="reproductor">
         <div id="barra-superior">
             <h2>📺 GregoTV</h2>
             <div class="controles-superior">
