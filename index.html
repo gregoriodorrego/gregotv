@@ -774,25 +774,28 @@
         }
 
         /* ============================================================
-           INICIO MÓVIL: centrado seguro, sin modificar la vista de TV.
-           El margen automático centra cuando sobra altura y se reduce
-           a cero si la pantalla es pequeña para evitar cortar el título.
+           INICIO MÓVIL: margen superior reforzado para iPhone/Safari,
+           con centrado horizontal y desplazamiento normal.
+           No altera la vista de TV ni el reproductor.
            ============================================================ */
         @media screen and (max-width: 600px) {
             #pantalla-bienvenida {
                 justify-content: flex-start;
-                padding-top: 12px;
-                padding-top: calc(12px + env(safe-area-inset-top, 0px));
+                min-height: 100svh;
+                height: auto;
+                padding-top: 26px;
+                padding-top: calc(26px + env(safe-area-inset-top, 0px));
                 padding-bottom: 16px;
                 padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
             }
             #pantalla-bienvenida .inicio-marco {
                 width: 100%;
                 flex: 0 0 auto;
-                margin: auto;
+                margin: 0 auto;
             }
             #pantalla-bienvenida .inicio-cabecera {
                 text-align: center;
+                margin-top: 0;
             }
         }
     </style>
@@ -896,7 +899,7 @@
                     </aside>
                 </div>
             </section>
-            <footer class="gregotv-version" aria-label="Versión de GregoTV">GregoTV · v2026.10.16.1</footer>
+            <footer class="gregotv-version" aria-label="Versión de GregoTV">GregoTV · v2026.10.16.2</footer>
         </div>
     </div>
 
