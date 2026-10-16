@@ -798,6 +798,40 @@
                 margin-top: 0;
             }
         }
+
+        /* ===============================================================
+           PELÍCULAS Y SERIES EN CELULAR: el catálogo tiene su propio scroll.
+           Esta regla se activa únicamente si la sección Cine está abierta.
+           Televisión, el reproductor y pantallas mayores a 600px no cambian.
+           ============================================================== */
+        @media screen and (max-width: 600px) {
+            #pantalla-bienvenida:has(#inicio-contenido-cine[style*="display: block"]) {
+                height: 100vh;     /* respaldo para Safari más antiguo */
+                height: 100dvh;    /* altura real visible al mostrar barras */
+                min-height: 0;
+                display: flex;
+                flex-direction: column;
+                justify-content: flex-start;
+                align-items: center;
+                overflow-x: hidden;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+                padding-top: 28px;
+                padding-top: calc(28px + env(safe-area-inset-top, 0px));
+                padding-bottom: 20px;
+                padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+            }
+            #pantalla-bienvenida:has(#inicio-contenido-cine[style*="display: block"]) .inicio-marco {
+                width: 100%;
+                flex: 0 0 auto;
+                margin: 0 auto;
+            }
+            #pantalla-bienvenida:has(#inicio-contenido-cine[style*="display: block"]) .inicio-cabecera {
+                flex: 0 0 auto;
+                text-align: center;
+                margin-top: 0;
+            }
+        }
     </style>
 </head>
 <body>
@@ -899,7 +933,7 @@
                     </aside>
                 </div>
             </section>
-            <footer class="gregotv-version" aria-label="Versión de GregoTV">GregoTV · v2026.10.16.2</footer>
+            <footer class="gregotv-version" aria-label="Versión de GregoTV">GregoTV · v2026.10.16.3</footer>
         </div>
     </div>
 
