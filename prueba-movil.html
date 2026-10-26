@@ -1908,7 +1908,7 @@
         // Se reutiliza el temporizador existente: 5 s en fullscreen móvil,
         // 10 s en el resto (valor histórico de TIEMPO_MODO_CINE).
         function demoraModoCine() {
-            return esCineMovilHorizontal() && fullscreenRealActivo() ? 5000 : TIEMPO_MODO_CINE;
+            return esCineMovilHorizontal() && fullscreenRealActivo() ? 10000 : TIEMPO_MODO_CINE;
         }
         function restaurarCineMovilAlSalirFullscreen() {
             if (!esCineMovilHorizontal()) return;
