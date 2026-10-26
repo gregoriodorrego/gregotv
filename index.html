@@ -1205,6 +1205,290 @@
     <style id="tv-cine-reglas-protegidas">
       /* TV / CINE: #inicio-contenido-cine. Reservado, sin reglas activas. */
     </style>
+    <!-- FASE 1 / CELULAR HORIZONTAL: excepción autorizada al contrato max-width:600px.
+         Solo reproductor normal, nunca modo cine ni fullscreen. Sin detección de APK.
+         Criterios conservadores: pantalla horizontal, baja altura, ancho acotado,
+         puntero táctil primario y ausencia de hover. No identifican teléfonos al 100%.
+         Los equipos ambiguos conservan el diseño existente. -->
+    <style id="gregotv-fase1-celular-horizontal">
+      @media screen and (orientation: landscape) and (max-width: 1000px) and (max-height: 520px) and (pointer: coarse) and (hover: none) {
+        #pantalla-principal.vista-celular-reproductor {
+          height: 100vh;
+          height: 100dvh;
+          min-height: 0;
+          overflow: hidden;
+        }
+        #pantalla-principal.vista-celular-reproductor #barra-superior:not(.oculto) {
+          flex: 0 0 auto;
+          padding: 3px 7px;
+          gap: 5px;
+          flex-wrap: nowrap;
+          align-items: center;
+        }
+        #pantalla-principal.vista-celular-reproductor #barra-superior h2 {
+          width: auto;
+          flex: 0 0 auto;
+          font-size: 13px;
+          line-height: 1.2;
+          white-space: nowrap;
+        }
+        #pantalla-principal.vista-celular-reproductor #barra-superior .controles-superior {
+          display: flex;
+          flex: 1 1 auto;
+          min-width: 0;
+          width: auto;
+          flex-wrap: wrap;
+          justify-content: flex-end;
+          gap: 3px;
+        }
+        #pantalla-principal.vista-celular-reproductor #barra-superior .controles-superior > button {
+          width: auto;
+          flex: 0 1 auto;
+          min-width: 0;
+          min-height: 34px;
+          padding: 4px 6px;
+          font-size: 11px;
+          line-height: 1.12;
+          border-radius: 5px;
+        }
+        #pantalla-principal.vista-celular-reproductor #contenedor-principal:not(.modo-cine) {
+          display: flex;
+          flex-direction: row;
+          flex: 1 1 auto;
+          height: auto;
+          min-height: 0;
+          overflow: hidden;
+        }
+        #pantalla-principal.vista-celular-reproductor #contenedor-principal:not(.modo-cine) #area-video {
+          flex: 1 1 auto;
+          width: auto;
+          min-width: 0;
+          height: 100%;
+          min-height: 0;
+          max-height: none;
+          overflow: hidden;
+        }
+        #pantalla-principal.vista-celular-reproductor #contenedor-principal:not(.modo-cine) #area-lista {
+          display: flex;
+          flex-direction: column;
+          flex: 0 0 36%;
+          width: 36%;
+          max-width: 310px;
+          min-width: 155px;
+          min-height: 0;
+          height: 100%;
+          max-height: none;
+          overflow: hidden;
+          border-left: 1px solid #444;
+          border-top: 0;
+        }
+        #pantalla-principal.vista-celular-reproductor #filtro-categorias,
+        #pantalla-principal.vista-celular-reproductor #buscador {
+          flex: 0 0 auto;
+          padding: 3px 5px;
+          min-width: 0;
+        }
+        #pantalla-principal.vista-celular-reproductor #select-categoria,
+        #pantalla-principal.vista-celular-reproductor #input-buscar {
+          width: 100%;
+          min-width: 0;
+          height: 34px;
+          min-height: 34px;
+          padding: 4px 6px;
+          font-size: 12px;
+        }
+        #pantalla-principal.vista-celular-reproductor #lista-canales {
+          flex: 1 1 auto;
+          min-height: 0;
+          height: auto;
+          max-height: none;
+          overflow-x: hidden;
+          overflow-y: auto;
+          -webkit-overflow-scrolling: touch;
+          padding: 4px;
+        }
+        #pantalla-principal.vista-celular-reproductor .canal-item {
+          min-height: 40px;
+          padding: 5px 7px;
+          margin-bottom: 4px;
+        }
+        #pantalla-principal.vista-celular-reproductor .canal-nombre {
+          font-size: 13px;
+          line-height: 1.25;
+          min-width: 0;
+        }
+        #pantalla-principal.vista-celular-reproductor #info-canales {
+          flex: 0 0 auto;
+          padding: 3px 6px;
+          font-size: 11px;
+        }
+      }
+    </style>
+    <!-- FASE 2 / FULLSCREEN MOVIL: excepción localizada al contrato max-width:600px.
+         Solo cuando el DOCUMENTO está en fullscreen real y el dispositivo coincide
+         con el perfil táctil conservador de Fase 1. No afecta modo cine por sí solo.
+         El botón de salida queda disponible, los otros controles se ocultan.
+         No cambia JS de fullscreen, motores ni elementos multimedia. -->
+    <style id="gregotv-fase2-fullscreen-movil">
+      @media screen and (orientation: landscape) and (max-width: 1000px) and (max-height: 520px) and (pointer: coarse) and (hover: none) {
+        html:fullscreen, html:-webkit-full-screen {
+          width: 100%; height: 100%; overflow: hidden; background: #000;
+        }
+        html:fullscreen body, html:-webkit-full-screen body {
+          width: 100%; height: 100%; margin: 0; overflow: hidden; background: #000;
+        }
+        html:fullscreen #pantalla-principal.vista-celular-reproductor,
+        html:-webkit-full-screen #pantalla-principal.vista-celular-reproductor {
+          width: 100%; height: 100%; min-height: 0; overflow: hidden;
+          background: #000; position: relative;
+        }
+        html:fullscreen #pantalla-principal.vista-celular-reproductor #contenedor-principal,
+        html:-webkit-full-screen #pantalla-principal.vista-celular-reproductor #contenedor-principal {
+          display: flex; flex: 1 1 auto; flex-direction: row;
+          width: 100%; height: 100%; min-height: 0; max-height: none;
+          overflow: hidden; margin: 0; padding: 0;
+        }
+        html:fullscreen #pantalla-principal.vista-celular-reproductor #area-video,
+        html:-webkit-full-screen #pantalla-principal.vista-celular-reproductor #area-video {
+          display: flex; flex: 1 1 auto; width: 100%; height: 100%;
+          min-width: 0; min-height: 0; max-width: none; max-height: none;
+          margin: 0; padding: 0; position: relative; overflow: hidden;
+          align-items: center; justify-content: center; background: #000;
+        }
+        html:fullscreen #pantalla-principal.vista-celular-reproductor #area-lista,
+        html:-webkit-full-screen #pantalla-principal.vista-celular-reproductor #area-lista {
+          display: none;
+        }
+        html:fullscreen #pantalla-principal.vista-celular-reproductor #video-nativo,
+        html:fullscreen #pantalla-principal.vista-celular-reproductor #video-procesado,
+        html:-webkit-full-screen #pantalla-principal.vista-celular-reproductor #video-nativo,
+        html:-webkit-full-screen #pantalla-principal.vista-celular-reproductor #video-procesado {
+          width: 100%; height: 100%; max-width: 100%; max-height: 100%;
+          object-fit: contain;
+        }
+        html:fullscreen #pantalla-principal.vista-celular-reproductor #contenedor-youtube,
+        html:-webkit-full-screen #pantalla-principal.vista-celular-reproductor #contenedor-youtube {
+          width: 100%; height: 100%; max-width: 100%; max-height: 100%;
+        }
+        /* Barra normal fuera de la composición; solo botón de salida visible.
+           La opacidad del botón permite ver el contenido sin taparlo permanentemente. */
+        html:fullscreen #pantalla-principal.vista-celular-reproductor #barra-superior,
+        html:-webkit-full-screen #pantalla-principal.vista-celular-reproductor #barra-superior {
+          display: block; position: absolute; top: 0; right: 0;
+          left: auto; width: auto; height: auto; z-index: 1100;
+          padding: 4px; margin: 0; border: 0; background: transparent;
+          transform: none; opacity: 1; pointer-events: none;
+        }
+        html:fullscreen #pantalla-principal.vista-celular-reproductor #barra-superior h2,
+        html:-webkit-full-screen #pantalla-principal.vista-celular-reproductor #barra-superior h2 {
+          display: none;
+        }
+        html:fullscreen #pantalla-principal.vista-celular-reproductor #barra-superior .controles-superior,
+        html:-webkit-full-screen #pantalla-principal.vista-celular-reproductor #barra-superior .controles-superior {
+          display: block; width: auto; margin: 0; padding: 0;
+        }
+        html:fullscreen #pantalla-principal.vista-celular-reproductor #barra-superior .controles-superior > button:not(#btn-toggle-fullscreen),
+        html:-webkit-full-screen #pantalla-principal.vista-celular-reproductor #barra-superior .controles-superior > button:not(#btn-toggle-fullscreen) {
+          display: none;
+        }
+        html:fullscreen #pantalla-principal.vista-celular-reproductor #btn-toggle-fullscreen,
+        html:-webkit-full-screen #pantalla-principal.vista-celular-reproductor #btn-toggle-fullscreen {
+          display: block; pointer-events: auto; width: auto; min-height: 34px;
+          padding: 5px 8px; font-size: 11px; line-height: 1.2;
+          opacity: .72;
+        }
+      }
+    </style>
+    <!-- FASE 3 / CELULAR HORIZONTAL: modo cine dentro del navegador.
+         Se aplica solo fuera de fullscreen real; preserva la Fase 1 y la Fase 2. -->
+    <style id="gregotv-fase3-cine-movil">
+      @media screen and (orientation: landscape) and (max-width: 1000px) and (max-height: 520px) and (pointer: coarse) and (hover: none) {
+        #pantalla-principal.vista-celular-reproductor #contenedor-principal.modo-cine {
+          display: flex; flex-direction: row; flex: 1 1 auto;
+          width: 100%; height: auto; min-height: 0; max-height: none;
+          overflow: hidden;
+        }
+        #pantalla-principal.vista-celular-reproductor #contenedor-principal.modo-cine #area-video {
+          display: flex; flex: 1 1 auto; width: 100%; height: 100%;
+          min-width: 0; min-height: 0; max-height: none;
+          align-items: center; justify-content: center; overflow: hidden;
+        }
+        #pantalla-principal.vista-celular-reproductor #contenedor-principal.modo-cine #area-lista { display: none; }
+        #pantalla-principal.vista-celular-reproductor #contenedor-principal.modo-cine #video-nativo,
+        #pantalla-principal.vista-celular-reproductor #contenedor-principal.modo-cine #video-procesado {
+          width: 100%; height: 100%; object-fit: contain;
+        }
+        #pantalla-principal.vista-celular-reproductor #contenedor-principal.modo-cine #contenedor-youtube {
+          width: 100%; height: 100%;
+        }
+      }
+    </style>
+    <!-- FASE 4: estados visuales móviles, sin tocar las reglas de TV.
+         Fullscreen real inicia con lista/controles; modo cine los oculta.
+         Modo cine fuera de fullscreen llena el viewport WEB (no barras Chrome). -->
+    <style id="gregotv-fase4-estados-movil">
+      @media screen and (orientation: landscape) and (max-width: 1000px) and (max-height: 520px) and (pointer: coarse) and (hover: none) {
+        /* En cine la barra transformada seguía ocupando altura en Flexbox.
+           Se elimina del flujo SOLO durante cine móvil. */
+        #pantalla-principal.vista-celular-reproductor #barra-superior.oculto {
+          display: none;
+        }
+        #pantalla-principal.vista-celular-reproductor #contenedor-principal.modo-cine {
+          flex: 1 1 auto; width: 100%; height: 100%; min-height: 0;
+          max-height: none; margin: 0; padding: 0; overflow: hidden;
+        }
+        #pantalla-principal.vista-celular-reproductor #contenedor-principal.modo-cine #area-video {
+          flex: 1 1 auto; width: 100%; height: 100%; min-height: 0;
+          max-height: none; margin: 0; padding: 0;
+        }
+        /* Fase 2 ocultaba la lista en fullscreen incluso antes del cine.
+           La restauramos solo durante el estado normal del fullscreen. */
+        html:fullscreen #pantalla-principal.vista-celular-reproductor #contenedor-principal:not(.modo-cine),
+        html:-webkit-full-screen #pantalla-principal.vista-celular-reproductor #contenedor-principal:not(.modo-cine) {
+          height: auto; flex: 1 1 auto; min-height: 0;
+        }
+        html:fullscreen #pantalla-principal.vista-celular-reproductor #contenedor-principal:not(.modo-cine) #area-lista,
+        html:-webkit-full-screen #pantalla-principal.vista-celular-reproductor #contenedor-principal:not(.modo-cine) #area-lista {
+          display: flex; flex: 0 0 36%; width: 36%; max-width: 310px;
+          min-width: 155px; min-height: 0; height: 100%; flex-direction: column;
+        }
+        html:fullscreen #pantalla-principal.vista-celular-reproductor #barra-superior:not(.oculto),
+        html:-webkit-full-screen #pantalla-principal.vista-celular-reproductor #barra-superior:not(.oculto) {
+          display: flex; position: relative; inset: auto; width: 100%;
+          flex: 0 0 auto; padding: 3px 7px; background: #2a2a2a;
+          pointer-events: auto; border-bottom: 2px solid #444;
+          flex-wrap: nowrap; align-items: center;
+        }
+        html:fullscreen #pantalla-principal.vista-celular-reproductor #barra-superior:not(.oculto) h2,
+        html:-webkit-full-screen #pantalla-principal.vista-celular-reproductor #barra-superior:not(.oculto) h2 {
+          display: block;
+        }
+        html:fullscreen #pantalla-principal.vista-celular-reproductor #barra-superior:not(.oculto) .controles-superior,
+        html:-webkit-full-screen #pantalla-principal.vista-celular-reproductor #barra-superior:not(.oculto) .controles-superior {
+          display: flex; flex: 1 1 auto; min-width: 0; width: auto;
+          flex-wrap: wrap; justify-content: flex-end; gap: 3px;
+        }
+        html:fullscreen #pantalla-principal.vista-celular-reproductor #barra-superior:not(.oculto) .controles-superior > button,
+        html:-webkit-full-screen #pantalla-principal.vista-celular-reproductor #barra-superior:not(.oculto) .controles-superior > button {
+          display: inline-block; pointer-events: auto; opacity: 1;
+          width: auto; min-height: 34px; padding: 4px 6px;
+          font-size: 11px; line-height: 1.12;
+        }
+        /* Cine fullscreen: ocultar barra/lista, conservar superficie de video. */
+        html:fullscreen #pantalla-principal.vista-celular-reproductor #barra-superior.oculto,
+        html:-webkit-full-screen #pantalla-principal.vista-celular-reproductor #barra-superior.oculto {
+          display: none;
+        }
+        html:fullscreen #pantalla-principal.vista-celular-reproductor #contenedor-principal.modo-cine #area-lista,
+        html:-webkit-full-screen #pantalla-principal.vista-celular-reproductor #contenedor-principal.modo-cine #area-lista {
+          display: none;
+        }
+        #pantalla-principal.vista-celular-reproductor #contenedor-principal.modo-cine #video-nativo,
+        #pantalla-principal.vista-celular-reproductor #contenedor-principal.modo-cine #video-procesado {
+          object-fit: contain;
+        }
+      }
+    </style>
 </head>
 <body>
 
@@ -1321,7 +1605,7 @@
                     </aside>
                 </div>
             </section>
-            <footer class="gregotv-version" aria-label="Versión de GregoTV">GregoTV · v2026.10.16.7</footer>
+            <footer class="gregotv-version" aria-label="Versión de GregoTV">GregoTV · v2026.10.26.3</footer>
         </div>
     </div>
 
@@ -1613,11 +1897,34 @@
             }
         }
 
+        // FASE 4: perfil conservador, idéntico al utilizado en las fases 1-3.
+        const perfilCineMovilHorizontal = window.matchMedia(
+            'screen and (orientation: landscape) and (max-width: 1000px) and (max-height: 520px) and (pointer: coarse) and (hover: none)'
+        );
+        function esCineMovilHorizontal() { return perfilCineMovilHorizontal.matches; }
+        function fullscreenRealActivo() {
+            return Boolean(document.fullscreenElement || document.webkitFullscreenElement);
+        }
+        // Se reutiliza el temporizador existente: 5 s en fullscreen móvil,
+        // 10 s en el resto (valor histórico de TIEMPO_MODO_CINE).
+        function demoraModoCine() {
+            return esCineMovilHorizontal() && fullscreenRealActivo() ? 10000 : TIEMPO_MODO_CINE;
+        }
+        function restaurarCineMovilAlSalirFullscreen() {
+            if (!esCineMovilHorizontal()) return;
+            if (timerInactividad) clearTimeout(timerInactividad);
+            timerInactividad = null;
+            estaEnModoCine = false;
+            contenedorPrincipal.classList.remove('modo-cine');
+            barraSuperior.classList.remove('oculto');
+            iniciarTimerModoCine();
+        }
+
         function iniciarTimerModoCine() {
             if (timerInactividad) clearTimeout(timerInactividad);
             if (canalSeleccionado && !modoLimpieza &&
                 (estadoReproduccion === 'reproduciendo' || estadoReproduccion === 'youtube')) {
-                timerInactividad = setTimeout(() => { activarModoCine(); }, TIEMPO_MODO_CINE);
+                timerInactividad = setTimeout(() => { activarModoCine(); }, demoraModoCine());
             }
         }
 
@@ -1718,19 +2025,39 @@
         });
 
         btnToggleFullscreen.addEventListener('click', async () => {
-            const estaEnFullscreen = document.fullscreenElement || document.webkitFullscreenElement;
-            if (estaEnFullscreen) await salirPantallaCompletaReal();
-            else {
+            const estaEnFullscreen = fullscreenRealActivo();
+            if (estaEnFullscreen) {
+                await salirPantallaCompletaReal();
+            } else {
+                // Reestablecer controles al entrar, sin duplicar temporizadores.
+                if (esCineMovilHorizontal()) {
+                    if (timerInactividad) clearTimeout(timerInactividad);
+                    timerInactividad = null;
+                    estaEnModoCine = false;
+                    contenedorPrincipal.classList.remove('modo-cine');
+                    barraSuperior.classList.remove('oculto');
+                }
                 const exito = await activarPantallaCompletaReal();
                 if (!exito) mostrarError('No se pudo activar la pantalla completa.');
-                else iniciarTimerModoCine();
+                // El evento fullscreenchange inicia el mismo temporizador.
+                if (!exito && esCineMovilHorizontal()) iniciarTimerModoCine();
+                if (exito && !esCineMovilHorizontal()) iniciarTimerModoCine();
             }
         });
 
         function manejarCambioFullscreen() {
             actualizarBotonFullscreen();
-            // Después de entrar o salir de pantalla completa, siguen contando
-            // 10 segundos de inactividad para ocultar los menús (modo cine).
+            if (esCineMovilHorizontal()) {
+                if (fullscreenRealActivo()) {
+                    if (timerInactividad) clearTimeout(timerInactividad);
+                    timerInactividad = null;
+                    estaEnModoCine = false;
+                    contenedorPrincipal.classList.remove('modo-cine');
+                    barraSuperior.classList.remove('oculto');
+                    iniciarTimerModoCine();
+                } else restaurarCineMovilAlSalirFullscreen();
+                return;
+            }
             if (!modoLimpieza && !estaEnModoCine) iniciarTimerModoCine();
         }
         document.addEventListener('fullscreenchange', manejarCambioFullscreen);
