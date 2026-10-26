@@ -1399,6 +1399,30 @@
         }
       }
     </style>
+    <!-- FASE 3 / CELULAR HORIZONTAL: modo cine dentro del navegador.
+         Se aplica solo fuera de fullscreen real; preserva la Fase 1 y la Fase 2. -->
+    <style id="gregotv-fase3-cine-movil">
+      @media screen and (orientation: landscape) and (max-width: 1000px) and (max-height: 520px) and (pointer: coarse) and (hover: none) {
+        #pantalla-principal.vista-celular-reproductor #contenedor-principal.modo-cine {
+          display: flex; flex-direction: row; flex: 1 1 auto;
+          width: 100%; height: auto; min-height: 0; max-height: none;
+          overflow: hidden;
+        }
+        #pantalla-principal.vista-celular-reproductor #contenedor-principal.modo-cine #area-video {
+          display: flex; flex: 1 1 auto; width: 100%; height: 100%;
+          min-width: 0; min-height: 0; max-height: none;
+          align-items: center; justify-content: center; overflow: hidden;
+        }
+        #pantalla-principal.vista-celular-reproductor #contenedor-principal.modo-cine #area-lista { display: none; }
+        #pantalla-principal.vista-celular-reproductor #contenedor-principal.modo-cine #video-nativo,
+        #pantalla-principal.vista-celular-reproductor #contenedor-principal.modo-cine #video-procesado {
+          width: 100%; height: 100%; object-fit: contain;
+        }
+        #pantalla-principal.vista-celular-reproductor #contenedor-principal.modo-cine #contenedor-youtube {
+          width: 100%; height: 100%;
+        }
+      }
+    </style>
 </head>
 <body>
 
@@ -1515,7 +1539,7 @@
                     </aside>
                 </div>
             </section>
-            <footer class="gregotv-version" aria-label="Versión de GregoTV">GregoTV · v2026.10.26.1</footer>
+            <footer class="gregotv-version" aria-label="Versión de GregoTV">GregoTV · v2026.10.26.2</footer>
         </div>
     </div>
 
@@ -1807,8 +1831,30 @@
             }
         }
 
+        // FASE 3: coordinación de estados SOLO en teléfonos horizontales.
+        // No identifica la APK ni modifica el comportamiento del TV Box.
+        const perfilCineMovilHorizontal = window.matchMedia(
+            'screen and (orientation: landscape) and (max-width: 1000px) and (max-height: 520px) and (pointer: coarse) and (hover: none)'
+        );
+        function esCineMovilHorizontal() { return perfilCineMovilHorizontal.matches; }
+        function fullscreenRealActivo() {
+            return Boolean(document.fullscreenElement || document.webkitFullscreenElement);
+        }
+        function restaurarCineMovilAlSalirFullscreen() {
+            if (!esCineMovilHorizontal()) return;
+            // Al salir del fullscreen real, volver al reproductor normal.
+            // Se evita rearmar un temporizador duplicado durante la restauración.
+            if (timerInactividad) clearTimeout(timerInactividad);
+            timerInactividad = null;
+            estaEnModoCine = false;
+            contenedorPrincipal.classList.remove('modo-cine');
+            barraSuperior.classList.remove('oculto');
+            iniciarTimerModoCine();
+        }
+
         function iniciarTimerModoCine() {
             if (timerInactividad) clearTimeout(timerInactividad);
+            if (esCineMovilHorizontal() && fullscreenRealActivo()) return;
             if (canalSeleccionado && !modoLimpieza &&
                 (estadoReproduccion === 'reproduciendo' || estadoReproduccion === 'youtube')) {
                 timerInactividad = setTimeout(() => { activarModoCine(); }, TIEMPO_MODO_CINE);
@@ -1816,6 +1862,7 @@
         }
 
         function activarModoCine() {
+            if (esCineMovilHorizontal() && fullscreenRealActivo()) return;
             if (modoLimpieza || (estadoReproduccion !== 'reproduciendo' && estadoReproduccion !== 'youtube')) return;
             estaEnModoCine = true;
             contenedorPrincipal.classList.add('modo-cine');
@@ -1912,17 +1959,38 @@
         });
 
         btnToggleFullscreen.addEventListener('click', async () => {
-            const estaEnFullscreen = document.fullscreenElement || document.webkitFullscreenElement;
+            const estaEnFullscreen = fullscreenRealActivo();
             if (estaEnFullscreen) await salirPantallaCompletaReal();
             else {
+                // La solicitud real no debe heredar el modo cine automático.
+                if (esCineMovilHorizontal() && estaEnModoCine) {
+                    estaEnModoCine = false;
+                    contenedorPrincipal.classList.remove('modo-cine');
+                    barraSuperior.classList.remove('oculto');
+                }
+                if (esCineMovilHorizontal() && timerInactividad) {
+                    clearTimeout(timerInactividad);
+                    timerInactividad = null;
+                }
                 const exito = await activarPantallaCompletaReal();
                 if (!exito) mostrarError('No se pudo activar la pantalla completa.');
-                else iniciarTimerModoCine();
+                else if (!esCineMovilHorizontal()) iniciarTimerModoCine();
+                else if (!fullscreenRealActivo()) iniciarTimerModoCine();
             }
         });
 
         function manejarCambioFullscreen() {
             actualizarBotonFullscreen();
+            if (esCineMovilHorizontal()) {
+                if (fullscreenRealActivo()) {
+                    if (timerInactividad) clearTimeout(timerInactividad);
+                    timerInactividad = null;
+                    estaEnModoCine = false;
+                    contenedorPrincipal.classList.remove('modo-cine');
+                    barraSuperior.classList.remove('oculto');
+                } else restaurarCineMovilAlSalirFullscreen();
+                return;
+            }
             // Después de entrar o salir de pantalla completa, siguen contando
             // 10 segundos de inactividad para ocultar los menús (modo cine).
             if (!modoLimpieza && !estaEnModoCine) iniciarTimerModoCine();
