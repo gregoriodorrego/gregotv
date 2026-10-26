@@ -1324,6 +1324,81 @@
         }
       }
     </style>
+    <!-- FASE 2 / FULLSCREEN MOVIL: excepción localizada al contrato max-width:600px.
+         Solo cuando el DOCUMENTO está en fullscreen real y el dispositivo coincide
+         con el perfil táctil conservador de Fase 1. No afecta modo cine por sí solo.
+         El botón de salida queda disponible, los otros controles se ocultan.
+         No cambia JS de fullscreen, motores ni elementos multimedia. -->
+    <style id="gregotv-fase2-fullscreen-movil">
+      @media screen and (orientation: landscape) and (max-width: 1000px) and (max-height: 520px) and (pointer: coarse) and (hover: none) {
+        html:fullscreen, html:-webkit-full-screen {
+          width: 100%; height: 100%; overflow: hidden; background: #000;
+        }
+        html:fullscreen body, html:-webkit-full-screen body {
+          width: 100%; height: 100%; margin: 0; overflow: hidden; background: #000;
+        }
+        html:fullscreen #pantalla-principal.vista-celular-reproductor,
+        html:-webkit-full-screen #pantalla-principal.vista-celular-reproductor {
+          width: 100%; height: 100%; min-height: 0; overflow: hidden;
+          background: #000; position: relative;
+        }
+        html:fullscreen #pantalla-principal.vista-celular-reproductor #contenedor-principal,
+        html:-webkit-full-screen #pantalla-principal.vista-celular-reproductor #contenedor-principal {
+          display: flex; flex: 1 1 auto; flex-direction: row;
+          width: 100%; height: 100%; min-height: 0; max-height: none;
+          overflow: hidden; margin: 0; padding: 0;
+        }
+        html:fullscreen #pantalla-principal.vista-celular-reproductor #area-video,
+        html:-webkit-full-screen #pantalla-principal.vista-celular-reproductor #area-video {
+          display: flex; flex: 1 1 auto; width: 100%; height: 100%;
+          min-width: 0; min-height: 0; max-width: none; max-height: none;
+          margin: 0; padding: 0; position: relative; overflow: hidden;
+          align-items: center; justify-content: center; background: #000;
+        }
+        html:fullscreen #pantalla-principal.vista-celular-reproductor #area-lista,
+        html:-webkit-full-screen #pantalla-principal.vista-celular-reproductor #area-lista {
+          display: none;
+        }
+        html:fullscreen #pantalla-principal.vista-celular-reproductor #video-nativo,
+        html:fullscreen #pantalla-principal.vista-celular-reproductor #video-procesado,
+        html:-webkit-full-screen #pantalla-principal.vista-celular-reproductor #video-nativo,
+        html:-webkit-full-screen #pantalla-principal.vista-celular-reproductor #video-procesado {
+          width: 100%; height: 100%; max-width: 100%; max-height: 100%;
+          object-fit: contain;
+        }
+        html:fullscreen #pantalla-principal.vista-celular-reproductor #contenedor-youtube,
+        html:-webkit-full-screen #pantalla-principal.vista-celular-reproductor #contenedor-youtube {
+          width: 100%; height: 100%; max-width: 100%; max-height: 100%;
+        }
+        /* Barra normal fuera de la composición; solo botón de salida visible.
+           La opacidad del botón permite ver el contenido sin taparlo permanentemente. */
+        html:fullscreen #pantalla-principal.vista-celular-reproductor #barra-superior,
+        html:-webkit-full-screen #pantalla-principal.vista-celular-reproductor #barra-superior {
+          display: block; position: absolute; top: 0; right: 0;
+          left: auto; width: auto; height: auto; z-index: 1100;
+          padding: 4px; margin: 0; border: 0; background: transparent;
+          transform: none; opacity: 1; pointer-events: none;
+        }
+        html:fullscreen #pantalla-principal.vista-celular-reproductor #barra-superior h2,
+        html:-webkit-full-screen #pantalla-principal.vista-celular-reproductor #barra-superior h2 {
+          display: none;
+        }
+        html:fullscreen #pantalla-principal.vista-celular-reproductor #barra-superior .controles-superior,
+        html:-webkit-full-screen #pantalla-principal.vista-celular-reproductor #barra-superior .controles-superior {
+          display: block; width: auto; margin: 0; padding: 0;
+        }
+        html:fullscreen #pantalla-principal.vista-celular-reproductor #barra-superior .controles-superior > button:not(#btn-toggle-fullscreen),
+        html:-webkit-full-screen #pantalla-principal.vista-celular-reproductor #barra-superior .controles-superior > button:not(#btn-toggle-fullscreen) {
+          display: none;
+        }
+        html:fullscreen #pantalla-principal.vista-celular-reproductor #btn-toggle-fullscreen,
+        html:-webkit-full-screen #pantalla-principal.vista-celular-reproductor #btn-toggle-fullscreen {
+          display: block; pointer-events: auto; width: auto; min-height: 34px;
+          padding: 5px 8px; font-size: 11px; line-height: 1.2;
+          opacity: .72;
+        }
+      }
+    </style>
 </head>
 <body>
 
@@ -1440,7 +1515,7 @@
                     </aside>
                 </div>
             </section>
-            <footer class="gregotv-version" aria-label="Versión de GregoTV">GregoTV · v2026.10.16.7</footer>
+            <footer class="gregotv-version" aria-label="Versión de GregoTV">GregoTV · v2026.10.26.1</footer>
         </div>
     </div>
 
