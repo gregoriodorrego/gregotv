@@ -1605,7 +1605,7 @@
                     </aside>
                 </div>
             </section>
-            <footer class="gregotv-version" aria-label="Versión de GregoTV">GregoTV · v2026.10.27.1</footer>
+            <footer class="gregotv-version" aria-label="Versión de GregoTV">GregoTV · v2026.10.27.2</footer>
         </div>
     </div>
 
@@ -2928,8 +2928,13 @@
                                     }
                                 },
                                 onError: (evento) => {
-                                    if (idSesion === reproduccionId) {
-                                        console.warn('YouTube informó un error de reproducción:', evento.data);
+                                    if (idSesion !== reproduccionId || canalSeleccionado?.tipo !== 'youtube') return;
+                                    console.warn('YouTube informó un error de reproducción:', evento.data);
+                                    // Solo códigos oficiales de video inexistente, privado o no reproducible.
+                                    // No convertir errores de API ni de conectividad en reportes.
+                                    const codigo = Number(evento.data);
+                                    if ([100, 101, 150].includes(codigo)) {
+                                        errorEnReproduccion('❌ YouTube no permite reproducir este video (error ' + codigo + ').', idSesion);
                                     }
                                 }
                             }
