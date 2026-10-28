@@ -1605,7 +1605,7 @@
                     </aside>
                 </div>
             </section>
-            <footer class="gregotv-version" aria-label="Versión de GregoTV">GregoTV · v2026.10.27.2</footer>
+            <footer class="gregotv-version" aria-label="Versión de GregoTV">GregoTV · v2026.10.27.3</footer>
         </div>
     </div>
 
@@ -2736,33 +2736,29 @@
             acciones.append(si, no); caja.append(titulo, pregunta, acciones); panel.append(caja);
             document.body.append(panel); avisoReporte = panel;
             no.onclick = () => cerrarAvisoReporte();
-            si.onclick = async () => {
-                si.disabled = true; no.disabled = true;
-                pregunta.textContent = 'Comprobando conexión...';
-                if (!(await comprobarInternetReporte()) || avisoReporte !== panel ||
-                    id !== reproduccionId || canalSeleccionado !== canal) {
-                    cerrarAvisoReporte(); return;
-                }
-                pregunta.textContent = 'Enviando reporte...';
-                try {
-                    // Apps Script recibe JSON como texto sin cabeceras CORS especiales.
-                    // no-cors no permite leer la confirmación del servidor.
-                    await fetch(GREGO_REPORTE_URL, {
-                        method: 'POST', mode: 'no-cors',
-                        headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
-                        body: JSON.stringify({
-                            contenido: String(canal.nombre || 'Sin nombre'),
-                            tipo: tipoReporteGrego(canal),
-                            enlace: canal.url,
-                            problema: motivo
-                        })
-                    });
-                    pregunta.textContent = 'Solicitud enviada. La recepción no se puede confirmar desde este dispositivo.';
-                } catch (_) {
-                    pregunta.textContent = 'No se pudo enviar el reporte.';
-                }
-                si.style.display = 'none'; no.disabled = false; no.textContent = 'CERRAR';
-                no.focus();
+            si.onclick = () => {
+                // Cerrar inmediatamente para no interrumpir el uso de GregoTV.
+                // El envío continúa en segundo plano, sin mensajes adicionales.
+                cerrarAvisoReporte();
+                const datos = {
+                    contenido: String(canal.nombre || 'Sin nombre'),
+                    tipo: tipoReporteGrego(canal),
+                    enlace: canal.url,
+                    problema: motivo
+                };
+                (async () => {
+                    if (!(await comprobarInternetReporte())) return;
+                    try {
+                        // Apps Script recibe JSON como texto sin cabeceras CORS especiales.
+                        await fetch(GREGO_REPORTE_URL, {
+                            method: 'POST', mode: 'no-cors',
+                            headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
+                            body: JSON.stringify(datos)
+                        });
+                    } catch (error) {
+                        console.warn('No se pudo enviar el reporte de GregoTV:', error);
+                    }
+                })();
             };
             no.focus();
         }
