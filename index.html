@@ -1605,7 +1605,7 @@
                     </aside>
                 </div>
             </section>
-            <footer class="gregotv-version" aria-label="Versión de GregoTV">GregoTV · v2026.10.26.3</footer>
+            <footer class="gregotv-version" aria-label="Versión de GregoTV">GregoTV · v2026.10.27.1</footer>
         </div>
     </div>
 
@@ -2670,8 +2670,107 @@
             });
         }
 
+        // Reportes voluntarios: solo se ofrecen después de un error definitivo.
+        const GREGO_REPORTE_URL = 'https://script.google.com/macros/s/AKfycbzWdAohLvyL9BsJnSryRWDiO3elkrp3mj3xtIU18osKNbjTg50aFZHI7fNEWPpbYrHaaQ/exec';
+        let avisoReporte = null;
+        let secuenciaAvisoReporte = 0;
+
+        function cerrarAvisoReporte() {
+            secuenciaAvisoReporte++;
+            if (avisoReporte) { avisoReporte.remove(); avisoReporte = null; }
+        }
+
+        async function comprobarInternetReporte() {
+            if (navigator.onLine === false) return false;
+            const controlador = typeof AbortController !== 'undefined' ? new AbortController() : null;
+            const temporizador = setTimeout(() => { if (controlador) controlador.abort(); }, 6000);
+            try {
+                // Un recurso externo, independiente del servidor IPTV.
+                const respuesta = await fetch('https://www.google.com/generate_204?gregotv=' + Date.now(), {
+                    mode: 'no-cors', cache: 'no-store',
+                    ...(controlador ? { signal: controlador.signal } : {})
+                });
+                return !!respuesta;
+            } catch (_) {
+                return false;
+            } finally {
+                clearTimeout(temporizador);
+            }
+        }
+
+        function tipoReporteGrego(canal) {
+            const categoria = String(canal.categoria || '').toLowerCase();
+            if (/serie|temporada|episodio|cap[ií]tulo/.test(categoria)) return 'Serie';
+            if (/pel[ií]cula|cine|movie|vod/.test(categoria)) return 'Película';
+            return 'Televisión';
+        }
+
+        async function ofrecerReporteGrego(canal, motivo, id) {
+            if (!canal || !canal.url || !/^https?:\/\//i.test(canal.url)) return;
+            const secuencia = ++secuenciaAvisoReporte;
+            if (!(await comprobarInternetReporte())) return;
+            if (secuencia !== secuenciaAvisoReporte || id !== reproduccionId ||
+                canalSeleccionado !== canal || estadoReproduccion !== 'error') return;
+
+            cerrarAvisoReporte();
+            const panel = document.createElement('div');
+            panel.setAttribute('role', 'dialog');
+            panel.setAttribute('aria-modal', 'true');
+            panel.setAttribute('aria-label', 'Informar problema de reproducción');
+            panel.style.cssText = 'position:fixed;inset:0;z-index:2147483647;background:rgba(0,0,0,.82);display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;';
+            const caja = document.createElement('div');
+            caja.style.cssText = 'max-width:420px;width:100%;background:#172433;color:white;border:1px solid #52657b;border-radius:12px;padding:24px;box-sizing:border-box;text-align:center;font:16px Arial,sans-serif;';
+            const titulo = document.createElement('div');
+            titulo.textContent = '⚠️ No se pudo reproducir este contenido.';
+            titulo.style.cssText = 'font-weight:bold;margin-bottom:16px;';
+            const pregunta = document.createElement('p');
+            pregunta.textContent = '¿Querés informar de este problema al soporte técnico?';
+            const acciones = document.createElement('div');
+            acciones.style.cssText = 'display:flex;gap:14px;justify-content:center;margin-top:22px;';
+            const si = document.createElement('button');
+            si.type = 'button'; si.textContent = 'SÍ';
+            const no = document.createElement('button');
+            no.type = 'button'; no.textContent = 'NO';
+            [si, no].forEach(b => { b.style.cssText = 'min-width:100px;padding:12px 20px;border-radius:8px;border:0;font:bold 16px Arial;cursor:pointer;'; });
+            si.style.background = '#54c985'; no.style.background = '#e3e7ed';
+            acciones.append(si, no); caja.append(titulo, pregunta, acciones); panel.append(caja);
+            document.body.append(panel); avisoReporte = panel;
+            no.onclick = () => cerrarAvisoReporte();
+            si.onclick = async () => {
+                si.disabled = true; no.disabled = true;
+                pregunta.textContent = 'Comprobando conexión...';
+                if (!(await comprobarInternetReporte()) || avisoReporte !== panel ||
+                    id !== reproduccionId || canalSeleccionado !== canal) {
+                    cerrarAvisoReporte(); return;
+                }
+                pregunta.textContent = 'Enviando reporte...';
+                try {
+                    // Apps Script recibe JSON como texto sin cabeceras CORS especiales.
+                    // no-cors no permite leer la confirmación del servidor.
+                    await fetch(GREGO_REPORTE_URL, {
+                        method: 'POST', mode: 'no-cors',
+                        headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
+                        body: JSON.stringify({
+                            contenido: String(canal.nombre || 'Sin nombre'),
+                            tipo: tipoReporteGrego(canal),
+                            enlace: canal.url,
+                            problema: motivo
+                        })
+                    });
+                    pregunta.textContent = 'Solicitud enviada. La recepción no se puede confirmar desde este dispositivo.';
+                } catch (_) {
+                    pregunta.textContent = 'No se pudo enviar el reporte.';
+                }
+                si.style.display = 'none'; no.disabled = false; no.textContent = 'CERRAR';
+                no.focus();
+            };
+            no.focus();
+        }
+
         function errorEnReproduccion(mensaje, id = reproduccionId) {
             if (id !== reproduccionId) return;
+            const canalFallido = canalSeleccionado;
+            const causaReporte = String(mensaje || 'Error de reproducción').replace(/^❌\s*/, '');
             if (temporizadorReintento !== null) {
                 clearTimeout(temporizadorReintento);
                 temporizadorReintento = null;
@@ -2685,6 +2784,9 @@
             contenedorYoutube.style.display = 'none';
             mostrarEstadoVideo(mensaje, 'error');
             actualizarCanalSeleccionadoVisualmente();
+            if (canalFallido && !/navegador no soporta/i.test(causaReporte)) {
+                ofrecerReporteGrego(canalFallido, causaReporte, id);
+            }
         }
 
         function reproducirHLS(url) {
@@ -2891,6 +2993,7 @@
         }
 
         function detenerReproduccion() {
+            cerrarAvisoReporte();
             // Invalidar la sesión ANTES de interrumpir los medios; ningún evento
             // posterior puede reactivar la reproducción anterior.
             reproduccionId++;
