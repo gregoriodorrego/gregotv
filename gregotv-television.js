@@ -485,6 +485,39 @@
             }
         }
 
+        // En Android TV, el OK en modo cine es pausa, sin reactivar el canal
+        // que conserva el foco en la lista oculta.
+        let ultimoOkCineTV = 0;
+        function okCineTV(e) {
+            const k = e.keyCode;
+            return e.key === 'Enter' || k === 13 || k === 23 || k === 66;
+        }
+        document.addEventListener('keydown', (e) => {
+            if (!estaEnModoCine || !window.GregoTVFocoRemoto ||
+                !window.GregoTVFocoRemoto() || !okCineTV(e) ||
+                !canalSeleccionado || (canalSeleccionado.tipo !== 'hls' &&
+                canalSeleccionado.tipo !== 'mp4')) return;
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            if (e.repeat) return;
+            ultimoOkCineTV = Date.now();
+            alternarPausaCanalEnVivo(videoActivo, true);
+        }, true);
+        document.addEventListener('keyup', (e) => {
+            if (!estaEnModoCine || !window.GregoTVFocoRemoto ||
+                !window.GregoTVFocoRemoto() || !okCineTV(e)) return;
+            e.preventDefault();
+            e.stopImmediatePropagation();
+        }, true);
+        // Algunos WebView generan un click sintético sobre el canal enfocado
+        // después del OK: impedir únicamente ese click, nunca uno físico.
+        document.addEventListener('click', (e) => {
+            if (Date.now() - ultimoOkCineTV > 600 || e.detail !== 0 ||
+                !e.target.closest || !e.target.closest('.canal-item')) return;
+            e.preventDefault();
+            e.stopImmediatePropagation();
+        }, true);
+
         document.addEventListener('keydown', (e) => {
             // Escape/Atrás termina la edición incluso si hay botones enfocados.
             const esCampoTexto = /^(INPUT|TEXTAREA)$/.test(e.target.tagName);
@@ -1628,11 +1661,11 @@
 
         // Los canales HLS/MP4 no necesitan la barra de controles nativos.
         // Un clic/toque o OK cuando el reproductor tiene foco alterna la pausa.
-        function alternarPausaCanalEnVivo(video) {
+        function alternarPausaCanalEnVivo(video, conservarModoCine = false) {
             if (video !== videoActivo || !canalSeleccionado || modoLimpieza ||
                 (canalSeleccionado.tipo !== 'hls' && canalSeleccionado.tipo !== 'mp4') ||
                 (estadoReproduccion !== 'reproduciendo' && !video.paused)) return;
-            resetearActividad();
+            if (!conservarModoCine) resetearActividad();
             if (video.paused) video.play().catch(() => {});
             else video.pause();
         }
