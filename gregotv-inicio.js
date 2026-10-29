@@ -13,7 +13,7 @@
 
 (function comprobarVersionPublicada() {
   if (location.protocol !== 'https:' || !window.fetch) return;
-  const actual = '2026.10.29.54';
+  const actual = '2026.10.29.55';
   function partes(v) {
     if (typeof v !== 'string' || !/^v?\d{4}\.\d{2}\.\d{2}\.\d+$/.test(v)) return null;
     return v.replace(/^v/, '').split('.').map(Number);
