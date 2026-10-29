@@ -1,0 +1,133 @@
+/* GregoTV - menú de países y categorías, igual en PC, Android TV/TV Box y móvil.
+   El select original permanece en el DOM para conservar el filtro M3U.
+   Si falla JavaScript, el select nativo sigue disponible con texto contrastado. */
+
+/* Mejorar contraste también en navegadores que muestren el select de sistema. */
+#pantalla-principal #select-categoria,
+#pantalla-principal #select-categoria option,
+#pantalla-principal #select-categoria optgroup{
+  background-color:#001e19;color:#ffffff;color-scheme:dark;
+}
+#pantalla-principal #select-categoria option:checked{
+  background-color:#086d43;color:#ffffff;
+}
+#pantalla-principal #filtro-categorias.gt-cat-mejorado #select-categoria{
+  display:none!important;
+}
+#pantalla-principal #gt-cat-trigger{
+  box-sizing:border-box!important;display:flex!important;
+  align-items:center!important;justify-content:space-between!important;
+  width:100%!important;height:52px!important;min-height:43px!important;
+  margin:0!important;padding:8px 14px!important;
+  gap:10px!important;
+  font-family:Arial,Helvetica,sans-serif!important;
+  font-size:clamp(13px,1.4vw,17px)!important;font-weight:500!important;
+  text-align:left!important;
+  color:#effff5!important;
+  background:linear-gradient(110deg,#00332b,#001d1c)!important;
+  border:1.5px solid #09e5a5!important;border-radius:11px!important;
+  box-shadow:inset 0 0 14px #00ae7831!important;
+  cursor:pointer!important;white-space:nowrap!important;
+}
+#pantalla-principal #gt-cat-trigger:hover,
+#pantalla-principal #gt-cat-trigger:focus-visible,
+#pantalla-principal #gt-cat-trigger.gt-cat-abierto{
+  border-color:#67ff9f!important;
+  background:linear-gradient(110deg,#00503a,#003026)!important;
+  box-shadow:0 0 13px #0bff7c91,inset 0 0 14px #00ce8e35!important;
+  outline:2px solid #98ffc4!important;outline-offset:2px!important;
+}
+#pantalla-principal .gt-cat-trigger-label{
+  display:inline-flex;align-items:center;gap:9px;flex:1 1 0;min-width:0;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+#pantalla-principal .gt-cat-trigger-label span{min-width:0;overflow:hidden;text-overflow:ellipsis}
+#pantalla-principal .gt-cat-icon,.gt-cat-popup .gt-cat-icon{
+  display:block;width:19px;height:19px;flex:0 0 19px;
+  fill:none;stroke:#61eab7;stroke-width:2.15;stroke-linecap:round;stroke-linejoin:round;
+  pointer-events:none;
+}
+.gt-cat-popup .gt-cat-icon *{pointer-events:none}
+.gt-cat-popup .gt-cat-grupo .gt-cat-icon{stroke:#47e9d7}
+.gt-cat-popup .gt-cat-opcion.gt-cat-elegido .gt-cat-icon{stroke:#aeffa1}
+.gt-cat-popup .gt-cat-opcion,.gt-cat-popup .gt-cat-grupo{gap:9px}
+#pantalla-principal .gt-cat-chevron{
+  flex:none;display:grid;place-items:center;width:23px;height:23px;
+  transition:transform .15s ease;
+}
+#pantalla-principal .gt-cat-chevron .gt-cat-icon{stroke:#59ffc0;width:20px;height:20px}
+#pantalla-principal #gt-cat-trigger[aria-expanded="true"] .gt-cat-chevron{transform:rotate(180deg)}
+.gt-cat-popup{
+  position:fixed!important;z-index:2147483000!important;
+  display:block;box-sizing:border-box;
+  min-height:0;max-height:470px;overflow-y:auto;overflow-x:hidden;
+  padding:5px 6px 7px;
+  background:linear-gradient(155deg,#003028,#001710 68%,#001d19)!important;
+  color:#fff!important;color-scheme:dark;
+  border:1.8px solid #13ef91!important;border-radius:11px!important;
+  box-shadow:0 0 19px #00f67d80,0 12px 25px #000b0adb,inset 0 0 20px #00b88312!important;
+  font:500 15px/1.2 Arial,Helvetica,sans-serif;
+  scrollbar-color:#1ccf93 #001d15;scrollbar-width:thin;
+  overscroll-behavior:contain;
+}
+.gt-cat-popup[hidden]{display:none!important}
+.gt-cat-popup::-webkit-scrollbar{width:7px}
+.gt-cat-popup::-webkit-scrollbar-track{background:#001b16}
+.gt-cat-popup::-webkit-scrollbar-thumb{background:#10aa74;border-radius:10px}
+.gt-cat-popup .gt-cat-opcion{
+  position:relative;box-sizing:border-box;display:flex;
+  align-items:center;min-height:38px;width:100%;
+  margin:1px 0;padding:8px 11px 8px 12px;
+  color:#f5fff9!important;background:transparent!important;
+  border:1px solid transparent;border-radius:7px;
+  font:500 15px/1.25 Arial,Helvetica,sans-serif;
+  cursor:pointer;white-space:normal;overflow-wrap:anywhere;
+}
+.gt-cat-popup .gt-cat-grupo{
+  box-sizing:border-box;display:flex;align-items:center;
+  width:100%;margin:7px 0 4px;padding:9px 10px 7px;
+  color:#b1f6df!important;
+  border-bottom:1px solid #128a70;
+  font:700 15px/1.2 Arial,Helvetica,sans-serif;
+  user-select:none;
+}
+.gt-cat-popup .gt-cat-opcion.gt-cat-activo,
+.gt-cat-popup .gt-cat-opcion:hover{
+  background:#07573b!important;border-color:#4dfdac!important;color:#fff!important;
+}
+.gt-cat-popup .gt-cat-opcion.gt-cat-elegido{
+  background:#056b37!important;border-color:#60ff76!important;
+  box-shadow:inset 0 0 15px #15f56635,0 0 8px #00d85933!important;
+  font-weight:700;
+}
+.gt-cat-popup .gt-cat-opcion.gt-cat-activo.gt-cat-elegido{
+  outline:2px solid #b5ffd1;outline-offset:-3px;
+}
+@media(max-width:1200px){
+  #pantalla-principal #gt-cat-trigger{
+    height:52px!important;font-size:clamp(13px,1.4vw,16px)!important
+  }
+}
+@media(max-width:700px){
+  #pantalla-principal #gt-cat-trigger{
+    height:36px!important;min-height:35px!important;
+    padding:5px 9px!important;font-size:13px!important;border-radius:9px!important;
+  }
+  #pantalla-principal .gt-cat-chevron{width:20px;height:20px}
+  #pantalla-principal .gt-cat-trigger-label .gt-cat-icon,.gt-cat-popup .gt-cat-icon{width:17px;height:17px;flex-basis:17px}
+  .gt-cat-popup .gt-cat-opcion{min-height:43px;font-size:14px}
+  .gt-cat-popup .gt-cat-grupo{font-size:14px}
+}
+@media(max-width:980px) and (orientation:landscape){
+  #pantalla-principal #gt-cat-trigger{
+    height:35px!important;min-height:35px!important;padding:5px 9px!important;
+  }
+  .gt-cat-popup .gt-cat-opcion{min-height:35px;font-size:13px;padding:6px 9px}
+  .gt-cat-popup .gt-cat-grupo{font-size:13px}
+}
+@media(min-width:701px) and (hover:none){
+  .gt-cat-popup .gt-cat-opcion{min-height:44px}
+}
+@media(prefers-reduced-motion:reduce){
+  #pantalla-principal .gt-cat-chevron{transition:none}
+}
