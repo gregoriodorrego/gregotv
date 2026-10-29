@@ -89,9 +89,18 @@
         // En TV Box, pasar por la búsqueda no debe abrir el teclado de Android.
         const androidNavegador = /Android/i.test(navigator.userAgent || '');
         let controlAndroidDetectado = androidNavegador && !/Mobile/i.test(navigator.userAgent || '');
+        // readOnly impide que WebView abra el teclado solo por recibir foco.
+        // Se habilita escritura únicamente mediante OK sobre el buscador.
+        if (controlAndroidDetectado) inputBuscar.readOnly = true;
         document.addEventListener('keydown', (e) => {
-            if (androidNavegador && [19, 20, 21, 22, 23].includes(e.keyCode)) controlAndroidDetectado = true;
+            if (androidNavegador && [19, 20, 21, 22, 23].includes(e.keyCode)) {
+                controlAndroidDetectado = true;
+                if (document.activeElement !== inputBuscar || inputBuscar.readOnly) inputBuscar.readOnly = true;
+            }
         }, true);
+        inputBuscar.addEventListener('blur', () => {
+            if (controlAndroidDetectado) inputBuscar.readOnly = true;
+        });
         window.GregoTVFocoRemoto = () => controlAndroidDetectado;
         function enfocarBuscadorSinTeclado() {
             if (controlAndroidDetectado) {
@@ -666,6 +675,7 @@
                 if (selector) selector.focus();
             } else if (e.key === 'Enter' || e.key === ' ' || n === 13 || n === 23 || n === 66) {
                 e.preventDefault();
+                inputBuscar.readOnly = false;
                 inputBuscar.focus();
                 inputBuscar.click();
             }
