@@ -1,0 +1,358 @@
+/* GregoTV — Administración de canales. Únicamente activa durante modo edición.
+   Diseño aprobado: panel lateral PC / TV Box, cuatro botones compactos 2x2
+   en celular, filtro y buscador a la par. Reproductor y menú normal intactos. */
+#pantalla-principal #gt-admin-panel{display:none}
+#pantalla-principal.gt-modo-administracion #gt-admin-panel{
+ box-sizing:border-box;display:flex;flex-direction:column;min-width:0;min-height:0;
+ background:linear-gradient(145deg,#001e18,#000e0b 80%,#00271e);
+ border:1.5px solid #0cdf85;border-radius:13px;
+ box-shadow:inset 0 0 20px #13db5c20,0 0 15px #00c8682b;
+ padding:12px;gap:8px;overflow:hidden;
+}
+#pantalla-principal.gt-modo-administracion #gt-admin-panel .gt-admin-title{
+ font:800 clamp(16px,1.7vw,22px)/1.2 Arial,sans-serif;
+ color:white;margin:0 0 3px;padding:1px 0 6px;border-bottom:1px solid #167b58;
+ white-space:nowrap;
+}
+#pantalla-principal.gt-modo-administracion #gt-admin-panel .gt-admin-buttons{
+ display:grid;grid-template-columns:minmax(0,1fr);gap:6px;min-height:0;
+}
+#pantalla-principal.gt-modo-administracion #gt-admin-panel .gt-admin-action{
+ box-sizing:border-box;display:flex!important;align-items:center;justify-content:flex-start;
+ flex:0 0 auto;width:100%!important;min-width:0;min-height:37px!important;
+ padding:7px 12px!important;margin:0!important;
+ border:1px solid #12ccac!important;border-radius:8px!important;
+ background:linear-gradient(115deg,#033729,#001b19)!important;
+ box-shadow:inset 0 0 10px #00e69e19!important;
+ color:#fff!important;font:600 clamp(12px,1.12vw,15px)/1.2 Arial,sans-serif!important;
+ white-space:normal!important;text-align:left;cursor:pointer;
+}
+#pantalla-principal.gt-modo-administracion #gt-admin-panel .gt-admin-action:hover,
+#pantalla-principal.gt-modo-administracion #gt-admin-panel .gt-admin-action:focus-visible{
+ background:#074f39!important;border-color:#6affb5!important;outline:2px solid #c5ffac!important;outline-offset:1px;
+}
+#pantalla-principal.gt-modo-administracion #gt-admin-panel .gt-admin-action .gt-admin-symbol{
+ flex:none;display:inline-flex;align-items:center;justify-content:center;
+ width:29px;min-width:29px;margin-right:8px;color:#1cff92;
+}
+#pantalla-principal.gt-modo-administracion #gt-admin-panel .gt-admin-action .gt-admin-label{min-width:0}
+#pantalla-principal.gt-modo-administracion #gt-admin-panel .gt-admin-action .gt-admin-symbol svg{
+ display:block;width:23px;height:23px;flex:none;fill:none;
+ stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;
+}
+@media(max-width:700px){
+ #pantalla-principal.gt-modo-administracion #gt-admin-panel .gt-admin-action .gt-admin-symbol svg{width:24px;height:24px}
+}
+
+/* PC y TV Box: lista a la derecha y acciones compactas junto a navegación principal. */
+#pantalla-principal #gt-admin-toolbar{display:none}
+@media(min-width:701px){
+ #pantalla-principal.gt-modo-administracion #gt-admin-panel{display:none!important}
+ #pantalla-principal.gt-modo-administracion #barra-superior{
+  display:flex!important;flex-wrap:nowrap!important;align-items:center!important;
+  gap:clamp(5px,.55vw,10px)!important;
+  min-height:65px!important;max-height:none!important;height:auto!important;
+  padding:7px clamp(8px,.85vw,15px)!important;
+ }
+ #pantalla-principal.gt-modo-administracion #barra-superior .gt-tv-brand{
+  flex:0 0 auto!important;font-size:clamp(19px,1.9vw,30px)!important;
+ }
+ #pantalla-principal.gt-modo-administracion #barra-superior .gt-tv-brand svg{
+  width:clamp(28px,2.8vw,42px)!important;margin-right:6px!important;
+ }
+ /* TV y Cine siguen siendo las acciones principales. */
+ #pantalla-principal.gt-modo-administracion #barra-superior .gt-tv-tabs{
+  flex:0 0 auto!important;gap:6px!important;
+ }
+ #pantalla-principal.gt-modo-administracion #barra-superior .gt-tv-tabs button{
+  min-height:46px!important;padding:7px clamp(8px,.8vw,13px)!important;
+  font-size:clamp(12px,1vw,16px)!important;white-space:nowrap!important;
+ }
+ #pantalla-principal.gt-modo-administracion #barra-superior .gt-tv-tabs svg{
+  width:23px!important;height:23px!important;
+ }
+ #pantalla-principal.gt-modo-administracion #barra-superior .controles-superior{display:none!important}
+ /* Botones a tamaño de contenido: sin columnas vacías ni espacios sobrantes. */
+ #pantalla-principal.gt-modo-administracion #gt-admin-toolbar{
+  display:flex!important;flex:0 1 auto!important;min-width:0;width:auto!important;
+  align-items:center;justify-content:flex-end;margin-left:auto;
+ }
+ #pantalla-principal.gt-modo-administracion #gt-admin-toolbar .gt-admin-buttons{
+  display:flex;align-items:center;justify-content:flex-end;
+  width:auto;min-width:0;gap:3px;
+ }
+ #pantalla-principal.gt-modo-administracion #gt-admin-toolbar .gt-admin-action{
+  display:inline-flex!important;align-items:center;justify-content:center;gap:3px;
+  flex:0 0 auto!important;width:auto!important;min-width:0;
+  min-height:38px!important;height:38px!important;
+  margin:0!important;padding:4px 6px!important;
+  border:1px solid #176854!important;border-radius:7px!important;
+  background:#00251e!important;box-shadow:none!important;
+  color:#dcefe6!important;font:600 clamp(10px,.74vw,12px)/1.1 Arial,sans-serif!important;
+  text-align:center;white-space:nowrap!important;cursor:pointer;
+ }
+ #pantalla-principal.gt-modo-administracion #gt-admin-toolbar .gt-admin-action:hover,
+ #pantalla-principal.gt-modo-administracion #gt-admin-toolbar .gt-admin-action:focus-visible{
+  background:#074f39!important;border-color:#6affb5!important;
+  outline:2px solid #c5ffac!important;outline-offset:1px;
+ }
+ #pantalla-principal.gt-modo-administracion #gt-admin-toolbar .gt-admin-symbol{
+  flex:none;display:inline-flex;align-items:center;justify-content:center;color:#64d8a1;
+ }
+ #pantalla-principal.gt-modo-administracion #gt-admin-toolbar .gt-admin-symbol svg{
+  display:block;width:16px;height:16px;fill:none;stroke:currentColor;
+  stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;
+ }
+ #pantalla-principal.gt-modo-administracion #gt-admin-toolbar .gt-admin-label{min-width:0}
+ /* La lista de TV ocupa el panel derecho; se eliminó la distribución inferior antigua. */
+ #pantalla-principal.gt-modo-administracion #contenedor-principal{
+  display:grid!important;
+  grid-template-columns:minmax(0,1.7fr) minmax(300px,1fr)!important;
+  grid-template-rows:minmax(0,1fr)!important;
+  gap:10px!important;min-height:0!important;
+ }
+ #pantalla-principal.gt-modo-administracion #area-video{
+  grid-column:1!important;grid-row:1!important;
+  width:100%!important;height:100%!important;min-width:0!important;min-height:0!important;
+ }
+ #pantalla-principal.gt-modo-administracion #area-lista{
+  grid-column:2!important;grid-row:1!important;
+  display:grid!important;grid-template-columns:minmax(0,1fr)!important;
+  grid-template-rows:auto auto auto auto minmax(0,1fr)!important;
+  gap:5px!important;padding:9px!important;
+  width:100%!important;max-width:none!important;min-width:0!important;
+  height:100%!important;min-height:0!important;align-content:stretch!important;
+ }
+ #pantalla-principal.gt-modo-administracion #area-lista > .gt-tv-list-heading{
+  display:flex!important;grid-column:1;grid-row:1;
+  padding:4px 6px 7px!important;font-size:clamp(15px,1.5vw,22px)!important;
+ }
+ #pantalla-principal.gt-modo-administracion #filtro-categorias{grid-column:1;grid-row:2;padding:0!important;min-width:0}
+ #pantalla-principal.gt-modo-administracion #buscador{grid-column:1;grid-row:3;padding:0!important;min-width:0}
+ #pantalla-principal.gt-modo-administracion #info-canales{
+  grid-column:1;grid-row:4;padding:3px 6px!important;border-top:1px solid #075c42!important;
+ }
+ #pantalla-principal.gt-modo-administracion #lista-canales{
+  grid-column:1;grid-row:5;min-height:0!important;padding:2px!important;overflow-y:auto!important;
+ }
+ #pantalla-principal.gt-modo-administracion #gt-cat-trigger,
+ #pantalla-principal.gt-modo-administracion #input-buscar,
+ #pantalla-principal.gt-modo-administracion #select-categoria{
+  width:100%!important;height:42px!important;min-height:42px!important;
+ }
+}
+/* En ventanas de escritorio excepcionalmente estrechas, evitar desbordamiento. */
+@media(min-width:701px) and (max-width:900px){
+ #pantalla-principal.gt-modo-administracion #barra-superior{
+  display:grid!important;
+  grid-template-columns:max-content minmax(0,1fr)!important;
+  grid-template-rows:auto auto!important;column-gap:8px!important;row-gap:6px!important;
+ }
+ #pantalla-principal.gt-modo-administracion #barra-superior .gt-tv-brand{grid-column:1;grid-row:1}
+ #pantalla-principal.gt-modo-administracion #barra-superior .gt-tv-tabs{grid-column:2;grid-row:1;justify-self:center}
+ #pantalla-principal.gt-modo-administracion #gt-admin-toolbar{
+  grid-column:1 / -1;grid-row:2;width:100%!important;
+ }
+ #pantalla-principal.gt-modo-administracion #gt-admin-toolbar .gt-admin-buttons{
+  flex-wrap:wrap!important;justify-content:center!important;
+ }
+}
+@media(min-width:701px) and (pointer:coarse){
+ #pantalla-principal.gt-modo-administracion #gt-admin-toolbar .gt-admin-action{
+  min-height:44px!important;height:44px!important;
+ }
+ #pantalla-principal.gt-modo-administracion #gt-admin-toolbar .gt-admin-symbol svg{
+  width:20px;height:20px;
+ }
+}
+/* Smartphone: cuatro opciones en dos filas; pestañas superiores visibles. */
+@media(max-width:700px){
+ #pantalla-principal.gt-modo-administracion #barra-superior{
+  display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  grid-template-areas:"brand brand" "tabs tabs"!important;
+  grid-template-rows:auto auto!important;
+  align-items:center!important;justify-content:stretch!important;
+  min-height:0!important;max-height:none!important;
+  height:auto!important;padding:5px 8px 7px!important;gap:5px!important;
+ }
+ #pantalla-principal.gt-modo-administracion #barra-superior .gt-tv-brand{
+  display:flex!important;font-size:21px!important;margin:0!important
+ }
+ #pantalla-principal.gt-modo-administracion #barra-superior .gt-tv-brand svg{width:27px!important}
+ #pantalla-principal.gt-modo-administracion #barra-superior .gt-tv-tabs{
+  display:grid!important;
+ }
+ #pantalla-principal.gt-modo-administracion #barra-superior .controles-superior{display:none!important}
+ #pantalla-principal.gt-modo-administracion #contenedor-principal{
+  display:flex!important;flex-direction:column!important;gap:6px!important;padding:6px 8px!important;
+  min-height:0!important;overflow:hidden!important;
+ }
+ #pantalla-principal.gt-modo-administracion #gt-admin-panel{
+  flex:none!important;order:0!important;width:100%!important;min-height:0!important;
+  padding:4px 6px 5px!important;gap:3px!important;border-radius:9px!important;
+ }
+ #pantalla-principal.gt-modo-administracion #gt-admin-panel .gt-admin-title{
+  font-size:13px!important;line-height:1.1!important;
+  margin:0!important;padding:2px 2px 3px!important;white-space:nowrap
+ }
+ #pantalla-principal.gt-modo-administracion #gt-admin-panel .gt-admin-buttons{
+  display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  grid-template-rows:repeat(2,42px)!important;
+  gap:4px!important;
+ }
+ #pantalla-principal.gt-modo-administracion #gt-admin-panel .gt-admin-action{
+  display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:center!important;
+  min-width:0!important;width:100%!important;min-height:42px!important;height:42px!important;
+  padding:3px 5px!important;margin:0!important;gap:5px!important;
+  border-width:1px!important;border-radius:6px!important;
+  font-size:clamp(9px,2.5vw,11px)!important;font-weight:600!important;
+  line-height:1.08!important;text-align:left!important;
+ }
+ #pantalla-principal.gt-modo-administracion #gt-admin-panel .gt-admin-symbol{
+  width:20px!important;min-width:20px!important;margin:0!important;
+  line-height:1!important;flex:none!important;
+ }
+ #pantalla-principal.gt-modo-administracion #gt-admin-panel .gt-admin-label{
+  text-align:left!important;line-height:1.08!important;
+ }
+ #pantalla-principal.gt-modo-administracion #gt-admin-panel .gt-admin-action .gt-admin-symbol svg{
+  width:20px!important;height:20px!important;
+ }
+ #pantalla-principal.gt-modo-administracion #area-video{
+  order:1!important;flex:0 0 clamp(142px,27dvh,235px)!important;
+  height:clamp(142px,27dvh,235px)!important;
+  min-height:0!important;max-height:none!important;width:100%!important;
+  border-radius:10px!important;
+ }
+ #pantalla-principal.gt-modo-administracion #area-lista{
+  order:2!important;flex:1 1 0!important;min-height:0!important;height:auto!important;
+  width:100%!important;max-width:none!important;
+  display:grid!important;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr)!important;
+  grid-template-rows:37px 26px minmax(0,1fr)!important;
+  gap:4px 5px!important;padding:6px!important;
+  align-content:stretch!important;border-radius:10px!important;
+ }
+ #pantalla-principal.gt-modo-administracion .gt-tv-list-heading{display:none!important}
+ #pantalla-principal.gt-modo-administracion #filtro-categorias{
+  grid-column:1;grid-row:1;min-width:0;padding:0!important;
+ }
+ #pantalla-principal.gt-modo-administracion #buscador{
+  grid-column:2;grid-row:1;min-width:0;padding:0!important;
+ }
+ #pantalla-principal.gt-modo-administracion #gt-cat-trigger,
+ #pantalla-principal.gt-modo-administracion #input-buscar,
+ #pantalla-principal.gt-modo-administracion #select-categoria{
+  width:100%!important;height:36px!important;min-height:36px!important;
+  padding:5px 7px!important;font-size:11px!important
+ }
+ #pantalla-principal.gt-modo-administracion #info-canales{
+  grid-column:1 / -1;grid-row:2;order:0!important;
+  padding:2px 6px!important;min-height:0!important;font-size:12px!important;
+  border-top:1px solid #0b7752!important
+ }
+ #pantalla-principal.gt-modo-administracion #lista-canales{
+  grid-column:1 / -1;grid-row:3;order:0!important;min-height:0!important;
+  padding:0!important;overflow:auto!important
+ }
+ #pantalla-principal.gt-modo-administracion #lista-canales .canal-item{
+  display:flex!important;align-items:center!important;justify-content:flex-start!important;
+  min-height:43px!important;height:43px!important;max-height:43px!important;
+  padding:3px 6px!important;margin:0 0 4px!important;
+  gap:3px!important;overflow:hidden!important
+ }
+ /* El nombre ocupa una sola línea; el nombre completo sigue en el DOM
+    y en la etiqueta accesible del canal. */
+ #pantalla-principal.gt-modo-administracion #lista-canales .canal-item .canal-nombre{
+  display:block!important;flex:1 1 0!important;
+  min-width:0!important;max-width:none!important;
+  padding:0!important;margin:0!important;
+  font-size:clamp(11px,3vw,13px)!important;line-height:1.15!important;
+  font-weight:500!important;
+  white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;
+  word-break:normal!important;overflow-wrap:normal!important
+ }
+ #pantalla-principal.gt-modo-administracion #lista-canales .canal-item::before{
+  flex:0 0 23px!important;width:23px!important;height:23px!important
+ }
+ #pantalla-principal.gt-modo-administracion #lista-canales .canal-item .drag-handle{
+  flex:0 0 auto!important;font-size:13px!important;margin:0 2px 0 0!important
+ }
+
+}
+@media(max-width:350px){
+ #pantalla-principal.gt-modo-administracion #gt-admin-panel .gt-admin-buttons{gap:3px!important}
+ #pantalla-principal.gt-modo-administracion #gt-admin-panel .gt-admin-action{font-size:8.5px!important}
+}
+
+/* Iconografía uniforme SVG del panel de administración. */
+#pantalla-principal.gt-modo-administracion #gt-admin-panel .gt-admin-title{
+ display:flex;align-items:center;gap:7px;
+}
+#pantalla-principal.gt-modo-administracion #gt-admin-panel .gt-admin-title svg{
+ display:block;width:20px;height:20px;flex:none;fill:none;
+ stroke:currentColor;stroke-width:2.25;stroke-linecap:round;stroke-linejoin:round;
+}
+@media(max-width:700px){
+ #pantalla-principal.gt-modo-administracion #gt-admin-panel .gt-admin-title svg{width:17px;height:17px}
+}
+
+/* Editar / Quitar: iconos SVG neón compactos, sin caracteres anteriores. */
+#pantalla-principal #lista-canales .canal-item .boton-editar,
+#pantalla-principal #lista-canales .canal-item .boton-quitar{display:none}
+#pantalla-principal.gt-modo-administracion #lista-canales .canal-item .boton-editar,
+#pantalla-principal.gt-modo-administracion #lista-canales .canal-item .boton-quitar{
+ box-sizing:border-box!important;display:inline-flex!important;
+ align-items:center!important;justify-content:center!important;
+ flex:0 0 34px!important;width:34px!important;min-width:34px!important;
+ height:34px!important;min-height:34px!important;max-height:34px!important;
+ margin:0!important;padding:0!important;line-height:1!important;
+ border:1.5px solid!important;border-radius:7px!important;
+ box-shadow:none;cursor:pointer;white-space:nowrap;
+}
+#pantalla-principal.gt-modo-administracion #lista-canales .canal-item .boton-editar{
+ color:#22f2ff!important;border-color:#00c9d7!important;background:#003037!important
+}
+#pantalla-principal.gt-modo-administracion #lista-canales .canal-item .boton-quitar{
+ color:#ff5c61!important;border-color:#ff525a!important;background:#330e15!important
+}
+#pantalla-principal.gt-modo-administracion #lista-canales .canal-item .boton-editar svg,
+#pantalla-principal.gt-modo-administracion #lista-canales .canal-item .boton-quitar svg{
+ display:block;width:19px;height:19px;flex:none;fill:none;
+ stroke:currentColor;stroke-width:2.3;stroke-linecap:round;stroke-linejoin:round
+}
+#pantalla-principal.gt-modo-administracion #lista-canales .canal-item .boton-editar:hover,
+#pantalla-principal.gt-modo-administracion #lista-canales .canal-item .boton-editar:focus{
+ background:#004b58!important;box-shadow:0 0 10px #00eaff80!important
+}
+#pantalla-principal.gt-modo-administracion #lista-canales .canal-item .boton-quitar:hover,
+#pantalla-principal.gt-modo-administracion #lista-canales .canal-item .boton-quitar:focus{
+ background:#51161e!important;box-shadow:0 0 10px #ff495d80!important
+}
+#pantalla-principal.gt-modo-administracion #lista-canales .canal-item .boton-editar:focus,
+#pantalla-principal.gt-modo-administracion #lista-canales .canal-item .boton-quitar:focus,
+#pantalla-principal.gt-modo-administracion #lista-canales .canal-item .boton-editar:focus-visible,
+#pantalla-principal.gt-modo-administracion #lista-canales .canal-item .boton-quitar:focus-visible{
+ outline:2px solid #d9ff53!important;outline-offset:2px!important
+}
+@media(min-width:701px){
+ #pantalla-principal.gt-modo-administracion #lista-canales .canal-item{gap:5px!important}
+ #pantalla-principal.gt-modo-administracion #lista-canales .canal-item .drag-handle{margin-right:2px!important}
+}
+@media(min-width:701px) and (pointer:coarse){
+ #pantalla-principal.gt-modo-administracion #lista-canales .canal-item .boton-editar,
+ #pantalla-principal.gt-modo-administracion #lista-canales .canal-item .boton-quitar{
+  flex-basis:44px!important;width:44px!important;min-width:44px!important;
+  height:44px!important;min-height:44px!important;max-height:44px!important
+ }
+ #pantalla-principal.gt-modo-administracion #lista-canales .canal-item .boton-editar svg,
+ #pantalla-principal.gt-modo-administracion #lista-canales .canal-item .boton-quitar svg{
+  width:23px;height:23px
+ }
+}
+@media(max-width:700px){
+ #pantalla-principal.gt-modo-administracion #lista-canales .canal-item .boton-editar,
+ #pantalla-principal.gt-modo-administracion #lista-canales .canal-item .boton-quitar{
+  flex-basis:36px!important;width:36px!important;min-width:36px!important;
+  height:36px!important;min-height:36px!important;max-height:36px!important
+ }
+}
