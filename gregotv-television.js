@@ -1626,8 +1626,28 @@
             }
         }
 
+        // Los canales HLS/MP4 no necesitan la barra de controles nativos.
+        // Un clic/toque o OK cuando el reproductor tiene foco alterna la pausa.
+        function alternarPausaCanalEnVivo(video) {
+            if (video !== videoActivo || !canalSeleccionado || modoLimpieza ||
+                (canalSeleccionado.tipo !== 'hls' && canalSeleccionado.tipo !== 'mp4') ||
+                (estadoReproduccion !== 'reproduciendo' && !video.paused)) return;
+            resetearActividad();
+            if (video.paused) video.play().catch(() => {});
+            else video.pause();
+        }
         // Eventos de HLS/MP4 en ambos elementos; el inactivo nunca manda.
         for (const video of [videoNativo, videoProcesado]) {
+            video.controls = false;
+            video.addEventListener('click', () => alternarPausaCanalEnVivo(video));
+            video.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ' || e.keyCode === 13 ||
+                    e.keyCode === 23 || e.keyCode === 66 || e.keyCode === 32) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    alternarPausaCanalEnVivo(video);
+                }
+            });
             video.addEventListener('playing', () => {
                 if (video !== videoActivo || !canalSeleccionado ||
                     canalSeleccionado.tipo === 'youtube' || estadoReproduccion === 'sin_canal') return;
