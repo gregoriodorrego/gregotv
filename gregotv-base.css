@@ -1,0 +1,1424 @@
+/* estilos-base-compartida */
+/* Estilos separados por Inicio, Televisión y Cine. */
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 18px;
+            background-color: #1a1a1a;
+            color: #f0f0f0;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* ===== PANTALLA DE BIENVENIDA ===== */
+        
+
+        #pantalla-bienvenida h1 { font-size: 36px; margin-bottom: 20px; color: #ffffff; }
+        #pantalla-bienvenida p { font-size: 20px; margin-bottom: 30px; color: #cccccc; max-width: 600px; }
+
+        .input-container { width: 100%; max-width: 600px; margin-bottom: 20px; }
+
+        .tab-group {
+            display: flex; gap: 10px; margin-bottom: 15px; justify-content: center;
+        }
+
+        .tab-btn {
+            background: #333; border: none; color: #aaa; padding: 10px 20px;
+            border-radius: 8px; cursor: pointer; font-size: 16px; transition: all 0.2s;
+        }
+        .tab-btn.active { background: #4CAF50; color: white; }
+
+        .input-area { display: none; flex-direction: column; gap: 10px; align-items: center; }
+        .input-area.active { display: flex; }
+
+        #input-url-lista, #file-input-local {
+            width: 100%; padding: 14px; font-size: 18px; border: 2px solid #555;
+            border-radius: 12px; background-color: #333; color: #fff; font-family: Arial, sans-serif;
+            outline: none;
+        }
+        #input-url-lista:focus { border-color: #4CAF50; }
+
+        .boton-grande {
+            background-color: #4CAF50; color: white; border: none; padding: 14px 32px;
+            font-size: 18px; border-radius: 12px; cursor: pointer; transition: background-color 0.2s;
+            font-family: Arial, sans-serif; white-space: nowrap;
+        }
+        .boton-grande:hover { background-color: #45a049; }
+        .boton-secundario { background-color: #2196F3; }
+        .boton-secundario:hover { background-color: #1976D2; }
+
+        #mensaje-error {
+            color: #ff6b6b; font-size: 18px; margin-top: 15px; padding: 10px;
+            background: #3a1a1a; border-radius: 8px; display: none; max-width: 600px;
+        }
+
+/* estilos-reproductor-tv-base */
+#pantalla-principal { display: none; height: 100vh; flex-direction: column; }
+
+        #barra-superior {
+            background-color: #2a2a2a; padding: 12px 20px; display: flex;
+            justify-content: space-between; align-items: center; border-bottom: 2px solid #444;
+            flex-wrap: wrap; gap: 10px; transition: transform 0.3s ease, opacity 0.3s ease;
+            z-index: 1001;
+        }
+        #barra-superior.oculto { transform: translateY(-100%); opacity: 0; pointer-events: none; }
+        #barra-superior h2 { font-size: 26px; color: #ffffff; }
+
+        .controles-superior { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+
+        .boton-mediano {
+            background-color: #555; color: white; border: none; padding: 10px 16px;
+            font-size: 17px; border-radius: 8px; cursor: pointer; font-family: Arial, sans-serif;
+            transition: background-color 0.2s;
+        }
+        .boton-mediano:hover { background-color: #666; }
+        .boton-mediano.activo { background-color: #ff9800; }
+
+        .boton-agregar { background-color: #4CAF50; }
+        .boton-agregar:hover { background-color: #45a049; }
+        #btn-agregar-canal { display: none; }
+
+        #btn-combinar-lista { display: none; }
+        .boton-combinar { background-color: #009688; }
+        .boton-combinar:hover { background-color: #00796B; }
+
+        #btn-guardar { display: none; }
+        #btn-borrar-seleccionados { display: none; }
+
+        #contenedor-principal { display: flex; flex: 1; overflow: hidden; transition: all 0.3s ease; position: relative; }
+
+        #area-video {
+            flex: 1; background-color: #000; display: flex; justify-content: center;
+            align-items: center; position: relative; min-height: 300px; transition: all 0.3s ease;
+        }
+
+        #contenedor-principal.modo-cine #area-video { width: 100%; height: 100%; }
+
+        #video-nativo, #video-procesado {
+            width: 100%; height: 100%; background-color: #000; display: none;
+        }
+
+        #contenedor-youtube {
+            display: none; width: 100%; height: 100%; position: relative;
+        }
+        #contenedor-youtube iframe { width: 100%; height: 100%; border: none; position: absolute; top: 0; left: 0; z-index: 1; }
+
+        /* Interacción sobre el reproductor YouTube: conservar el control del iframe. */
+        #capa-youtube-overlay {
+            position: absolute; top: 0; right: 0; bottom: 0; left: 0;
+            z-index: 2; pointer-events: none;
+        }
+        #capa-youtube-overlay .zona-interaccion {
+            position: absolute; background: transparent;
+            pointer-events: auto; touch-action: manipulation;
+        }
+        /* Dos superficies sencillas (sin clip-path) para compatibilidad
+           con navegadores de televisores más antiguos. */
+        #capa-youtube-overlay .zona-superior {
+            top: 0; left: 0; width: 100%; height: 62%;
+        }
+        #capa-youtube-overlay .zona-inferior {
+            top: 62%; left: 0; width: 70%; height: 38%;
+        }
+
+        /* Estado de reproducción: siempre centrado SOBRE el video, nunca en
+           una columna a su izquierda. No captura los clics del reproductor. */
+        #mensaje-sin-video {
+            position: absolute; top: 0; right: 0; bottom: 0; left: 0;
+            z-index: 3;
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: center; gap: 12px;
+            width: 100%; min-width: 0; padding: 24px;
+            text-align: center; color: #f1f1f1; font-size: 22px; line-height: 1.5;
+            background: transparent; pointer-events: none;
+        }
+        .fila-carga {
+            display: flex; align-items: center; justify-content: center;
+            flex-wrap: wrap; gap: 12px; width: 100%;
+            font-size: 24px; font-size: clamp(18px, 2.5vw, 26px); font-weight: bold;
+        }
+
+        .spinner-carga {
+            display: inline-block; width: 28px; height: 28px; flex-shrink: 0;
+            border: 4px solid #ffffff4d; border-top-color: #ffffff; border-radius: 50%;
+            animation: girar 0.8s linear infinite; vertical-align: middle;
+        }
+        @keyframes girar { to { transform: rotate(360deg); } }
+        #segundos-carga {
+            display: inline-block; min-width: 100px; font-weight: 700;
+            font-size: 52px; font-size: clamp(42px, 5vw, 60px); line-height: 1.15;
+            color: #ffffff; font-variant-numeric: tabular-nums;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.85);
+        }
+        .aviso-espera {
+            display: none; max-width: 640px; margin-top: 12px;
+            font-size: 18px; font-size: clamp(16px, 2vw, 20px); line-height: 1.5; color: #ffcc80;
+        }
+
+        #area-lista {
+            width: 38vw; max-width: 440px; width: min(440px, 38vw);
+            background-color: #222; border-left: 2px solid #444;
+            display: flex; flex-direction: column; transition: transform 0.3s ease, opacity 0.3s ease;
+            z-index: 1001;
+        }
+
+        #contenedor-principal.modo-cine #area-lista {
+            transform: translateX(100%); opacity: 0; pointer-events: none;
+            position: absolute; right: 0; top: 0; height: 100%; z-index: 999;
+        }
+
+        /* Selector de categorías */
+        #filtro-categorias {
+            padding: 12px; border-bottom: 1px solid #444; background: #2a2a2a;
+        }
+        #select-categoria {
+            width: 100%; padding: 12px; font-size: 16px; border: 2px solid #555;
+            border-radius: 8px; background-color: #333; color: #fff; font-family: Arial, sans-serif;
+            outline: none; cursor: pointer;
+        }
+        #select-categoria:focus { border-color: #4CAF50; }
+
+        #buscador { padding: 12px; border-bottom: 1px solid #444; }
+        #input-buscar {
+            width: 100%; padding: 14px; font-size: 18px; border: 2px solid #555;
+            border-radius: 8px; background-color: #333; color: #fff; font-family: Arial, sans-serif;
+        }
+        #input-buscar:focus { outline: none; border-color: #4CAF50; }
+        #lista-canales { flex: 1; overflow-y: auto; padding: 10px 15px; }
+
+        .canal-item {
+            background-color: #333; padding: 16px; margin-bottom: 8px; border-radius: 8px;
+            cursor: pointer; display: flex; justify-content: space-between; align-items: center;
+            transition: background-color 0.15s; border-left: 4px solid transparent; min-height: 66px;
+        }
+        .canal-item:hover { background-color: #444; }
+        .canal-item.seleccionado { background-color: #2e7d32; border-left-color: #a6f3b1; color: #ffffff; box-shadow: inset 0 0 0 2px #a6f3b1; }
+        .canal-item.seleccion-borrado { background-color: #4a2c00; border-left-color: #ff9800; }
+
+        .canal-item.draggable { cursor: grab; }
+        .canal-item.draggable:active { cursor: grabbing; }
+        .canal-item.dragging { opacity: 0.5; background-color: #555; border: 2px dashed #4CAF50; }
+        .canal-item.drag-over { border-top: 3px solid #4CAF50; }
+
+        .canal-nombre {
+            font-size: 22px; flex: 1; word-break: break-word; overflow-wrap: break-word;
+            padding-right: 10px; line-height: 1.4; white-space: normal; max-width: calc(100% - 80px);
+        }
+
+        .drag-handle {
+            display: none; color: #888; font-size: 18px; margin-right: 8px;
+            cursor: grab; flex-shrink: 0; user-select: none;
+        }
+        .modo-limpieza .drag-handle { display: inline-block; }
+
+        #info-canales { padding: 10px 12px; background-color: #2a2a2a; border-top: 1px solid #444; font-size: 17px; color: #aaa; }
+
+
+        #modal-canal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 3000;
+        }
+        .modal-canal-contenido {
+            background-color: #2a2a2a; padding: 30px; border-radius: 12px;
+            max-width: 500px; width: 90%; border: 2px solid #4CAF50;
+        }
+        .modal-canal-contenido h3 { font-size: 24px; margin-bottom: 20px; color: #fff; text-align: center; }
+
+        .form-grupo { margin-bottom: 20px; }
+        .form-grupo label { display: block; font-size: 16px; color: #ccc; margin-bottom: 8px; }
+        .form-grupo input, .form-grupo select {
+            width: 100%; padding: 12px; font-size: 16px; border: 2px solid #555;
+            border-radius: 8px; background-color: #333; color: #fff; font-family: Arial, sans-serif;
+        }
+        .form-grupo input:focus, .form-grupo select:focus { outline: none; border-color: #4CAF50; }
+
+        .modal-canal-botones { display: flex; gap: 15px; justify-content: center; margin-top: 25px; }
+        .boton-guardar-canal { background-color: #4CAF50; color: white; border: none; padding: 14px 28px; font-size: 18px; border-radius: 8px; cursor: pointer; font-family: Arial, sans-serif; }
+        .boton-guardar-canal:hover { background-color: #45a049; }
+        .boton-cancelar-canal { background-color: #666; color: white; border: none; padding: 14px 28px; font-size: 18px; border-radius: 8px; cursor: pointer; font-family: Arial, sans-serif; }
+        .boton-cancelar-canal:hover { background-color: #555; }
+
+        #lista-canales::-webkit-scrollbar { width: 12px; }
+        #lista-canales::-webkit-scrollbar-track { background: #1a1a1a; }
+        #lista-canales::-webkit-scrollbar-thumb { background: #555; border-radius: 6px; }
+        #lista-canales::-webkit-scrollbar-thumb:hover { background: #777; }
+
+        /* Legibilidad y objetivos grandes para personas mayores. */
+        button, select, input { min-height: 48px; }
+        button:focus-visible, input:focus-visible, select:focus-visible,
+        .canal-item:focus-visible { outline: 3px solid #f8dc78; outline-offset: 3px; }
+        .canal-item:focus-visible { background: #34523c; }
+        @media (max-width: 900px) {
+          #area-lista { width: 46vw; max-width: 360px; width: min(46vw, 360px); max-height: none; border-left: 2px solid #444; border-top: 0; }
+          #area-video { min-width: 0; }
+          .canal-nombre { font-size: 19px; }
+        }
+        @media (max-width: 590px) {
+          #area-lista { width: 44vw; }
+          .canal-nombre { font-size: 18px; }
+          .canal-item { padding: 10px; }
+          #barra-superior { padding: 8px; }
+          .boton-mediano { padding: 9px; font-size: 15px; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+        }
+        #contenedor-principal.modo-cine,
+        #contenedor-principal.modo-cine * { cursor: none !important; }
+
+/* estilos-inicio-navegacion-base */
+/* Inicio: distribución compartida. */
+        #pantalla-bienvenida {
+            display:flex; flex-direction:column; justify-content:flex-start; align-items:center;
+            height:100vh; overflow-x:hidden; overflow-y:auto;
+            padding:12px 16px 16px; background:#151515; color:#f3f3f3; text-align:left;
+            -webkit-text-size-adjust:100%;
+        }
+        #pantalla-bienvenida .inicio-marco { width:100%; max-width:1230px; margin:auto; }
+        #pantalla-bienvenida .inicio-cabecera { text-align:center; margin:0 0 9px; }
+        #pantalla-bienvenida .inicio-opciones {
+            display:flex; gap:9px; background:#222; border:1px solid #414141;
+            border-radius:12px; padding:6px; margin:0 auto 10px; max-width:990px;
+        }
+        #pantalla-bienvenida .inicio-opcion {
+            flex:1; min-width:0; min-height:88px; display:flex; flex-direction:column;
+            align-items:center; justify-content:center; gap:3px; cursor:pointer;
+            background:#262626; border:2px solid transparent; border-radius:9px;
+            padding:8px 7px; color:#f7f7f7; font-family:Arial,sans-serif;
+        }
+        #pantalla-bienvenida .inicio-opcion svg {
+            width:29px; height:29px; fill:none; stroke:#f0f2f1; stroke-width:2.4;
+            stroke-linecap:round; stroke-linejoin:round;
+        }
+        #pantalla-bienvenida .inicio-opcion strong { font-size:20px; line-height:1.15; }
+        #pantalla-bienvenida .inicio-opcion span { color:#c9d0cb; font-size:13px; line-height:1.2; }
+        #pantalla-bienvenida .inicio-opcion:hover { background:#353e38; }
+        #pantalla-bienvenida .inicio-opcion.activa { background:#234630; border-color:#7dd99a; }
+        #pantalla-bienvenida button:focus, #pantalla-bienvenida input:focus,
+        #pantalla-bienvenida a:focus { outline:3px solid #8de6aa; outline-offset:2px; }
+        #pantalla-bienvenida .inicio-panel {
+            background:#222; border:1px solid #414141; border-radius:12px;
+            padding:13px 18px; margin:0 auto; max-width:990px;
+        }
+        #pantalla-bienvenida #inicio-contenido-cine { max-width:1230px; }
+        #pantalla-bienvenida .inicio-panel h2 { margin:0 0 4px; font-size:23px; color:#f7f7f7; }
+        #pantalla-bienvenida p.inicio-descripcion { font-size:15px; line-height:1.25; margin:0 0 10px; color:#c3cac7; max-width:none; }
+        #inicio-contenido-tv .input-container { width:100%; max-width:720px; margin:0 auto; }
+        #inicio-contenido-tv .tab-group { margin-bottom:8px; gap:8px; }
+        #inicio-contenido-tv .tab-btn {
+            background:#353535; color:#e9ecea; font-size:16px; font-weight:600;
+            min-height:48px; padding:8px 15px;
+        }
+        #inicio-contenido-tv .tab-btn.active { background:#267f47; color:#fff; }
+        #inicio-contenido-tv .input-area { gap:7px; }
+        #inicio-contenido-tv .input-area p {
+            color:#c9ceca !important; font-size:14px !important;
+            line-height:1.25; margin:0; max-width:none; text-align:center;
+        }
+        #inicio-contenido-tv #input-url-lista, #inicio-contenido-tv #file-input-local {
+            background:#2b2b2b; color:#fafafa; border-color:#747d77;
+            padding:10px 12px; font-size:16px; min-height:48px;
+        }
+        #inicio-contenido-tv #btn-cargar-url {
+            min-height:48px; padding:10px 28px; font-size:18px; border-radius:9px;
+        }
+        #inicio-contenido-tv #mensaje-error { margin:9px auto 0; }
+
+/* estilos-cine-base */
+/* Catálogo compacto (aislado de la UI de canales) */
+        #inicio-contenido-cine .cine-encabezado { display:flex; justify-content:space-between; align-items:center; gap:16px; margin-bottom:10px; }
+        #inicio-contenido-cine .cine-distribucion { display:flex; gap:18px; align-items:stretch; }
+        #inicio-contenido-cine .cine-principal { flex:1; min-width:0; }
+        #inicio-contenido-cine .cine-contar { margin:0 0 13px; color:#92e0a9; font-size:16px; font-weight:bold; max-width:none; }
+        #inicio-contenido-cine .cine-rejilla { display:flex; flex-wrap:wrap; margin:-6px; }
+        #inicio-contenido-cine .cine-ficha {
+            display:flex; width:calc(50% - 12px); min-width:0; min-height:121px;
+            margin:6px; overflow:hidden; align-items:stretch; text-decoration:none;
+            border:2px solid #474c49; border-radius:11px; background:#303030; color:#f3f3f3;
+        }
+        #inicio-contenido-cine .cine-ficha:hover, #inicio-contenido-cine .cine-ficha:focus { background:#35483d; border-color:#86d7a0; }
+        #inicio-contenido-cine .cine-portada, #inicio-contenido-cine .cine-portada img { display:block; width:85px; height:119px; }
+        #inicio-contenido-cine .cine-portada { flex:0 0 85px; background:#393939; overflow:hidden; }
+        #inicio-contenido-cine .cine-portada img { object-fit:cover; }
+        #inicio-contenido-cine .cine-info { flex:1; min-width:0; padding:11px 12px; display:flex; flex-direction:column; align-items:flex-start; justify-content:center; }
+        #inicio-contenido-cine .cine-info h3 { font-size:19px; margin:0 0 6px; color:#fafafa; line-height:1.25; overflow-wrap:break-word; }
+        #inicio-contenido-cine .cine-info p { font-size:14px; margin:0 0 9px; max-width:none; color:#c5cbc7; line-height:1.3; }
+        #inicio-contenido-cine .cine-ver { color:#99e2af; font-size:16px; font-weight:bold; }
+        #inicio-contenido-cine p.cine-nota { color:#bfc8c2; font-size:14px; line-height:1.5; margin:18px 0 0; max-width:none; }
+        @media(max-width:1080px) {
+            #inicio-contenido-cine .cine-ficha { width:calc(100% - 12px); }
+        }
+
+/* estilos-adaptacion-intermedia */
+/* Teléfonos: solo reglas visuales, separadas del reproductor TV. */
+        @media(max-width:670px) {
+            #pantalla-bienvenida { padding:10px 9px 18px; }
+            #pantalla-bienvenida .inicio-cabecera { margin-bottom:8px; }
+            #pantalla-bienvenida .inicio-opciones { padding:5px; gap:5px; margin-bottom:9px; }
+            #pantalla-bienvenida .inicio-opcion { min-height:84px; padding:7px 4px; }
+            #pantalla-bienvenida .inicio-opcion svg { width:25px; height:25px; }
+            #pantalla-bienvenida .inicio-opcion strong { font-size:16px; text-align:center; }
+            #pantalla-bienvenida .inicio-opcion span { font-size:12px; text-align:center; }
+            #pantalla-bienvenida .inicio-panel { padding:12px 11px; }
+            #pantalla-bienvenida .inicio-panel h2 { font-size:21px; }
+            #inicio-contenido-tv .tab-btn { font-size:14px; padding:8px 7px; }
+            #pantalla-bienvenida p.inicio-descripcion { font-size:14px; }
+            #inicio-contenido-cine .cine-encabezado { flex-direction:column; align-items:stretch; }
+            #inicio-contenido-cine .cine-ficha { min-height:115px; }
+            /* En celular el video queda arriba y los canales debajo, sin
+               estrechar el video a solo media pantalla. */
+            #contenedor-principal { flex-direction:column; min-height:0; }
+            #area-video { width:100%; min-height:180px; height:37vh; flex:0 0 37vh; }
+            #area-lista {
+                width:100%; max-width:none; min-height:0; max-height:none;
+                flex:1 1 auto; border-left:0; border-top:2px solid #444;
+            }
+            #contenedor-principal.modo-cine #area-video { width:100%; height:100%; flex:1 1 auto; }
+            #barra-superior h2 { font-size:20px; }
+            #barra-superior .controles-superior { gap:5px; }
+            #barra-superior .boton-mediano { font-size:14px; min-height:42px; padding:7px 9px; }
+        }
+
+/* estilos-tv-altura-reducida */
+/* Reglas para pantallas de televisor de altura reducida. */
+        @media (min-width:671px) and (max-height:650px) {
+            #pantalla-bienvenida { padding:8px 13px; }
+            #pantalla-bienvenida .inicio-cabecera { margin-bottom:6px; }
+            #pantalla-bienvenida .inicio-opciones { margin-bottom:7px; padding:4px; }
+            #pantalla-bienvenida .inicio-opcion { min-height:71px; padding:5px; }
+            #pantalla-bienvenida .inicio-opcion svg { width:24px; height:24px; }
+            #pantalla-bienvenida .inicio-opcion strong { font-size:18px; }
+            #pantalla-bienvenida .inicio-panel { padding:10px 15px; }
+            #pantalla-bienvenida p.inicio-descripcion { margin-bottom:7px; }
+            #inicio-contenido-tv .tab-group { margin-bottom:6px; }
+            #inicio-contenido-tv .tab-btn { min-height:44px; }
+        }
+
+/* estilos-celular-vistas */
+/* Reglas exclusivas de celular. */
+        /* Cabecera móvil compartida entre las pantallas. */
+        @media screen and (max-width: 600px) {
+            /* Navegación de inicio: opciones visibles sin ocupar media pantalla. */
+            #pantalla-bienvenida {
+                padding: 9px 8px 16px;
+            }
+            
+            #pantalla-bienvenida .inicio-cabecera { margin-bottom: 6px; }
+            #pantalla-bienvenida .inicio-opciones {
+                padding: 4px; gap: 5px; margin-bottom: 7px; border-radius: 9px;
+            }
+            #pantalla-bienvenida .inicio-opcion {
+                min-height: 64px; gap: 2px; padding: 5px 3px; border-radius: 7px;
+            }
+            #pantalla-bienvenida .inicio-opcion svg { width: 20px; height: 20px; }
+            #pantalla-bienvenida .inicio-opcion strong { font-size: 14px; line-height: 1.15; }
+            #pantalla-bienvenida .inicio-opcion span { font-size: 11px; line-height: 1.1; }
+            #pantalla-bienvenida .inicio-panel { padding: 10px; }
+            #pantalla-bienvenida .inicio-panel h2 { font-size: 19px; }
+            #pantalla-bienvenida p.inicio-descripcion { margin-bottom: 7px; font-size: 13px; }
+            #inicio-contenido-tv .tab-group { gap: 5px; margin-bottom: 6px; }
+            #inicio-contenido-tv .tab-btn {
+                font-size: 12px; padding: 6px 7px; min-height: 40px; white-space: normal;
+            }
+            #inicio-contenido-tv .input-area p { font-size: 12px !important; }
+            #inicio-contenido-tv #input-url-lista,
+            #inicio-contenido-tv #file-input-local {
+                min-height: 43px; font-size: 14px; padding: 8px 9px;
+            }
+            #inicio-contenido-tv #btn-cargar-url {
+                min-height: 43px; font-size: 16px; padding: 8px 18px;
+            }
+
+        }
+        /* [CELULAR / REPRODUCTOR DE TELEVISION]
+           Visual exclusivamente. No tocar el orquestador TV ni YouTube. */
+        @media screen and (max-width: 600px) {
+            /* Encabezado de canales: compacto, pero botones pulsables. */
+            
+            
+            
+            #barra-superior .boton-mediano {
+                min-height: 40px; font-size: 12px; line-height: 1.15;
+                padding: 6px 8px; border-radius: 6px;
+            }
+
+            /* Video proporcional, reservando más altura para los canales. */
+            
+            
+            #mensaje-sin-video { padding: 12px; font-size: 17px; line-height: 1.3; }
+            /* Se conserva la posición centrada y la cuenta grande existente. */
+
+            /* Selector y búsqueda juntos para no gastar dos filas completas. */
+            #area-lista {
+                width: 100%; max-width: none;
+                grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+                background: #222; border-left: 0; border-top: 1px solid #444;
+            }
+            #filtro-categorias, #buscador {
+                min-width: 0; padding: 5px 5px 6px; border-bottom: 1px solid #444;
+                background: #292929;
+            }
+            #filtro-categorias { grid-column: 1; grid-row: 1; }
+            #buscador { grid-column: 2; grid-row: 1; }
+            #select-categoria, #input-buscar {
+                width: 100%; min-width: 0; min-height: 40px; height: 40px;
+                padding: 6px 7px; border-radius: 7px; font-size: 14px;
+            }
+            #select-categoria { padding-right: 2px; }
+            #lista-canales {
+                grid-column: 1 / 3; grid-row: 2;
+                padding: 5px 7px;
+            }
+            .canal-item {
+                min-height: 46px; margin-bottom: 4px; padding: 8px 10px;
+                align-items: center; border-radius: 7px;
+            }
+            .canal-nombre {
+                font-size: 16px; line-height: 1.25; max-width: none;
+                padding-right: 4px;
+            }
+            #info-canales {
+                grid-column: 1 / 3; grid-row: 3;
+                padding: 5px 9px; font-size: 13px; line-height: 1.2;
+            }
+        }
+        /* Cine móvil: presentación aislada. */
+        @media screen and (max-width: 600px) {
+            /* La vista de cine también ahorra altura y mantiene sus enlaces. */
+            #inicio-contenido-cine .cine-encabezado { gap: 6px; margin-bottom: 7px; }
+            #inicio-contenido-cine .cine-distribucion { gap: 8px; }
+            #inicio-contenido-cine .cine-contar { font-size: 14px; margin-bottom: 7px; }
+            #inicio-contenido-cine .cine-rejilla { margin: -4px; }
+            #inicio-contenido-cine .cine-ficha {
+                min-height: 94px; margin: 4px;
+            }
+            #inicio-contenido-cine .cine-portada,
+            #inicio-contenido-cine .cine-portada img { width: 65px; height: 92px; }
+            #inicio-contenido-cine .cine-portada { flex: 0 0 65px; }
+            #inicio-contenido-cine .cine-info { padding: 7px 9px; }
+            #inicio-contenido-cine .cine-info h3 { font-size: 16px; margin-bottom: 3px; }
+            #inicio-contenido-cine .cine-info p { font-size: 12px; margin-bottom: 4px; }
+            #inicio-contenido-cine .cine-ver { font-size: 14px; }
+            #inicio-contenido-cine p.cine-nota { font-size: 12px; margin-top: 9px; }
+        }
+        /* [CELULAR / VENTANAS DE ADMINISTRACION DE TELEVISION] */
+        @media screen and (max-width: 600px) {
+            #modal-canal .modal-canal-contenido {
+                padding: 16px; max-height: 92vh; overflow-y: auto;
+            }
+        }
+        /* Versión visible en Inicio. */
+        #pantalla-bienvenida .gregotv-version {
+            display:block; width:100%; margin:9px auto 0;
+            padding:3px 5px; text-align:center; font-size:11px;
+            line-height:1.4; letter-spacing:.04em; font-weight:normal;
+            color:#8f9792; pointer-events:none;
+        }
+        @media screen and (max-width:600px) {
+            #pantalla-bienvenida .gregotv-version { margin-top:6px; font-size:10px; }
+        }
+
+        /* Desplazamiento interno en celular. */
+        @media screen and (max-width:600px) {
+            body {
+                height:auto; min-height:100vh;
+                overflow-x:hidden; overflow-y:auto;
+                -webkit-overflow-scrolling:touch;
+            }
+            #pantalla-principal {
+                height:auto; min-height:0;
+            }
+            #contenedor-principal {
+                flex:0 0 auto; overflow:visible;
+            }
+            /* Evitar que Safari iOS pinte una copia oscura del video
+               encima de la lista durante el desplazamiento. */
+            #area-video {
+                position:relative; top:auto; z-index:auto;
+            }
+            #area-lista {
+                position:relative; z-index:auto;
+                flex:0 0 auto; overflow:visible;
+                grid-template-rows:auto auto auto;
+            }
+            #lista-canales {
+                height:auto; max-height:none;
+                overflow:visible;
+            }
+            /* Conservar el modo cine a pantalla de video completa y
+               ocultar el encabezado mientras permanece activo. */
+            #barra-superior.oculto { display:none; }
+            #contenedor-principal.modo-cine {
+                height:100vh; height:100dvh;
+                overflow:hidden;
+                flex:1 1 auto;
+            }
+            #contenedor-principal.modo-cine #area-video {
+                position:relative; top:auto;
+                flex:1 1 auto; height:100%; max-height:none;
+            }
+            #contenedor-principal.modo-cine #area-lista { display:none; }
+        }
+
+        /* Navegación móvil compacta. */
+        @media screen and (max-width: 600px) {
+            #barra-superior {
+                position: -webkit-sticky;
+                position: sticky;
+                top: 0;
+                z-index: 1200;
+                width: 100%;
+                padding: 5px 7px 7px;
+                gap: 4px;
+                background-color: #2a2a2a;
+                border-bottom: 2px solid #444;
+            }
+            #barra-superior h2 {
+                width: 100%;
+                font-size: 16px;
+                line-height: 1.15;
+                text-align: center;
+                margin: 0;
+            }
+            #barra-superior .controles-superior {
+                display: grid;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 5px;
+                align-items: stretch;
+                width: 100%;
+                min-width: 0;
+            }
+            #barra-superior .controles-superior > button {
+                width: 100%;
+                min-width: 0;
+                min-height: 44px;
+                padding: 6px 3px;
+                font-size: 11px;
+                line-height: 1.15;
+                white-space: normal;
+                overflow-wrap: break-word;
+                text-align: center;
+            }
+            /* Mientras se edita la lista aparecen controles adicionales
+               en filas nuevas, sin comprimir los botones principales. */
+            #barra-superior.oculto { display: none; }
+        }
+
+        /* Celular: desplazar únicamente el listado de canales. */
+        @media screen and (max-width: 600px) {
+            html, body {
+                height: 100%;
+                overflow: hidden;
+            }
+            /* La bienvenida mantiene su desplazamiento interno propio. */
+            #pantalla-principal {
+                height: 100vh; /* alternativa para Safari anterior a dvh */
+                height: 100dvh;
+                min-height: 0;
+                overflow: hidden;
+            }
+            /* El encabezado queda en el flujo normal, siempre visible. */
+            #barra-superior {
+                position: relative;
+                top: auto;
+                flex: 0 0 auto;
+                z-index: 1200;
+            }
+            #contenedor-principal {
+                display: flex;
+                flex-direction: column;
+                flex: 1 1 auto;
+                height: auto;
+                min-height: 0;
+                overflow: hidden;
+            }
+            #area-video {
+                position: relative;
+                top: auto;
+                z-index: auto;
+                flex: 0 0 auto;
+                width: 100%;
+                min-height: 140px;
+                height: 56.25vw;
+                max-height: 39vh;
+                overflow: hidden;
+                background: #000;
+            }
+            #area-lista {
+                display: grid;
+                flex: 1 1 auto;
+                min-height: 0;
+                height: auto;
+                overflow: hidden;
+                grid-template-rows: auto minmax(0, 1fr) auto;
+            }
+            #lista-canales {
+                height: auto;
+                max-height: none;
+                min-height: 0;
+                overflow-y: auto;
+                overflow-x: hidden;
+                -webkit-overflow-scrolling: touch;
+            }
+            /* En modo cine se conserva el video ampliado, sin lista. */
+            #contenedor-principal.modo-cine {
+                height: auto;
+                flex: 1 1 auto;
+                overflow: hidden;
+            }
+            #contenedor-principal.modo-cine #area-video {
+                flex: 1 1 auto;
+                height: 100%;
+                min-height: 0;
+                max-height: none;
+            }
+            #contenedor-principal.modo-cine #area-lista {
+                display: none;
+            }
+        }
+
+        /* Ajuste de margen superior en Safari móvil. */
+        @media screen and (max-width: 600px) {
+            #pantalla-bienvenida {
+                justify-content: flex-start;
+                min-height: 100svh;
+                height: auto;
+                padding-top: 26px;
+                padding-top: calc(26px + env(safe-area-inset-top, 0px));
+                padding-bottom: 16px;
+                padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+            }
+            #pantalla-bienvenida .inicio-marco {
+                width: 100%;
+                flex: 0 0 auto;
+                margin: 0 auto;
+            }
+            #pantalla-bienvenida .inicio-cabecera {
+                text-align: center;
+                margin-top: 0;
+            }
+        }
+
+        /* Cine móvil: estilos aislados de Televisión. */
+        @media screen and (max-width: 600px) {
+            #pantalla-bienvenida.inicio-cine-activo {
+                height: 100vh;  /* Respaldo para WebKit sin dvh */
+                height: 100dvh;
+                min-height: 0;
+                padding-top: 24px;
+                padding-top: calc(24px + env(safe-area-inset-top, 0px));
+                padding-bottom: 12px;
+                padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+                justify-content: flex-start;
+                align-items: center;
+                overflow: hidden;
+            }
+            
+            #pantalla-bienvenida.inicio-cine-activo .inicio-cabecera,
+            #pantalla-bienvenida.inicio-cine-activo .inicio-opciones,
+            #pantalla-bienvenida.inicio-cine-activo .gregotv-version {
+                flex-shrink: 0;
+            }
+            #pantalla-bienvenida.inicio-cine-activo .inicio-cabecera {
+                margin-top: 0;
+                text-align: center;
+            }
+            #pantalla-bienvenida.inicio-cine-activo #inicio-contenido-cine {
+                overscroll-behavior: contain;
+            }
+        }
+
+/* gregotv-mobile-autoadaptativo-v1 */
+@media screen and (max-width: 600px) {
+        /* ========= CELULAR / PANTALLA PRINCIPAL ========= */
+        #pantalla-bienvenida:not(.inicio-cine-activo) {
+          box-sizing: border-box;
+          width: 100%;
+          height: 100vh; /* Respaldo de Safari antiguo */
+          height: 100dvh;
+          min-height: 0;
+          overflow-x: hidden;
+          overflow-y: auto;
+          -webkit-overflow-scrolling: touch;
+          justify-content: flex-start;
+          align-items: center;
+          padding: 24px 10px 16px;
+          padding-top: calc(24px + env(safe-area-inset-top, 0px));
+          padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+        }
+        #pantalla-bienvenida:not(.inicio-cine-activo) .inicio-marco {
+          box-sizing: border-box;
+          width: 100%;
+          max-width: 560px;
+          min-width: 0;
+          flex: 0 0 auto;
+          margin: auto auto; /* centra solo cuando hay espacio libre */
+        }
+        #pantalla-bienvenida:not(.inicio-cine-activo) .inicio-cabecera {
+          margin-top: 0;
+          text-align: center;
+        }
+        #pantalla-bienvenida:not(.inicio-cine-activo) .inicio-opcion {
+          min-width: 0;
+          min-height: clamp(63px, 11vh, 82px);
+        }
+        #pantalla-bienvenida:not(.inicio-cine-activo) .inicio-opcion strong {
+          font-size: clamp(13px, 3.6vw, 17px);
+        }
+        #inicio-contenido-tv {
+          width: 100%;
+          min-width: 0;
+        }
+        #inicio-contenido-tv .input-container,
+        #inicio-contenido-tv #input-url-lista,
+        #inicio-contenido-tv #file-input-local {
+          min-width: 0;
+          max-width: 100%;
+        }
+
+        /* ========= CELULAR / REPRODUCTOR ========= */
+        #pantalla-principal.vista-celular-reproductor {
+          box-sizing: border-box;
+          width: 100%;
+          height: 100vh;
+          height: 100dvh;
+          min-height: 0;
+          overflow: hidden;
+        }
+        #pantalla-principal #barra-superior {
+          box-sizing: border-box;
+          width: 100%;
+          flex: 0 0 auto;
+          position: relative; /* evita superposiciones sticky de Safari */
+          top: auto;
+          padding: clamp(4px, 1.1vw, 7px) clamp(5px, 1.5vw, 9px);
+        }
+        #pantalla-principal #barra-superior h2 {
+          width: 100%;
+          text-align: center;
+          font-size: clamp(14px, 3.8vw, 19px);
+          line-height: 1.2;
+        }
+        #pantalla-principal #barra-superior .controles-superior {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: clamp(3px, 1vw, 6px);
+          width: 100%;
+          min-width: 0;
+        }
+        #pantalla-principal #barra-superior .controles-superior > button {
+          width: 100%;
+          min-width: 0;
+          min-height: 44px;
+          padding: 5px 3px;
+          font-size: clamp(10px, 2.8vw, 13px);
+          line-height: 1.17;
+          white-space: normal;
+          overflow-wrap: anywhere;
+        }
+        #pantalla-principal #contenedor-principal:not(.modo-cine) {
+          display: flex;
+          flex-direction: column;
+          flex: 1 1 auto;
+          min-height: 0;
+          height: auto;
+          overflow: hidden;
+        }
+        #pantalla-principal #contenedor-principal:not(.modo-cine) #area-video {
+          box-sizing: border-box;
+          position: relative;
+          top: auto;
+          z-index: auto;
+          flex: 0 0 auto;
+          width: 100%;
+          height: 56.25vw;
+          min-height: 0;
+          max-height: 37vh; /* respaldo */
+          max-height: 37dvh;
+          overflow: hidden;
+          background: #000;
+        }
+        #pantalla-principal #contenedor-principal:not(.modo-cine) #area-lista {
+          display: grid;
+          flex: 1 1 auto;
+          min-height: 0;
+          height: auto;
+          max-height: none;
+          overflow: hidden;
+          grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+          grid-template-rows: auto minmax(0, 1fr) auto;
+        }
+        #pantalla-principal #filtro-categorias,
+        #pantalla-principal #buscador {
+          padding: clamp(3px, 1.1vw, 6px);
+          min-width: 0;
+        }
+        #pantalla-principal #select-categoria,
+        #pantalla-principal #input-buscar {
+          font-size: clamp(12px, 3.5vw, 15px);
+          width: 100%;
+          min-width: 0;
+          height: 42px;
+          min-height: 42px;
+        }
+        #pantalla-principal #lista-canales {
+          min-height: 0;
+          max-height: none;
+          height: auto;
+          overflow-x: hidden;
+          overflow-y: auto;
+          -webkit-overflow-scrolling: touch;
+          padding: clamp(4px, 1.3vw, 8px);
+        }
+        #pantalla-principal .canal-item {
+          min-height: 44px;
+          padding: clamp(7px, 1.8vw, 10px);
+          margin-bottom: clamp(3px, 1vw, 6px);
+        }
+        #pantalla-principal .canal-nombre {
+          min-width: 0;
+          font-size: clamp(14px, 3.9vw, 18px);
+          line-height: 1.25;
+        }
+        #pantalla-principal #info-canales {
+          padding: clamp(4px, 1.2vw, 7px) 9px;
+          font-size: clamp(12px, 3.2vw, 14px);
+        }
+        /* El modo cine existente permanece sin cambios. */
+
+        /* ========= CELULAR / PELÍCULAS Y SERIES ========= */
+        #pantalla-bienvenida.inicio-cine-activo {
+          box-sizing: border-box;
+          width: 100%;
+          height: 100vh;
+          height: 100dvh;
+          min-height: 0;
+          overflow: hidden;
+          display: flex;
+          flex-direction: column;
+          justify-content: flex-start;
+          align-items: center;
+          padding: 28px 10px 12px;
+          padding-top: calc(28px + env(safe-area-inset-top, 0px));
+          padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+        }
+        #pantalla-bienvenida.inicio-cine-activo .inicio-marco {
+          display: flex;
+          flex-direction: column;
+          flex: 1 1 auto;
+          height: 100%;
+          min-height: 0;
+          min-width: 0;
+          max-width: 560px;
+          width: 100%;
+          margin: 0 auto; /* jamás centrar hacia arriba un catálogo largo */
+        }
+        #pantalla-bienvenida.inicio-cine-activo .inicio-cabecera,
+        #pantalla-bienvenida.inicio-cine-activo .inicio-opciones,
+        #pantalla-bienvenida.inicio-cine-activo .gregotv-version {
+          flex: 0 0 auto;
+        }
+        #pantalla-bienvenida.inicio-cine-activo .inicio-opciones {
+          box-sizing: border-box;
+          width: 100%;
+          max-width: 100%;
+          min-width: 0;
+        }
+        #pantalla-bienvenida.inicio-cine-activo .inicio-cabecera {
+          margin: 0 0 7px;
+          text-align: center;
+        }
+        #pantalla-bienvenida.inicio-cine-activo .inicio-opcion {
+          min-width: 0;
+          min-height: clamp(60px, 10vh, 82px);
+        }
+        #pantalla-bienvenida.inicio-cine-activo .inicio-opcion strong {
+          font-size: clamp(13px, 3.6vw, 17px);
+        }
+        #pantalla-bienvenida.inicio-cine-activo #inicio-contenido-cine {
+          flex: 1 1 auto;
+          box-sizing: border-box;
+          width: 100%;
+          min-height: 0;
+          min-width: 0;
+          overflow-x: hidden;
+          overflow-y: auto;
+          -webkit-overflow-scrolling: touch;
+          overscroll-behavior-y: contain;
+          padding: clamp(9px, 2.6vw, 13px);
+        }
+        #inicio-contenido-cine .cine-ficha {
+          min-width: 0;
+          width: calc(100% - 8px);
+          min-height: clamp(92px, 24vw, 110px);
+        }
+        #inicio-contenido-cine .cine-portada,
+        #inicio-contenido-cine .cine-portada img {
+          width: clamp(60px, 16.7vw, 75px);
+          height: clamp(88px, 23.6vw, 106px);
+        }
+        #inicio-contenido-cine .cine-portada {
+          flex: 0 0 clamp(60px, 16.7vw, 75px);
+        }
+        #inicio-contenido-cine .cine-info {
+          min-width: 0;
+        }
+        #inicio-contenido-cine .cine-info h3 {
+          font-size: clamp(15px, 4.1vw, 18px);
+          overflow-wrap: break-word;
+        }
+      }
+      /* En móviles bajos se prioriza el catálogo y los canales sin tocar TV.
+         Se aplica SOLO si la anchura del dispositivo sigue siendo móvil. */
+      @media screen and (max-width: 600px) and (max-height: 620px) {
+        #pantalla-principal #contenedor-principal:not(.modo-cine) #area-video {
+          max-height: 33vh;
+          max-height: 33dvh;
+        }
+        #pantalla-bienvenida.inicio-cine-activo {
+          padding-top: 12px;
+          padding-top: calc(12px + env(safe-area-inset-top, 0px));
+        }
+        #pantalla-bienvenida.inicio-cine-activo .inicio-opcion {
+          min-height: 58px;
+        }
+      }
+
+/* gregotv-fase1-celular-horizontal */
+@media screen and (orientation: landscape) and (max-width: 1000px) and (max-height: 520px) and (pointer: coarse) and (hover: none) {
+        #pantalla-principal.vista-celular-reproductor {
+          height: 100vh;
+          height: 100dvh;
+          min-height: 0;
+          overflow: hidden;
+        }
+        #pantalla-principal.vista-celular-reproductor #barra-superior:not(.oculto) {
+          flex: 0 0 auto;
+          padding: 3px 7px;
+          gap: 5px;
+          flex-wrap: nowrap;
+          align-items: center;
+        }
+        #pantalla-principal.vista-celular-reproductor #barra-superior h2 {
+          width: auto;
+          flex: 0 0 auto;
+          font-size: 13px;
+          line-height: 1.2;
+          white-space: nowrap;
+        }
+        #pantalla-principal.vista-celular-reproductor #barra-superior .controles-superior {
+          display: flex;
+          flex: 1 1 auto;
+          min-width: 0;
+          width: auto;
+          flex-wrap: wrap;
+          justify-content: flex-end;
+          gap: 3px;
+        }
+        #pantalla-principal.vista-celular-reproductor #barra-superior .controles-superior > button {
+          width: auto;
+          flex: 0 1 auto;
+          min-width: 0;
+          min-height: 34px;
+          padding: 4px 6px;
+          font-size: 11px;
+          line-height: 1.12;
+          border-radius: 5px;
+        }
+        #pantalla-principal.vista-celular-reproductor #contenedor-principal:not(.modo-cine) {
+          display: flex;
+          flex-direction: row;
+          flex: 1 1 auto;
+          height: auto;
+          min-height: 0;
+          overflow: hidden;
+        }
+        #pantalla-principal.vista-celular-reproductor #contenedor-principal:not(.modo-cine) #area-video {
+          flex: 1 1 auto;
+          width: auto;
+          min-width: 0;
+          height: 100%;
+          min-height: 0;
+          max-height: none;
+          overflow: hidden;
+        }
+        #pantalla-principal.vista-celular-reproductor #contenedor-principal:not(.modo-cine) #area-lista {
+          display: flex;
+          flex-direction: column;
+          flex: 0 0 36%;
+          width: 36%;
+          max-width: 310px;
+          min-width: 155px;
+          min-height: 0;
+          height: 100%;
+          max-height: none;
+          overflow: hidden;
+          border-left: 1px solid #444;
+          border-top: 0;
+        }
+        #pantalla-principal.vista-celular-reproductor #filtro-categorias,
+        #pantalla-principal.vista-celular-reproductor #buscador {
+          flex: 0 0 auto;
+          padding: 3px 5px;
+          min-width: 0;
+        }
+        #pantalla-principal.vista-celular-reproductor #select-categoria,
+        #pantalla-principal.vista-celular-reproductor #input-buscar {
+          width: 100%;
+          min-width: 0;
+          height: 34px;
+          min-height: 34px;
+          padding: 4px 6px;
+          font-size: 12px;
+        }
+        #pantalla-principal.vista-celular-reproductor #lista-canales {
+          flex: 1 1 auto;
+          min-height: 0;
+          height: auto;
+          max-height: none;
+          overflow-x: hidden;
+          overflow-y: auto;
+          -webkit-overflow-scrolling: touch;
+          padding: 4px;
+        }
+        #pantalla-principal.vista-celular-reproductor .canal-item {
+          min-height: 40px;
+          padding: 5px 7px;
+          margin-bottom: 4px;
+        }
+        #pantalla-principal.vista-celular-reproductor .canal-nombre {
+          font-size: 13px;
+          line-height: 1.25;
+          min-width: 0;
+        }
+        #pantalla-principal.vista-celular-reproductor #info-canales {
+          flex: 0 0 auto;
+          padding: 3px 6px;
+          font-size: 11px;
+        }
+      }
+
+/* gregotv-fase2-fullscreen-movil */
+@media screen and (orientation: landscape) and (max-width: 1000px) and (max-height: 520px) and (pointer: coarse) and (hover: none) {
+        html:fullscreen, html:-webkit-full-screen {
+          width: 100%; height: 100%; overflow: hidden; background: #000;
+        }
+        html:fullscreen body, html:-webkit-full-screen body {
+          width: 100%; height: 100%; margin: 0; overflow: hidden; background: #000;
+        }
+        html:fullscreen #pantalla-principal.vista-celular-reproductor,
+        html:-webkit-full-screen #pantalla-principal.vista-celular-reproductor {
+          width: 100%; height: 100%; min-height: 0; overflow: hidden;
+          background: #000; position: relative;
+        }
+        html:fullscreen #pantalla-principal.vista-celular-reproductor #contenedor-principal,
+        html:-webkit-full-screen #pantalla-principal.vista-celular-reproductor #contenedor-principal {
+          display: flex; flex: 1 1 auto; flex-direction: row;
+          width: 100%; height: 100%; min-height: 0; max-height: none;
+          overflow: hidden; margin: 0; padding: 0;
+        }
+        html:fullscreen #pantalla-principal.vista-celular-reproductor #area-video,
+        html:-webkit-full-screen #pantalla-principal.vista-celular-reproductor #area-video {
+          display: flex; flex: 1 1 auto; width: 100%; height: 100%;
+          min-width: 0; min-height: 0; max-width: none; max-height: none;
+          margin: 0; padding: 0; position: relative; overflow: hidden;
+          align-items: center; justify-content: center; background: #000;
+        }
+        html:fullscreen #pantalla-principal.vista-celular-reproductor #area-lista,
+        html:-webkit-full-screen #pantalla-principal.vista-celular-reproductor #area-lista {
+          display: none;
+        }
+        html:fullscreen #pantalla-principal.vista-celular-reproductor #video-nativo,
+        html:fullscreen #pantalla-principal.vista-celular-reproductor #video-procesado,
+        html:-webkit-full-screen #pantalla-principal.vista-celular-reproductor #video-nativo,
+        html:-webkit-full-screen #pantalla-principal.vista-celular-reproductor #video-procesado {
+          width: 100%; height: 100%; max-width: 100%; max-height: 100%;
+          object-fit: contain;
+        }
+        html:fullscreen #pantalla-principal.vista-celular-reproductor #contenedor-youtube,
+        html:-webkit-full-screen #pantalla-principal.vista-celular-reproductor #contenedor-youtube {
+          width: 100%; height: 100%; max-width: 100%; max-height: 100%;
+        }
+        /* Fullscreen móvil: acceso a salir. */
+        html:fullscreen #pantalla-principal.vista-celular-reproductor #barra-superior,
+        html:-webkit-full-screen #pantalla-principal.vista-celular-reproductor #barra-superior {
+          display: block; position: absolute; top: 0; right: 0;
+          left: auto; width: auto; height: auto; z-index: 1100;
+          padding: 4px; margin: 0; border: 0; background: transparent;
+          transform: none; opacity: 1; pointer-events: none;
+        }
+        html:fullscreen #pantalla-principal.vista-celular-reproductor #barra-superior h2,
+        html:-webkit-full-screen #pantalla-principal.vista-celular-reproductor #barra-superior h2 {
+          display: none;
+        }
+        html:fullscreen #pantalla-principal.vista-celular-reproductor #barra-superior .controles-superior,
+        html:-webkit-full-screen #pantalla-principal.vista-celular-reproductor #barra-superior .controles-superior {
+          display: block; width: auto; margin: 0; padding: 0;
+        }
+        html:fullscreen #pantalla-principal.vista-celular-reproductor #barra-superior .controles-superior > button,
+        html:-webkit-full-screen #pantalla-principal.vista-celular-reproductor #barra-superior .controles-superior > button {
+          display: none;
+        }
+      }
+
+/* gregotv-fase3-cine-movil */
+@media screen and (orientation: landscape) and (max-width: 1000px) and (max-height: 520px) and (pointer: coarse) and (hover: none) {
+        #pantalla-principal.vista-celular-reproductor #contenedor-principal.modo-cine {
+          display: flex; flex-direction: row; flex: 1 1 auto;
+          width: 100%; height: auto; min-height: 0; max-height: none;
+          overflow: hidden;
+        }
+        #pantalla-principal.vista-celular-reproductor #contenedor-principal.modo-cine #area-video {
+          display: flex; flex: 1 1 auto; width: 100%; height: 100%;
+          min-width: 0; min-height: 0; max-height: none;
+          align-items: center; justify-content: center; overflow: hidden;
+        }
+        #pantalla-principal.vista-celular-reproductor #contenedor-principal.modo-cine #area-lista { display: none; }
+        #pantalla-principal.vista-celular-reproductor #contenedor-principal.modo-cine #video-nativo,
+        #pantalla-principal.vista-celular-reproductor #contenedor-principal.modo-cine #video-procesado {
+          width: 100%; height: 100%; object-fit: contain;
+        }
+        #pantalla-principal.vista-celular-reproductor #contenedor-principal.modo-cine #contenedor-youtube {
+          width: 100%; height: 100%;
+        }
+      }
+
+/* gregotv-fase4-estados-movil */
+@media screen and (orientation: landscape) and (max-width: 1000px) and (max-height: 520px) and (pointer: coarse) and (hover: none) {
+        /* En cine la barra transformada seguía ocupando altura en Flexbox.
+           Se elimina del flujo SOLO durante cine móvil. */
+        #pantalla-principal.vista-celular-reproductor #barra-superior.oculto {
+          display: none;
+        }
+        #pantalla-principal.vista-celular-reproductor #contenedor-principal.modo-cine {
+          flex: 1 1 auto; width: 100%; height: 100%; min-height: 0;
+          max-height: none; margin: 0; padding: 0; overflow: hidden;
+        }
+        #pantalla-principal.vista-celular-reproductor #contenedor-principal.modo-cine #area-video {
+          flex: 1 1 auto; width: 100%; height: 100%; min-height: 0;
+          max-height: none; margin: 0; padding: 0;
+        }
+        /* Fase 2 ocultaba la lista en fullscreen incluso antes del cine.
+           La restauramos solo durante el estado normal del fullscreen. */
+        html:fullscreen #pantalla-principal.vista-celular-reproductor #contenedor-principal:not(.modo-cine),
+        html:-webkit-full-screen #pantalla-principal.vista-celular-reproductor #contenedor-principal:not(.modo-cine) {
+          height: auto; flex: 1 1 auto; min-height: 0;
+        }
+        html:fullscreen #pantalla-principal.vista-celular-reproductor #contenedor-principal:not(.modo-cine) #area-lista,
+        html:-webkit-full-screen #pantalla-principal.vista-celular-reproductor #contenedor-principal:not(.modo-cine) #area-lista {
+          display: flex; flex: 0 0 36%; width: 36%; max-width: 310px;
+          min-width: 155px; min-height: 0; height: 100%; flex-direction: column;
+        }
+        html:fullscreen #pantalla-principal.vista-celular-reproductor #barra-superior:not(.oculto),
+        html:-webkit-full-screen #pantalla-principal.vista-celular-reproductor #barra-superior:not(.oculto) {
+          display: flex; position: relative; inset: auto; width: 100%;
+          flex: 0 0 auto; padding: 3px 7px; background: #2a2a2a;
+          pointer-events: auto; border-bottom: 2px solid #444;
+          flex-wrap: nowrap; align-items: center;
+        }
+        html:fullscreen #pantalla-principal.vista-celular-reproductor #barra-superior:not(.oculto) h2,
+        html:-webkit-full-screen #pantalla-principal.vista-celular-reproductor #barra-superior:not(.oculto) h2 {
+          display: block;
+        }
+        html:fullscreen #pantalla-principal.vista-celular-reproductor #barra-superior:not(.oculto) .controles-superior,
+        html:-webkit-full-screen #pantalla-principal.vista-celular-reproductor #barra-superior:not(.oculto) .controles-superior {
+          display: flex; flex: 1 1 auto; min-width: 0; width: auto;
+          flex-wrap: wrap; justify-content: flex-end; gap: 3px;
+        }
+        html:fullscreen #pantalla-principal.vista-celular-reproductor #barra-superior:not(.oculto) .controles-superior > button,
+        html:-webkit-full-screen #pantalla-principal.vista-celular-reproductor #barra-superior:not(.oculto) .controles-superior > button {
+          display: inline-block; pointer-events: auto; opacity: 1;
+          width: auto; min-height: 34px; padding: 4px 6px;
+          font-size: 11px; line-height: 1.12;
+        }
+        /* Cine fullscreen: ocultar barra/lista, conservar superficie de video. */
+        html:fullscreen #pantalla-principal.vista-celular-reproductor #barra-superior.oculto,
+        html:-webkit-full-screen #pantalla-principal.vista-celular-reproductor #barra-superior.oculto {
+          display: none;
+        }
+        html:fullscreen #pantalla-principal.vista-celular-reproductor #contenedor-principal.modo-cine #area-lista,
+        html:-webkit-full-screen #pantalla-principal.vista-celular-reproductor #contenedor-principal.modo-cine #area-lista {
+          display: none;
+        }
+        #pantalla-principal.vista-celular-reproductor #contenedor-principal.modo-cine #video-nativo,
+        #pantalla-principal.vista-celular-reproductor #contenedor-principal.modo-cine #video-procesado {
+          object-fit: contain;
+        }
+      }
+
+/* gregotv-diseno-pruebas */
+#pantalla-bienvenida:not(.inicio-cine-activo){background:radial-gradient(ellipse at 50% 40%,#05241c 0%,#020d0b 43%,#000 85%)!important;min-height:100vh;min-height:100dvh;box-sizing:border-box;display:flex;align-items:center;justify-content:center;padding:28px 22px 70px!important;position:relative}
+#pantalla-bienvenida:not(.inicio-cine-activo) .inicio-marco{max-width:1020px!important;width:100%;margin:auto!important}
+#pantalla-bienvenida:not(.inicio-cine-activo) .inicio-cabecera{margin:0 0 54px!important;text-align:center}
+#pantalla-bienvenida:not(.inicio-cine-activo) .inicio-opciones{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:28px!important;background:transparent!important;border:0!important;padding:0!important;margin:0 0 16px!important}
+#pantalla-bienvenida:not(.inicio-cine-activo) .inicio-opcion{width:100%;min-height:196px!important;display:flex!important;flex-direction:column;align-items:center;justify-content:center;gap:9px;border:2px solid #16dc7b!important;border-radius:20px!important;background:linear-gradient(150deg,#072a1c,#06110f)!important;color:#fff!important;box-shadow:0 0 26px #0bdb6c35,inset 0 0 30px #0bdb6c12;transition:transform .15s,box-shadow .15s}
+#pantalla-bienvenida:not(.inicio-cine-activo) .inicio-opcion:hover,#pantalla-bienvenida:not(.inicio-cine-activo) .inicio-opcion:focus-visible{transform:translateY(-2px);box-shadow:0 0 32px #0bdb6c77}
+#pantalla-bienvenida:not(.inicio-cine-activo) #inicio-tab-cine{border-color:#1ed7e8!important;background:linear-gradient(150deg,#07212a,#061115)!important;box-shadow:0 0 26px #00c9f035,inset 0 0 30px #00c9f012}
+#pantalla-bienvenida:not(.inicio-cine-activo) .inicio-opcion svg{width:50px!important;height:50px!important;stroke:#2df99a!important;fill:none}
+
+#pantalla-bienvenida:not(.inicio-cine-activo) .inicio-opcion strong{font-size:clamp(21px,2.5vw,31px)!important;color:#fff!important}
+#pantalla-bienvenida:not(.inicio-cine-activo) .inicio-opcion span{font-size:15px!important;color:#c9dad7!important}
+#pantalla-bienvenida:not(.inicio-cine-activo) .prueba-cargas{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:28px}
+#pantalla-bienvenida .prueba-carga{height:47px;width:100%;background:#0b1515;border:1px solid #36544c;border-radius:10px;color:#dbeae7;font-size:15px;cursor:pointer}
+#pantalla-bienvenida .prueba-carga:hover,#pantalla-bienvenida .prueba-carga:focus-visible{border-color:#2de3a5;background:#122622;outline-offset:3px}
+#pantalla-bienvenida:not(.inicio-cine-activo) #inicio-contenido-tv{display:none!important}
+
+#pantalla-bienvenida .prueba-footer{position:fixed;right:25px;bottom:17px;margin:0!important;font-size:13px!important;color:#a5b8b1!important;z-index:2}
+#pantalla-bienvenida .prueba-engranaje{font-size:23px;vertical-align:middle;margin-left:8px}
+@media(max-width:600px){
+#pantalla-bienvenida:not(.inicio-cine-activo){padding:25px 18px 62px!important;align-items:flex-start}
+#pantalla-bienvenida:not(.inicio-cine-activo) .inicio-cabecera{margin:28px 0 35px!important}
+#pantalla-bienvenida:not(.inicio-cine-activo) .inicio-opciones{grid-template-columns:1fr!important;gap:16px!important;margin-bottom:16px!important}
+#pantalla-bienvenida:not(.inicio-cine-activo) .inicio-opcion{min-height:132px!important;border-radius:16px!important;gap:4px}
+#pantalla-bienvenida:not(.inicio-cine-activo) .inicio-opcion svg{width:36px!important;height:36px!important}
+#pantalla-bienvenida:not(.inicio-cine-activo) .prueba-cargas{grid-template-columns:1fr;gap:12px}
+#pantalla-bienvenida .prueba-carga{height:42px;font-size:14px}
+#pantalla-bienvenida .prueba-footer{right:14px;bottom:12px;font-size:11px!important}
+}
+
+/* gregotv-diseno-aprobado */
+/* Diseño aprobado 28-10-2026: únicamente la portada. Conserva reproductores y cine. */
+/* Al abrir Cine, conservar la cabecera compacta anterior y no invadir su catálogo. */
+/* Ajustes exclusivos de Cine. */
+#pantalla-bienvenida.inicio-cine-activo .prueba-cargas{display:none!important}
+
+#pantalla-bienvenida.inicio-cine-activo .inicio-cabecera{
+  display:flex!important;
+  width:100%!important;
+  justify-content:center!important;
+  align-items:center!important;
+}
+#pantalla-bienvenida.inicio-cine-activo .gregotv-logo-oficial{
+  margin-left:auto!important;
+  margin-right:auto!important;
+}
+
+#pantalla-bienvenida.inicio-cine-activo .gregotv-rayos{display:none!important}
+#pantalla-bienvenida.inicio-cine-activo .gregotv-logo-oficial{width:170px!important;height:auto;max-height:110px}
+@media(max-width:600px){#pantalla-bienvenida.inicio-cine-activo .gregotv-logo-oficial{width:120px!important;max-height:80px}}
+
+#pantalla-bienvenida:not(.inicio-cine-activo) {
+  background:radial-gradient(ellipse 68% 62% at 50% 44%,#003c18 0%,#001507 40%,#000d06 72%,#000 100%)!important;
+  overflow-x:hidden;isolation:isolate;min-height:100vh!important;min-height:100dvh!important;
+  padding:25px 22px 70px!important;justify-content:center!important;align-items:center!important;
+}
+#pantalla-bienvenida:not(.inicio-cine-activo) .gregotv-rayos{
+ position:absolute;inset:0;width:100%;height:100%;min-height:650px;z-index:-1;pointer-events:none;opacity:.97;
+}
+#pantalla-bienvenida:not(.inicio-cine-activo) .inicio-marco{position:relative;z-index:1;max-width:1000px!important;width:100%!important;margin:0 auto!important}
+#pantalla-bienvenida:not(.inicio-cine-activo) .inicio-cabecera{margin:0 auto 22px!important;display:flex;justify-content:center;align-items:center}
+#pantalla-bienvenida .gregotv-logo-oficial{display:block;width:clamp(300px,40vw,430px);max-width:100%;height:auto;filter:drop-shadow(0 0 18px #00d84470)}
+#pantalla-bienvenida:not(.inicio-cine-activo) .inicio-opciones{
+ display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:20px!important;margin:0 0 16px!important;
+}
+#pantalla-bienvenida:not(.inicio-cine-activo) .inicio-opcion{
+ min-height:134px!important;height:134px!important;padding:16px 24px!important;
+ display:grid!important;grid-template-columns:92px minmax(0,1fr) 43px!important;
+ grid-template-rows:1fr 1fr!important;align-content:center!important;align-items:center!important;
+ column-gap:10px!important;row-gap:0!important;text-align:left!important;
+ border:2px solid #60ff5c!important;border-radius:14px!important;
+ background:linear-gradient(135deg,#0a4d17d9,#002411f0 45%,#001a10de)!important;
+ box-shadow:0 0 17px #00ff3355,inset 0 0 33px #00ff3528,0 0 42px #00fc2d16!important;
+}
+#pantalla-bienvenida:not(.inicio-cine-activo) #inicio-tab-cine{
+ border-color:#19eff1!important;background:linear-gradient(135deg,#064b4cde,#00272ff0 50%,#001a23f2)!important;
+ box-shadow:0 0 17px #00f0ec4d,inset 0 0 32px #00eaff25!important;
+}
+#pantalla-bienvenida:not(.inicio-cine-activo) .inicio-opcion svg{
+ grid-column:1;grid-row:1 / span 2;width:68px!important;height:68px!important;justify-self:center;
+ stroke:#e8fff1!important;stroke-width:2.7;fill:none!important;filter:drop-shadow(0 0 8px #05ff624f);
+}
+#pantalla-bienvenida:not(.inicio-cine-activo) #inicio-tab-cine svg{stroke:#e8ffff!important}
+#pantalla-bienvenida:not(.inicio-cine-activo) .inicio-opcion strong{
+ grid-column:2;grid-row:1;align-self:end;font-size:clamp(19px,2vw,26px)!important;font-weight:800!important;
+ text-align:left!important;white-space:nowrap;letter-spacing:-.4px;color:white!important;padding-bottom:2px;
+}
+#pantalla-bienvenida:not(.inicio-cine-activo) .inicio-opcion span{
+ grid-column:2;grid-row:2;align-self:start;font-size:clamp(12px,1.35vw,17px)!important;text-align:left!important;color:#ebf9f3!important;padding-top:3px;
+}
+#pantalla-bienvenida:not(.inicio-cine-activo) .inicio-opcion::after{
+ content:'›';grid-column:3;grid-row:1/span 2;width:41px;height:41px;display:grid;place-items:center;
+ border:1px solid #13ff4b;border-radius:50%;font-size:39px;font-weight:300;line-height:1;
+ background:linear-gradient(145deg,#006c23,#002f10);box-shadow:0 0 11px #00ff2845;color:#fff;
+}
+#pantalla-bienvenida:not(.inicio-cine-activo) #inicio-tab-cine::after{border-color:#00fbd4;background:linear-gradient(145deg,#007b71,#003c45)}
+#pantalla-bienvenida:not(.inicio-cine-activo) .inicio-opcion:hover,
+#pantalla-bienvenida:not(.inicio-cine-activo) .inicio-opcion:focus-visible{transform:translateY(-2px);filter:brightness(1.2);outline:2px solid #e1ffe1;outline-offset:3px}
+#pantalla-bienvenida:not(.inicio-cine-activo) .prueba-cargas{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:20px!important}
+#pantalla-bienvenida .prueba-carga{
+ height:48px!important;padding:0 18px!important;display:grid;grid-template-columns:56px 1fr 30px;align-items:center;
+ text-align:left!important;border:1.5px solid #6dff65!important;border-radius:10px!important;
+ background:linear-gradient(100deg,#052711dd,#002012f0 55%,#003c2bdd)!important;
+ color:#fff!important;box-shadow:0 0 13px #00ff3c38,inset 0 0 15px #00ff1d1b!important;
+ font-size:15px!important;
+}
+#pantalla-bienvenida .prueba-carga:nth-child(2){border-color:#36ffb2!important}
+#pantalla-bienvenida .prueba-carga svg{width:31px;height:31px;stroke:#fff;stroke-width:2.2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+#pantalla-bienvenida .prueba-carga::after{
+ content:'›';display:grid;place-items:center;width:27px;height:27px;border:1px solid #00c454;
+ border-radius:50%;background:#00492b;color:#fff;font-size:25px;line-height:1;
+}
+#pantalla-bienvenida .prueba-carga:hover,#pantalla-bienvenida .prueba-carga:focus-visible{filter:brightness(1.3);outline:2px solid white;outline-offset:2px}
+#pantalla-bienvenida .gregotv-version.prueba-footer{
+ position:fixed!important;right:24px!important;bottom:17px!important;top:auto!important;left:auto!important;
+ width:auto!important;margin:0!important;padding:0!important;text-align:right!important;pointer-events:none!important;
+ font-size:13px!important;line-height:1.2!important;color:#d0e4d7!important;z-index:10!important;
+}
+#pantalla-bienvenida .prueba-engranaje{font-size:28px!important;vertical-align:middle!important;margin-left:9px!important;color:white!important}
+@media(max-width:700px){
+ #pantalla-bienvenida:not(.inicio-cine-activo){padding:50px 18px 85px!important;align-items:flex-start!important;justify-content:flex-start!important}
+ #pantalla-bienvenida:not(.inicio-cine-activo) .inicio-cabecera{margin:35px auto 24px!important}
+ #pantalla-bienvenida .gregotv-logo-oficial{width:min(88vw,360px)!important}
+ #pantalla-bienvenida:not(.inicio-cine-activo) .inicio-opciones{grid-template-columns:1fr!important;gap:14px!important;margin-bottom:14px!important}
+ #pantalla-bienvenida:not(.inicio-cine-activo) .inicio-opcion{height:115px!important;min-height:115px!important;padding:12px 16px!important;grid-template-columns:84px minmax(0,1fr) 39px!important;gap:3px!important}
+ #pantalla-bienvenida:not(.inicio-cine-activo) .inicio-opcion svg{width:62px!important;height:62px!important}
+ #pantalla-bienvenida:not(.inicio-cine-activo) .inicio-opcion strong{font-size:clamp(17px,4.4vw,22px)!important}
+ #pantalla-bienvenida:not(.inicio-cine-activo) .inicio-opcion span{font-size:clamp(12px,3.6vw,15px)!important}
+ #pantalla-bienvenida:not(.inicio-cine-activo) .inicio-opcion::after{width:37px;height:37px;font-size:34px}
+ #pantalla-bienvenida:not(.inicio-cine-activo) .prueba-cargas{grid-template-columns:1fr!important;gap:12px!important}
+ #pantalla-bienvenida .prueba-carga{height:45px!important;font-size:14px!important}
+ #pantalla-bienvenida .gregotv-version.prueba-footer{right:18px!important;bottom:12px!important;font-size:12px!important}
+ #pantalla-bienvenida .prueba-engranaje{font-size:25px!important}
+}
+@media(max-width:350px){
+ #pantalla-bienvenida:not(.inicio-cine-activo) .inicio-opcion{grid-template-columns:59px minmax(0,1fr) 30px!important;padding:10px!important}
+ #pantalla-bienvenida:not(.inicio-cine-activo) .inicio-opcion svg{width:48px!important;height:48px!important}
+ #pantalla-bienvenida:not(.inicio-cine-activo) .inicio-opcion::after{width:29px;height:29px;font-size:26px}
+ #pantalla-bienvenida:not(.inicio-cine-activo) .inicio-opcion strong{font-size:16px!important;white-space:normal}
+}
+
+/* Alto reducido: conservar la portada completa visible sin desplazamiento.
+   También en TV Box 960x540 y celulares pequeños. */
+@media(min-width:701px) and (max-height:650px){
+ #pantalla-bienvenida:not(.inicio-cine-activo){height:100vh!important;height:100dvh!important;min-height:0!important;overflow:hidden!important;padding:10px 14px 36px!important}
+ #pantalla-bienvenida:not(.inicio-cine-activo) .inicio-cabecera{margin:0 auto 11px!important}
+ #pantalla-bienvenida:not(.inicio-cine-activo) .gregotv-logo-oficial{width:min(285px,34vh)!important;max-height:172px}
+ #pantalla-bienvenida:not(.inicio-cine-activo) .inicio-opciones{gap:13px!important;margin-bottom:10px!important}
+ #pantalla-bienvenida:not(.inicio-cine-activo) .inicio-opcion{height:102px!important;min-height:102px!important;padding:8px 12px!important;grid-template-columns:65px minmax(0,1fr) 37px!important}
+ #pantalla-bienvenida:not(.inicio-cine-activo) .inicio-opcion svg{width:53px!important;height:53px!important}
+ #pantalla-bienvenida:not(.inicio-cine-activo) .inicio-opcion strong{font-size:clamp(17px,2.1vw,24px)!important}
+ #pantalla-bienvenida:not(.inicio-cine-activo) .inicio-opcion::after{width:35px;height:35px;font-size:32px}
+ #pantalla-bienvenida:not(.inicio-cine-activo) .prueba-cargas{gap:13px!important}
+ #pantalla-bienvenida:not(.inicio-cine-activo) .prueba-carga{height:40px!important}
+}
+@media(max-width:700px) and (max-height:760px){
+ #pantalla-bienvenida:not(.inicio-cine-activo){height:100vh!important;height:100dvh!important;min-height:0!important;overflow:hidden!important;padding:12px 14px 49px!important;align-items:center!important;justify-content:center!important}
+ #pantalla-bienvenida:not(.inicio-cine-activo) .inicio-cabecera{margin:0 auto 11px!important}
+ #pantalla-bienvenida:not(.inicio-cine-activo) .gregotv-logo-oficial{width:min(65vw,215px)!important}
+ #pantalla-bienvenida:not(.inicio-cine-activo) .inicio-opciones{gap:8px!important;margin-bottom:9px!important}
+ #pantalla-bienvenida:not(.inicio-cine-activo) .inicio-opcion{height:93px!important;min-height:93px!important;padding:8px 12px!important;grid-template-columns:65px minmax(0,1fr) 32px!important}
+ #pantalla-bienvenida:not(.inicio-cine-activo) .inicio-opcion svg{width:51px!important;height:51px!important}
+ #pantalla-bienvenida:not(.inicio-cine-activo) .inicio-opcion strong{font-size:clamp(15px,4.4vw,21px)!important}
+ #pantalla-bienvenida:not(.inicio-cine-activo) .inicio-opcion span{font-size:12px!important}
+ #pantalla-bienvenida:not(.inicio-cine-activo) .inicio-opcion::after{width:31px;height:31px;font-size:28px}
+ #pantalla-bienvenida:not(.inicio-cine-activo) .prueba-cargas{gap:8px!important}
+ #pantalla-bienvenida:not(.inicio-cine-activo) .prueba-carga{height:38px!important;padding:0 10px!important;grid-template-columns:42px 1fr 28px}
+}
+@media(max-width:700px) and (max-height:610px){
+ #pantalla-bienvenida:not(.inicio-cine-activo) .gregotv-logo-oficial{width:min(58vw,180px)!important}
+ #pantalla-bienvenida:not(.inicio-cine-activo) .inicio-opcion{height:82px!important;min-height:82px!important}
+ #pantalla-bienvenida:not(.inicio-cine-activo) .inicio-opcion svg{width:43px!important;height:43px!important}
+ #pantalla-bienvenida:not(.inicio-cine-activo) .prueba-carga{height:36px!important}
+}
