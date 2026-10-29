@@ -462,9 +462,9 @@
             return promesaAPIYouTube;
         }
 
-        function alternarPausaYouTube() {
-            // Importante: los clics no deben impedir abrir el menú lateral.
-            resetearActividad();
+        function alternarPausaYouTube(conservarModoCine = false) {
+            // El OK del TV Box no debe cerrar el modo cine al pausar YouTube.
+            if (!conservarModoCine) resetearActividad();
             if (!canalSeleccionado || canalSeleccionado.tipo !== 'youtube' ||
                 !youtubeApiLista || !reproductorYouTube) return;
             try {
@@ -498,12 +498,14 @@
             if (!estaEnModoCine || !window.GregoTVFocoRemoto ||
                 !window.GregoTVFocoRemoto() || !okCineTV(e) ||
                 !canalSeleccionado || (canalSeleccionado.tipo !== 'hls' &&
-                canalSeleccionado.tipo !== 'mp4')) return;
+                canalSeleccionado.tipo !== 'mp4' &&
+                canalSeleccionado.tipo !== 'youtube')) return;
             e.preventDefault();
             e.stopImmediatePropagation();
             if (e.repeat) return;
             ultimoOkCineTV = Date.now();
-            alternarPausaCanalEnVivo(videoActivo, true);
+            if (canalSeleccionado.tipo === 'youtube') alternarPausaYouTube(true);
+            else alternarPausaCanalEnVivo(videoActivo, true);
         }, true);
         document.addEventListener('keyup', (e) => {
             if (!estaEnModoCine || !window.GregoTVFocoRemoto ||
