@@ -340,3 +340,9 @@
   object-fit:contain!important;object-position:center center;
  }
 }
+
+/* Foco del control remoto sobre búsqueda, sin activar el teclado Android. */
+#pantalla-principal #buscador:focus {
+  outline:2px solid #a9ffe0;outline-offset:2px;
+  box-shadow:0 0 12px #21efbb66;
+}
