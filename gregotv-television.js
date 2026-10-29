@@ -518,6 +518,28 @@
             e.stopImmediatePropagation();
         }, true);
 
+        // Primera pulsación de Atrás durante modo cine: volver a la vista de canales.
+        // Captura el evento antes que los controles que puedan navegar al inicio.
+        function esAtrasTV(e) {
+            return e.key === 'Escape' || e.key === 'BrowserBack' ||
+                e.key === 'Backspace' || e.keyCode === 4 ||
+                e.keyCode === 8 || e.keyCode === 27 || e.keyCode === 10009;
+        }
+        let atrasCineConsumido = false;
+        document.addEventListener('keydown', (e) => {
+            if (!estaEnModoCine || !esAtrasTV(e) || modoLimpieza) return;
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            atrasCineConsumido = true;
+            desactivarModoCine();
+        }, true);
+        document.addEventListener('keyup', (e) => {
+            if (!atrasCineConsumido || !esAtrasTV(e)) return;
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            atrasCineConsumido = false;
+        }, true);
+
         document.addEventListener('keydown', (e) => {
             // Escape/Atrás termina la edición incluso si hay botones enfocados.
             const esCampoTexto = /^(INPUT|TEXTAREA)$/.test(e.target.tagName);
