@@ -93,6 +93,8 @@
             && typeof tecladoTV.enableWebControl === 'function'
             && typeof tecladoTV.openKeyboard === 'function'
             && typeof tecladoTV.closeKeyboard === 'function');
+        // Identificador exclusivo de la APK TV; PC y móviles conservan animaciones.
+        if (controlPorAPK) document.documentElement.classList.add('gt-android-tv');
         const androidNavegador = /Android/i.test(navigator.userAgent || '');
         let controlAndroidDetectado = controlPorAPK || (androidNavegador && !/Mobile/i.test(navigator.userAgent || ''));
         function cerrarTecladoTV() {
