@@ -518,8 +518,29 @@
             e.stopImmediatePropagation();
         }, true);
 
-        // Primera pulsación de Atrás durante modo cine: volver a la vista de canales.
-        // Captura el evento antes que los controles que puedan navegar al inicio.
+        // Android TV 0.2.7 consulta este contrato de forma sincrónica.
+        // Usar los estados existentes, sin crear una segunda navegación.
+        window.GregoTVHandleBack = function () {
+            if (controlPorAPK && document.activeElement === inputBuscar &&
+                !inputBuscar.readOnly) {
+                cerrarTecladoTV();
+                enfocarBuscadorSinTeclado();
+                return true;
+            }
+            if (modalCanal.style.display === 'flex') {
+                cerrarModalCanal();
+                return true;
+            }
+            if (modoLimpieza) {
+                alternarModoLimpieza();
+                return true;
+            }
+            if (estaEnModoCine) {
+                desactivarModoCine();
+                return true;
+            }
+            return false;
+        };
         function esAtrasTV(e) {
             return e.key === 'Escape' || e.key === 'BrowserBack' ||
                 e.key === 'Backspace' || e.keyCode === 4 ||
@@ -527,11 +548,15 @@
         }
         let atrasCineConsumido = false;
         document.addEventListener('keydown', (e) => {
-            if (!estaEnModoCine || !esAtrasTV(e) || modoLimpieza) return;
+            if (!window.GregoTVFocoRemoto || !window.GregoTVFocoRemoto() ||
+                !esAtrasTV(e)) return;
+            // No confundir Backspace de edición con el botón físico ATRÁS.
+            if (e.key === 'Backspace' && e.keyCode === 8 &&
+                /^(INPUT|TEXTAREA)$/.test(e.target.tagName)) return;
+            if (!window.GregoTVHandleBack()) return;
             e.preventDefault();
             e.stopImmediatePropagation();
             atrasCineConsumido = true;
-            desactivarModoCine();
         }, true);
         document.addEventListener('keyup', (e) => {
             if (!atrasCineConsumido || !esAtrasTV(e)) return;
