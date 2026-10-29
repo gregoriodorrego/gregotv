@@ -1,0 +1,342 @@
+/* GREGO TV - Television / reproductor, aspecto aprobado 28-10-2026.
+   Aplicado SOLO a #pantalla-principal. El motor HLS, YouTube,
+   los reportes y la administracion de canales siguen siendo los originales. */
+#pantalla-principal{
+  height:100vh;height:100dvh;max-height:100dvh;min-height:0;
+  color:#f6fff9;background:radial-gradient(ellipse at 50% 85%,#00311e 0%,#00140f 48%,#000705 100%);
+  overflow:hidden;
+}
+#pantalla-principal *{box-sizing:border-box}
+#pantalla-principal #barra-superior{
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:nowrap;gap:clamp(8px,1.2vw,20px);
+  width:100%;min-height:87px;max-height:175px;padding:10px clamp(12px,1.4vw,23px);
+  background:linear-gradient(180deg,#00110d,#000a08 90%);
+  border:0;border-bottom:1px solid #126e45;box-shadow:0 7px 25px #00ff4920;
+  z-index:1001;
+}
+#pantalla-principal #barra-superior.oculto{transform:translateY(-100%);opacity:0;pointer-events:none}
+#pantalla-principal #barra-superior .gt-tv-brand{
+  display:flex;align-items:center;flex:none;min-width:0;margin:0;
+  font:900 clamp(21px,2.6vw,41px)/1 Arial,sans-serif;
+  letter-spacing:-.035em;color:white;text-shadow:0 0 12px #14e54b44;white-space:nowrap;
+}
+#pantalla-principal .gt-tv-brand svg{width:clamp(35px,4.5vw,65px);height:auto;flex:none;margin-right:10px;filter:drop-shadow(0 0 6px #18f01a9c)}
+#pantalla-principal .gt-tv-brand .gt-tv-green{color:#1af04d}
+#pantalla-principal .gt-tv-tabs{
+  display:flex;align-items:center;justify-content:center;gap:clamp(7px,1.2vw,18px);
+  flex:1 1 auto;min-width:0;
+}
+#pantalla-principal .gt-tv-tabs button{display:inline-flex}
+#pantalla-principal .gt-tv-tabs button,
+#pantalla-principal #barra-superior .controles-superior > button{
+  align-items:center;justify-content:center;flex-direction:row;gap:8px;flex:none;
+  min-height:46px;padding:9px clamp(10px,1.1vw,17px);
+  font:700 clamp(12px,1.15vw,18px)/1.15 Arial,sans-serif;
+  letter-spacing:-.02em;white-space:nowrap;
+  border:1.5px solid #0af46e;border-radius:11px;
+  background:linear-gradient(155deg,#023820,#001a15 65%,#00201c);
+  box-shadow:0 0 12px #00ec4f32,inset 0 0 15px #00e94d1b;
+  color:white;cursor:pointer;transition:box-shadow .15s,filter .15s;
+}
+#pantalla-principal .gt-tv-tabs button:hover,
+#pantalla-principal .gt-tv-tabs button:focus-visible,
+#pantalla-principal #barra-superior .controles-superior > button:hover,
+#pantalla-principal #barra-superior .controles-superior > button:focus-visible{
+  filter:brightness(1.22);outline:2px solid #e5ffb0;outline-offset:3px;
+}
+#pantalla-principal .gt-tv-tabs button.gt-tv-selected{
+  border-color:#7dff09;background:linear-gradient(155deg,#134c13,#003c17 60%,#00150b);
+  box-shadow:0 0 18px #45ff00aa,inset 0 0 16px #3cff0030;
+}
+#pantalla-principal .gt-tv-tabs #gt-tv-tab-cine{
+  border-color:#0ddae8;background:linear-gradient(155deg,#06404b,#00202a 64%,#001820);
+  box-shadow:0 0 12px #08e3e633,inset 0 0 14px #09e3e515;
+}
+#pantalla-principal .gt-tv-tabs svg{display:block;width:26px;height:26px;stroke:#effff1;fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;flex:none}
+#pantalla-principal .gt-tv-tabs #gt-tv-tab-cine svg{stroke:#2befff}
+#pantalla-principal #barra-superior .controles-superior{
+  display:flex;flex:0 1 auto;align-items:center;justify-content:flex-end;
+  flex-wrap:wrap;gap:8px;max-width:48%;margin-left:auto;
+}
+#pantalla-principal #barra-superior .controles-superior #btn-volver{display:inline-flex;min-height:46px}
+#pantalla-principal #barra-superior .controles-superior > button:not(#btn-volver){
+  font-size:13px;white-space:normal;
+}
+#pantalla-principal #contenedor-principal{
+  flex:1 1 auto;min-height:0;overflow:hidden;gap:clamp(9px,1vw,18px);
+  padding:clamp(9px,1vw,18px);
+  background:radial-gradient(ellipse at bottom,#003b25 0%,#001810 45%,#000806 100%);
+  display:flex;
+}
+#pantalla-principal #area-video{
+  position:relative;flex:1 1 0;min-width:0;min-height:0;height:auto;overflow:hidden;
+  border:2px solid #79ff80;border-radius:18px;
+  background-color:#000b06;
+  background-image:linear-gradient(to bottom,#000b0625,#000b0640),url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%201200%20800%22%20preserveAspectRatio%3D%22none%22%3E%0A%3Cdefs%3E%3ClinearGradient%20id%3D%22a%22%3E%3Cstop%20stop-color%3D%22%2316ff09%22%2F%3E%3Cstop%20offset%3D%22.35%22%20stop-color%3D%22%23059b2b%22%20stop-opacity%3D%22.3%22%2F%3E%3Cstop%20offset%3D%22.5%22%20stop-color%3D%22%23001408%22%20stop-opacity%3D%220%22%2F%3E%3Cstop%20offset%3D%22.65%22%20stop-color%3D%22%23059b2b%22%20stop-opacity%3D%22.3%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%2316ff09%22%2F%3E%3C%2FlinearGradient%3E%3Cfilter%20id%3D%22blur%22%3E%3CfeGaussianBlur%20stdDeviation%3D%229%22%2F%3E%3C%2Ffilter%3E%3C%2Fdefs%3E%0A%3Cg%20fill%3D%22none%22%3E%3Cg%20stroke%3D%22url(%23a)%22%20stroke-width%3D%2218%22%20opacity%3D%22.55%22%20filter%3D%22url(%23blur)%22%3E%3Cpath%20d%3D%22M-90%20220%20Q160%20620%20540%20510%20T1290%20160%22%2F%3E%3Cpath%20d%3D%22M-90%20610%20Q240%20380%20530%20490%20T1290%20360%22%2F%3E%3C%2Fg%3E%0A%3Cg%20stroke%3D%22url(%23a)%22%20stroke-width%3D%222%22%20opacity%3D%22.85%22%3E%3Cpath%20d%3D%22M-80%20110%20Q230%20665%20550%20505%20T1270%20170%22%2F%3E%3Cpath%20d%3D%22M-80%20155%20Q220%20600%20590%20470%20T1270%20140%22%2F%3E%3Cpath%20d%3D%22M-80%20245%20Q250%20575%20610%20495%20T1270%20205%22%2F%3E%3Cpath%20d%3D%22M-80%20340%20Q260%20540%20600%20445%20T1270%20345%22%2F%3E%3Cpath%20d%3D%22M-80%20550%20Q330%20390%20650%20480%20T1270%20490%22%2F%3E%3Cpath%20d%3D%22M-80%20680%20Q300%20380%20620%20465%20T1270%20680%22%2F%3E%3Cpath%20d%3D%22M-80%20765%20Q360%20390%20620%20470%20T1270%20780%22%2F%3E%3C%2Fg%3E%0A%3Cg%20stroke%3D%22%2301bc46%22%20stroke-width%3D%2220%22%20opacity%3D%22.10%22%3E%3Cpath%20d%3D%22M-90%20130%20Q220%20630%20550%20490%20T1300%20220%22%2F%3E%3Cpath%20d%3D%22M-90%20675%20Q240%20400%20600%20490%20T1290%20710%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+  background-repeat:no-repeat;background-size:cover;background-position:center;
+  box-shadow:0 0 21px #00ff6466,inset 0 0 27px #00ff4421;
+}
+#pantalla-principal #area-video video,
+#pantalla-principal #area-video #contenedor-youtube{max-width:100%;max-height:100%;object-fit:contain}
+#pantalla-principal #mensaje-sin-video{
+  width:100%;height:100%;inset:0;padding:clamp(14px,2vw,30px);
+  gap:clamp(8px,1.1vw,15px);
+  font-size:clamp(15px,1.8vw,24px);line-height:1.35;color:white;
+  text-shadow:0 0 8px #000;pointer-events:none;
+}
+#pantalla-principal[data-gt-estado="sin_canal"] #mensaje-sin-video::before{
+  content:"";display:block;flex:0 0 auto;
+  width:clamp(165px,28vw,350px);height:clamp(120px,17vw,245px);
+  background:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20420%20270%22%3E%0A%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%3Cstop%20stop-color%3D%22%23cfff36%22%2F%3E%3Cstop%20offset%3D%22.5%22%20stop-color%3D%22%233dff04%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%2300e47c%22%2F%3E%3C%2FlinearGradient%3E%3Cfilter%20id%3D%22f%22%3E%3CfeGaussianBlur%20stdDeviation%3D%225%22%2F%3E%3C%2Ffilter%3E%3C%2Fdefs%3E%0A%3Cg%20stroke%3D%22url(%23g)%22%20stroke-width%3D%227%22%20stroke-linecap%3D%22round%22%20fill%3D%22none%22%3E%3Cpath%20d%3D%22M180%2048%20155%2020M240%2048%20265%2020%22%2F%3E%3Crect%20x%3D%22143%22%20y%3D%2257%22%20width%3D%22132%22%20height%3D%2290%22%20rx%3D%2214%22%2F%3E%3Cpath%20d%3D%22M170%20150v10m79-10v10%22%2F%3E%3C%2Fg%3E%0A%3Cg%20stroke%3D%22%2334ff19%22%20fill%3D%22none%22%20opacity%3D%22.7%22%20filter%3D%22url(%23f)%22%20stroke-width%3D%2212%22%3E%3Crect%20x%3D%22143%22%20y%3D%2257%22%20width%3D%22132%22%20height%3D%2290%22%20rx%3D%2214%22%2F%3E%3C%2Fg%3E%0A%3Cpath%20fill%3D%22url(%23g)%22%20d%3D%22M191%2078Q184%2077%20184%2086V121Q184%20132%20194%20126L242%20102Q250%2097%20242%2093Z%22%2F%3E%0A%3Ctext%20x%3D%22210%22%20y%3D%22215%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%2CHelvetica%2Csans-serif%22%20font-size%3D%2249%22%20font-weight%3D%22900%22%20letter-spacing%3D%22-2%22%20fill%3D%22%23ffffff%22%3EGrego%3Ctspan%20fill%3D%22%2323f548%22%3ETV%3C%2Ftspan%3E%3C%2Ftext%3E%3C%2Fsvg%3E") center/contain no-repeat;
+  filter:drop-shadow(0 0 13px #00f93d57);
+}
+#pantalla-principal #area-lista{
+  position:relative;display:flex;flex-direction:column;gap:0;
+  flex:0 0 clamp(310px,30vw,485px);width:clamp(310px,30vw,485px);max-width:none;min-width:0;min-height:0;height:auto;
+  background:linear-gradient(135deg,#001b16,#00100e 65%,#00211a);
+  border:1.5px solid #00dd65;border-radius:17px;overflow:hidden;
+  box-shadow:0 0 18px #00fb5a25,inset 0 0 17px #00be5718;
+  transition:transform .3s ease,opacity .3s ease;
+}
+#pantalla-principal .gt-tv-list-heading{
+  flex:0 0 auto;display:flex;align-items:center;gap:12px;
+  padding:13px 18px 6px;font:800 clamp(18px,2vw,26px)/1.2 Arial,sans-serif;color:#fafffb;
+  background:transparent;
+}
+#pantalla-principal .gt-tv-list-heading svg{width:36px;height:36px;stroke:#aaffba;fill:none;stroke-width:2.6;filter:drop-shadow(0 0 6px #00ff5d8a)}
+#pantalla-principal #filtro-categorias{flex:0 0 auto;padding:8px 16px;background:transparent;border:0}
+#pantalla-principal #select-categoria{
+  display:block;width:100%;height:52px;min-height:43px;
+  border:1.5px solid #0fe5a5;border-radius:11px;
+  background:linear-gradient(110deg,#00322a,#001d1c);
+  color:#edfff4;padding:8px 14px;
+  font:500 clamp(13px,1.4vw,17px)/1.2 Arial,sans-serif;
+  outline-offset:2px;box-shadow:inset 0 0 14px #00ad7831;
+}
+#pantalla-principal #buscador{flex:0 0 auto;padding:6px 16px 13px;background:transparent;border:0}
+#pantalla-principal #input-buscar{
+  display:block;width:100%;height:51px;min-height:43px;
+  border:1.5px solid #16cbaf;border-radius:11px;background:#00201e;
+  color:white;padding:9px 14px;font:400 clamp(13px,1.35vw,17px)/1.25 Arial,sans-serif;
+  outline-offset:2px;box-shadow:inset 0 0 12px #009b7730;
+}
+#pantalla-principal #select-categoria:focus,
+#pantalla-principal #input-buscar:focus{border-color:#aaffc0;outline:2px solid #63ffb2}
+#pantalla-principal #lista-canales{
+  flex:1 1 0;min-height:0;overflow-x:hidden;overflow-y:auto;
+  padding:7px 15px 10px;
+  scrollbar-color:#44f3a0 #002019;scrollbar-width:thin;
+}
+#pantalla-principal #lista-canales::-webkit-scrollbar{width:7px}
+#pantalla-principal #lista-canales::-webkit-scrollbar-track{background:#001913}
+#pantalla-principal #lista-canales::-webkit-scrollbar-thumb{background:#2f9d70;border-radius:8px}
+#pantalla-principal #lista-canales .canal-item{
+  display:flex;align-items:center;gap:10px;min-height:66px;
+  padding:10px 11px;margin-bottom:8px;
+  background:linear-gradient(135deg,#003b34,#001a1c);
+  border:1.5px solid #02c9c6;border-left:1.5px solid #02c9c6;border-radius:11px;
+  box-shadow:inset 0 0 15px #00b39b18;transition:background .15s,border-color .15s;
+  color:white;
+}
+#pantalla-principal #lista-canales .canal-item::before{
+  content:"";display:block;flex:0 0 33px;width:33px;height:33px;
+  background:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2048%2048%22%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%23e1fff1%22%20stroke-width%3D%223%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M18%2010%2011%203M30%2010l7-7%22%2F%3E%3Crect%20x%3D%224%22%20y%3D%2211%22%20width%3D%2240%22%20height%3D%2228%22%20rx%3D%225%22%2F%3E%3Cpath%20d%3D%22M18%2044h12%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E") center/contain no-repeat;
+}
+#pantalla-principal #lista-canales .canal-item .canal-nombre{
+  display:block;flex:1 1 0;min-width:0;max-width:none;
+  padding-right:0;font:500 clamp(15px,1.45vw,20px)/1.3 Arial,sans-serif;
+  overflow-wrap:anywhere;word-break:normal;
+}
+#pantalla-principal #lista-canales .canal-item:hover,
+#pantalla-principal #lista-canales .canal-item:focus-visible{background:#074d35;border-color:#7affc6}
+#pantalla-principal #lista-canales .canal-item.seleccionado{
+  background:linear-gradient(135deg,#13591d,#004325);
+  border-color:#81ff19;box-shadow:0 0 13px #45ff00a3,inset 0 0 14px #3bff0030;
+}
+#pantalla-principal #lista-canales .canal-item.seleccion-borrado{border-color:#ffbf67;background:#503321}
+#pantalla-principal #info-canales{
+  flex:0 0 auto;display:flex;align-items:center;gap:6px;
+  padding:11px 18px;color:#e4f4e9;background:#001712;
+  border:0;border-top:1px solid #079c63;
+  font:500 clamp(13px,1.25vw,17px)/1.2 Arial,sans-serif;
+}
+#pantalla-principal #info-canales::before{content:"☷";font-size:24px;line-height:.8;margin-right:6px;color:#b1ffe0}
+#pantalla-principal #contenedor-principal.modo-cine{padding:0;gap:0}
+#pantalla-principal #contenedor-principal.modo-cine #area-video{border:0;border-radius:0;box-shadow:none}
+#pantalla-principal #contenedor-principal.modo-cine #area-lista{
+  position:absolute;right:0;top:0;transform:translateX(100%);opacity:0;pointer-events:none;
+  height:100%;z-index:999;
+}
+@media(max-width:1200px){
+ #pantalla-principal #barra-superior{min-height:68px;padding:7px 11px;gap:8px}
+ #pantalla-principal .gt-tv-brand svg{width:37px;margin-right:6px}
+ #pantalla-principal #barra-superior .gt-tv-brand{font-size:clamp(18px,2.2vw,28px)}
+ #pantalla-principal .gt-tv-tabs button,
+ #pantalla-principal #barra-superior .controles-superior > button{
+   font-size:clamp(11px,1.1vw,15px);min-height:40px;padding:7px 10px;gap:5px;
+ }
+ #pantalla-principal .gt-tv-tabs svg{width:21px;height:21px}
+ #pantalla-principal #area-lista{flex-basis:clamp(275px,31vw,370px);width:clamp(275px,31vw,370px)}
+ #pantalla-principal .gt-tv-list-heading{padding:10px 12px 3px;font-size:19px}
+ #pantalla-principal #filtro-categorias{padding:7px 10px}
+ #pantalla-principal #buscador{padding:5px 10px 10px}
+ #pantalla-principal #lista-canales{padding:6px 9px}
+ #pantalla-principal #lista-canales .canal-item{min-height:55px;padding:7px 9px}
+ #pantalla-principal #lista-canales .canal-item .canal-nombre{font-size:15px}
+}
+@media(max-width:700px) and (orientation:portrait){
+ #pantalla-principal #barra-superior{
+   flex:0 0 auto;display:grid;grid-template-columns:1fr 1fr;
+   grid-template-areas:"brand brand" "tabs tabs" "tools tools";gap:5px;
+   min-height:0;max-height:none;padding:5px 9px 7px;
+ }
+ #pantalla-principal #barra-superior .gt-tv-brand{grid-area:brand;justify-content:center;font-size:20px;padding:0}
+ #pantalla-principal .gt-tv-brand svg{width:26px}
+ #pantalla-principal .gt-tv-tabs{grid-area:tabs;display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%}
+ #pantalla-principal .gt-tv-tabs button{min-height:35px;padding:5px 4px;font-size:clamp(11px,3.1vw,14px)}
+ #pantalla-principal .gt-tv-tabs svg{width:19px;height:19px}
+ #pantalla-principal #barra-superior .controles-superior{
+   grid-area:tools;display:grid;grid-template-columns:1fr 1fr;width:100%;max-width:none;gap:8px;margin:0;
+ }
+ #pantalla-principal #barra-superior .controles-superior #btn-volver{
+   display:flex;min-width:0;min-height:33px;padding:5px 3px;
+   font-size:clamp(10px,2.7vw,13px);white-space:normal;text-align:center;
+ }
+ #pantalla-principal #contenedor-principal{
+   display:flex;flex-direction:column;gap:8px;padding:8px;min-height:0;overflow:hidden;
+ }
+ #pantalla-principal #area-video{
+   flex:0 0 clamp(145px,31dvh,265px);
+   min-height:0;max-height:none;width:100%;height:clamp(145px,31dvh,265px);border-radius:12px;
+ }
+ #pantalla-principal #mensaje-sin-video{font-size:clamp(12px,3.3vw,17px);gap:2px;padding:9px}
+ #pantalla-principal[data-gt-estado="sin_canal"] #mensaje-sin-video::before{
+   width:clamp(110px,39vw,175px);height:clamp(75px,21dvh,117px);
+ }
+ #pantalla-principal #area-lista{
+   flex:1 1 0;min-height:0;max-height:none;width:100%;height:auto;max-width:none;border-radius:12px;
+ }
+ #pantalla-principal .gt-tv-list-heading{font-size:17px;padding:5px 12px 3px}
+ #pantalla-principal .gt-tv-list-heading svg{width:23px;height:23px}
+ #pantalla-principal #select-categoria,
+ #pantalla-principal #input-buscar{height:36px;min-height:35px;padding:5px 9px;font-size:13px}
+ #pantalla-principal #filtro-categorias{padding:4px 9px}
+ #pantalla-principal #buscador{padding:3px 9px 6px}
+ #pantalla-principal #lista-canales{padding:4px 9px}
+ #pantalla-principal #lista-canales .canal-item{min-height:48px;margin-bottom:5px;padding:6px 9px}
+ #pantalla-principal #lista-canales .canal-item::before{width:25px;height:25px;flex-basis:25px}
+ #pantalla-principal #lista-canales .canal-item .canal-nombre{font-size:14px}
+ #pantalla-principal #info-canales{padding:6px 10px;font-size:12px}
+}
+@media(max-width:980px) and (orientation:landscape){
+ #pantalla-principal #barra-superior{min-height:52px;gap:5px;padding:3px 9px}
+ #pantalla-principal #barra-superior .gt-tv-brand{font-size:17px}
+ #pantalla-principal .gt-tv-brand svg{width:27px}
+ #pantalla-principal .gt-tv-tabs button,
+ #pantalla-principal #barra-superior .controles-superior > button{min-height:34px;font-size:11px;padding:5px 6px;gap:4px}
+ #pantalla-principal .gt-tv-tabs svg{width:17px;height:17px}
+ #pantalla-principal #area-lista{flex-basis:35%;width:35%;min-width:235px}
+ #pantalla-principal #area-video{min-height:0}
+ #pantalla-principal #contenedor-principal{display:flex;flex-direction:row;gap:7px;padding:7px}
+ #pantalla-principal #lista-canales .canal-item{min-height:43px;padding:5px 8px;margin-bottom:5px}
+ #pantalla-principal #select-categoria,#pantalla-principal #input-buscar{height:35px;min-height:35px}
+ #pantalla-principal .gt-tv-list-heading{padding:5px 8px 0;font-size:16px}
+ #pantalla-principal .gt-tv-list-heading svg{width:21px;height:21px}
+}
+@media(prefers-reduced-motion:reduce){
+ #pantalla-principal #barra-superior button,
+ #pantalla-principal #lista-canales .canal-item{transition:none!important}
+}
+
+/* Celular: quitar solo el rótulo redundante "Canales en vivo" bajo la lista. */
+@media(max-width:700px){
+ #pantalla-principal #area-lista > .gt-tv-list-heading{display:none!important}
+}
+
+/* Logos reales cuando el M3U incluye tvg-logo; respaldo propio de GregoTV.
+   Se respeta el ancho de las tarjetas y todas las pantallas. */
+#pantalla-principal #lista-canales .canal-item::before{
+ background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2048%2048%22%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%2345fa52%22%20stroke-width%3D%223%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M17%2013%2010%205M31%2013l7-8%22%2F%3E%3Crect%20x%3D%224%22%20y%3D%2214%22%20width%3D%2240%22%20height%3D%2229%22%20rx%3D%225%22%2F%3E%3C%2Fg%3E%3Cpath%20fill%3D%22%2339fe28%22%20d%3D%22M21%2021q-2-1-2%202v13q0%203%203%201l13-7q3-2%200-3z%22%2F%3E%3C%2Fsvg%3E");
+}
+#pantalla-principal #lista-canales .canal-item.gt-con-logo::before{display:none!important}
+#pantalla-principal #lista-canales .canal-item > img.gt-logo-canal{
+ display:block;box-sizing:border-box;flex:0 0 33px;width:33px;height:33px;
+ object-fit:contain;object-position:center;background:transparent;
+ border:0;border-radius:5px;margin:0;padding:0;
+}
+@media(max-width:1200px){
+ #pantalla-principal #lista-canales .canal-item > img.gt-logo-canal{
+  flex-basis:29px;width:29px;height:29px
+ }
+}
+@media(max-width:700px){
+ #pantalla-principal #lista-canales .canal-item > img.gt-logo-canal{
+  flex-basis:25px;width:25px;height:25px
+ }
+}
+@media(max-width:700px) and (orientation:landscape){
+ #pantalla-principal #lista-canales .canal-item > img.gt-logo-canal{
+  flex-basis:23px;width:23px;height:23px
+ }
+}
+
+#pantalla-principal #lista-canales .canal-item.gt-es-youtube:not(.gt-con-logo)::before{
+  background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2048%2048%22%3E%3Crect%20x%3D%224%22%20y%3D%2211%22%20width%3D%2240%22%20height%3D%2226%22%20rx%3D%228%22%20fill%3D%22%23FF0033%22%2F%3E%3Cpath%20d%3D%22M20%2017v14l13-7z%22%20fill%3D%22%23FFF%22%2F%3E%3C%2Fsvg%3E")!important;
+}
+
+/* Aviso de recuperación de señal; antes definido dentro del HTML. */
+#gt-aviso-recuperacion {
+        position:absolute;z-index:4;top:10px;right:10px;
+        display:inline-flex;align-items:center;justify-content:center;
+        box-sizing:border-box;max-width:calc(100% - 20px);
+        padding:7px 11px;border:1px solid #22d98a;border-radius:8px;
+        background:rgba(0,25,19,.88);color:#f1fff6;
+        font:600 clamp(12px,1.2vw,15px)/1.25 Arial,Helvetica,sans-serif;
+        text-align:center;pointer-events:none;
+        box-shadow:0 0 10px rgba(0,200,95,.22);
+      }
+      #gt-aviso-recuperacion[hidden]{display:none!important}
+      @media(max-width:700px){
+        #gt-aviso-recuperacion{top:7px;right:7px;padding:5px 8px;font-size:12px}
+      }
+
+/* Lupa SVG neón: un único icono para PC, TV Box y celular. */
+#pantalla-principal #buscador{position:relative}
+#pantalla-principal #buscador .gt-search-icon{
+ position:absolute;z-index:1;
+ left:clamp(15px,1.5vw,28px);top:50%;transform:translateY(-50%);
+ width:21px;height:21px;pointer-events:none;
+ fill:none;stroke:#73f9f3;stroke-width:2.25;
+ stroke-linecap:round;stroke-linejoin:round;
+}
+#pantalla-principal #buscador #input-buscar{
+ padding-left:clamp(43px,3.3vw,52px)!important;
+}
+@media(max-width:700px){
+ #pantalla-principal #buscador .gt-search-icon{left:13px;width:18px;height:18px}
+ #pantalla-principal #buscador #input-buscar{padding-left:36px!important}
+}
+
+/* Prueba de modo cine en PC y TV Box: video a superficie completa.
+   Excluye celulares en vertical y paisaje (hasta 1000px x 520px). */
+@media screen and (min-width:1001px), screen and (min-width:701px) and (min-height:521px){
+ #pantalla-principal #barra-superior.oculto{
+  display:none!important;
+ }
+ #pantalla-principal #contenedor-principal.modo-cine{
+  flex:1 1 auto!important;
+  width:100%;height:100%;min-height:0;max-height:none;
+  margin:0!important;padding:0!important;gap:0!important;
+ }
+ #pantalla-principal #contenedor-principal.modo-cine #area-video{
+  flex:1 1 auto!important;
+  width:100%;height:100%;min-height:0;max-height:none;
+  margin:0!important;padding:0!important;
+ }
+ #pantalla-principal #contenedor-principal.modo-cine #video-nativo,
+ #pantalla-principal #contenedor-principal.modo-cine #video-procesado{
+  width:100%!important;height:100%!important;
+  max-width:100%!important;max-height:100%!important;
+  object-fit:contain!important;object-position:center center;
+ }
+}
