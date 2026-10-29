@@ -85,6 +85,21 @@
 
         const selectCategoria = document.getElementById('select-categoria');
         const inputBuscar = document.getElementById('input-buscar');
+        const marcoBuscar = document.getElementById('buscador');
+        // En TV Box, pasar por la búsqueda no debe abrir el teclado de Android.
+        const androidNavegador = /Android/i.test(navigator.userAgent || '');
+        let controlAndroidDetectado = androidNavegador && !/Mobile/i.test(navigator.userAgent || '');
+        document.addEventListener('keydown', (e) => {
+            if (androidNavegador && [19, 20, 21, 22, 23].includes(e.keyCode)) controlAndroidDetectado = true;
+        }, true);
+        window.GregoTVFocoRemoto = () => controlAndroidDetectado;
+        function enfocarBuscadorSinTeclado() {
+            if (controlAndroidDetectado) {
+                marcoBuscar.tabIndex = 0;
+                marcoBuscar.setAttribute('aria-label', 'Buscar canal: presionar OK para escribir');
+                marcoBuscar.focus();
+            } else inputBuscar.focus();
+        }
         const listaCanales = document.getElementById('lista-canales');
         const totalCanales = document.getElementById('total-canales');
 
@@ -637,6 +652,24 @@
             aplicarFiltros();
         });
 
+        // En navegación TV la caja de búsqueda es una parada; solo OK abre el teclado.
+        marcoBuscar.addEventListener('keydown', (e) => {
+            if (!controlAndroidDetectado || e.target !== marcoBuscar) return;
+            const n = e.keyCode;
+            if (e.key === 'ArrowDown' || n === 40 || n === 20) {
+                e.preventDefault();
+                const primer = listaCanales.querySelector('.canal-item');
+                if (primer) primer.focus();
+            } else if (e.key === 'ArrowUp' || n === 38 || n === 19) {
+                e.preventDefault();
+                const selector = document.getElementById('gt-cat-trigger');
+                if (selector) selector.focus();
+            } else if (e.key === 'Enter' || e.key === ' ' || n === 13 || n === 23 || n === 66) {
+                e.preventDefault();
+                inputBuscar.focus();
+                inputBuscar.click();
+            }
+        });
         // Recorrido con control remoto: buscador <-> canales filtrados.
         inputBuscar.addEventListener('keydown', (e) => {
             if (e.key === 'ArrowDown' || e.keyCode === 40 || e.keyCode === 20) {
@@ -836,7 +869,7 @@
                             siguiente.focus();
                         } else if (arriba && posicion === 0) {
                             e.preventDefault();
-                            inputBuscar.focus();
+                            enfocarBuscadorSinTeclado();
                         } else {
                             e.preventDefault();
                         }
