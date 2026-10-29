@@ -86,26 +86,41 @@
         const selectCategoria = document.getElementById('select-categoria');
         const inputBuscar = document.getElementById('input-buscar');
         const marcoBuscar = document.getElementById('buscador');
-        // En TV Box, pasar por la búsqueda no debe abrir el teclado de Android.
+        // El control remoto utiliza un contenedor enfocable; escribir exige OK.
+        // Solo la APK de Android TV 0.2.4 expone este puente nativo.
+        const tecladoTV = window.GregoTVAndroidTV;
+        const controlPorAPK = !!(tecladoTV
+            && typeof tecladoTV.enableWebControl === 'function'
+            && typeof tecladoTV.openKeyboard === 'function'
+            && typeof tecladoTV.closeKeyboard === 'function');
         const androidNavegador = /Android/i.test(navigator.userAgent || '');
-        let controlAndroidDetectado = androidNavegador && !/Mobile/i.test(navigator.userAgent || '');
-        // readOnly impide que WebView abra el teclado solo por recibir foco.
-        // Se habilita escritura únicamente mediante OK sobre el buscador.
-        if (controlAndroidDetectado) inputBuscar.readOnly = true;
+        let controlAndroidDetectado = controlPorAPK || (androidNavegador && !/Mobile/i.test(navigator.userAgent || ''));
+        function cerrarTecladoTV() {
+            if (!controlAndroidDetectado) return;
+            inputBuscar.readOnly = true;
+            if (controlPorAPK) tecladoTV.closeKeyboard();
+        }
+        if (controlAndroidDetectado) {
+            inputBuscar.readOnly = true;
+            marcoBuscar.tabIndex = 0;
+            marcoBuscar.setAttribute('aria-label', 'Buscar canal: presionar OK para escribir');
+            if (controlPorAPK) {
+                tecladoTV.enableWebControl();
+                tecladoTV.closeKeyboard();
+            }
+        }
         document.addEventListener('keydown', (e) => {
-            if (androidNavegador && [19, 20, 21, 22, 23].includes(e.keyCode)) {
+            if (!controlPorAPK && androidNavegador && [19, 20, 21, 22, 23].includes(e.keyCode)) {
                 controlAndroidDetectado = true;
-                if (document.activeElement !== inputBuscar || inputBuscar.readOnly) inputBuscar.readOnly = true;
+                if (document.activeElement !== inputBuscar) cerrarTecladoTV();
             }
         }, true);
-        inputBuscar.addEventListener('blur', () => {
-            if (controlAndroidDetectado) inputBuscar.readOnly = true;
-        });
+        inputBuscar.addEventListener('blur', cerrarTecladoTV);
         window.GregoTVFocoRemoto = () => controlAndroidDetectado;
         function enfocarBuscadorSinTeclado() {
             if (controlAndroidDetectado) {
+                cerrarTecladoTV();
                 marcoBuscar.tabIndex = 0;
-                marcoBuscar.setAttribute('aria-label', 'Buscar canal: presionar OK para escribir');
                 marcoBuscar.focus();
             } else inputBuscar.focus();
         }
@@ -677,17 +692,23 @@
                 e.preventDefault();
                 inputBuscar.readOnly = false;
                 inputBuscar.focus();
-                inputBuscar.click();
+                if (controlPorAPK) tecladoTV.openKeyboard();
+                else inputBuscar.click();
             }
         });
         // Recorrido con control remoto: buscador <-> canales filtrados.
         inputBuscar.addEventListener('keydown', (e) => {
             if (e.key === 'ArrowDown' || e.keyCode === 40 || e.keyCode === 20) {
                 const primerCanal = listaCanales.querySelector('.canal-item');
-                if (primerCanal) { e.preventDefault(); primerCanal.focus(); }
+                if (primerCanal) { e.preventDefault(); cerrarTecladoTV(); primerCanal.focus(); }
             } else if (e.key === 'ArrowUp' || e.keyCode === 38 || e.keyCode === 19) {
                 const selector = document.getElementById('gt-cat-trigger');
-                if (selector) { e.preventDefault(); selector.focus(); }
+                if (selector) { e.preventDefault(); cerrarTecladoTV(); selector.focus(); }
+            } else if (controlAndroidDetectado &&
+                       (e.key === 'Escape' || e.key === 'BrowserBack' || e.keyCode === 4 || e.keyCode === 27)) {
+                e.preventDefault();
+                cerrarTecladoTV();
+                enfocarBuscadorSinTeclado();
             }
         });
         // Evitar reconstruir la lista completa al pulsar cada tecla.
