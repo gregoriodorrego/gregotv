@@ -225,7 +225,10 @@
         if (primerCanal) primerCanal.focus();
         else {
             var buscador = document.getElementById('input-buscar');
-            if (buscador) buscador.focus();
+            var marcoBuscar = document.getElementById('buscador');
+            if (window.GregoTVFocoRemoto && window.GregoTVFocoRemoto() && marcoBuscar) {
+                marcoBuscar.tabIndex = 0; marcoBuscar.focus();
+            } else if (buscador) buscador.focus();
             else boton.focus();
         }
     }
@@ -267,10 +270,14 @@
         if (abajo && popup.hidden) {
             // Menú cerrado: bajar debe recorrer canales, no abrir de nuevo categorías.
             var buscador = document.getElementById('input-buscar');
+            var marcoBuscar = document.getElementById('buscador');
             var primerCanal = document.querySelector('#lista-canales .canal-item');
-            if (buscador || primerCanal) {
+            var focoBuscador = window.GregoTVFocoRemoto && window.GregoTVFocoRemoto()
+                ? marcoBuscar : buscador;
+            if (focoBuscador || primerCanal) {
                 e.preventDefault(); e.stopPropagation();
-                (buscador || primerCanal).focus();
+                if (focoBuscador === marcoBuscar) marcoBuscar.tabIndex = 0;
+                (focoBuscador || primerCanal).focus();
                 return;
             }
         }
