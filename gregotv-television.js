@@ -637,6 +637,16 @@
             aplicarFiltros();
         });
 
+        // Recorrido con control remoto: buscador <-> canales filtrados.
+        inputBuscar.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowDown' || e.keyCode === 40 || e.keyCode === 20) {
+                const primerCanal = listaCanales.querySelector('.canal-item');
+                if (primerCanal) { e.preventDefault(); primerCanal.focus(); }
+            } else if (e.key === 'ArrowUp' || e.keyCode === 38 || e.keyCode === 19) {
+                const selector = document.getElementById('gt-cat-trigger');
+                if (selector) { e.preventDefault(); selector.focus(); }
+            }
+        });
         // Evitar reconstruir la lista completa al pulsar cada tecla.
         let temporizadorBusqueda = null;
         inputBuscar.addEventListener('input', () => {
@@ -814,8 +824,24 @@
                 item.setAttribute('aria-label', 'Reproducir ' + canal.nombre);
                 item.addEventListener('keydown', e => {
                     if (e.target !== item) return;
-                    if ((e.key === 'ArrowDown' || e.keyCode === 40 || e.keyCode === 20)
-                        && indice >= siguienteCanalPorMostrar - 6) agregarLoteCanales();
+                    const abajo = e.key === 'ArrowDown' || e.keyCode === 40 || e.keyCode === 20;
+                    const arriba = e.key === 'ArrowUp' || e.keyCode === 38 || e.keyCode === 19;
+                    if (abajo || arriba) {
+                        if (abajo && indice >= siguienteCanalPorMostrar - 6) agregarLoteCanales();
+                        const visibles = Array.from(listaCanales.querySelectorAll('.canal-item'));
+                        const posicion = visibles.indexOf(item);
+                        const siguiente = visibles[posicion + (abajo ? 1 : -1)];
+                        if (siguiente) {
+                            e.preventDefault();
+                            siguiente.focus();
+                        } else if (arriba && posicion === 0) {
+                            e.preventDefault();
+                            inputBuscar.focus();
+                        } else {
+                            e.preventDefault();
+                        }
+                        return;
+                    }
                     // En televisores el control remoto suele informar keyCode 13,
                     // aunque e.key no sea "Enter". Mantener también el mouse.
                     if (e.key === 'Enter' || e.keyCode === 13 || e.which === 13) {
