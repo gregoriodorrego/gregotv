@@ -219,7 +219,15 @@
         }
         original.dispatchEvent(evento);
         sincronizar();
-        cerrar(true);
+        cerrar(false);
+        // En TV Box, después de elegir categoría el foco pasa a sus canales.
+        var primerCanal = document.querySelector('#lista-canales .canal-item');
+        if (primerCanal) primerCanal.focus();
+        else {
+            var buscador = document.getElementById('input-buscar');
+            if (buscador) buscador.focus();
+            else boton.focus();
+        }
     }
 
     boton.addEventListener('click', function () {
@@ -255,6 +263,16 @@
             e.preventDefault(); e.stopPropagation();
             if (popup.hidden) abrir(); else elegir(indiceActivo);
             return;
+        }
+        if (abajo && popup.hidden) {
+            // Menú cerrado: bajar debe recorrer canales, no abrir de nuevo categorías.
+            var buscador = document.getElementById('input-buscar');
+            var primerCanal = document.querySelector('#lista-canales .canal-item');
+            if (buscador || primerCanal) {
+                e.preventDefault(); e.stopPropagation();
+                (buscador || primerCanal).focus();
+                return;
+            }
         }
         if (abajo || arriba || k === 'Home' || k === 'End' || k === 'PageDown' || k === 'PageUp') {
             e.preventDefault(); e.stopPropagation();
