@@ -346,3 +346,12 @@
   outline:2px solid #a9ffe0;outline-offset:2px;
   box-shadow:0 0 12px #21efbb66;
 }
+
+/* Android TV: evita la transición de tamaño y el salto del video al salir del modo cine.
+   El modo cine mantiene el mismo diseño, solo cambia instantáneamente la distribución. */
+html.gt-android-tv #pantalla-principal #contenedor-principal,
+html.gt-android-tv #pantalla-principal #area-video,
+html.gt-android-tv #pantalla-principal #area-lista,
+html.gt-android-tv #pantalla-principal #barra-superior {
+  transition:none!important;
+}
